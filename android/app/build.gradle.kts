@@ -24,10 +24,10 @@ android {
         applicationId = "com.example.live_mart_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        minSdk = 3.35.3
+        targetSdk = 3.35.3
+        versionCode = 1
+        versionName = "1.0"
     }
 
     buildTypes {

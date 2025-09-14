@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/utils.dart';
 import '../services/api_service.dart';
 import 'otp_screen.dart';
 
@@ -12,6 +14,7 @@ class EmailScreen extends StatefulWidget {
 class _EmailScreenState extends State<EmailScreen> {
   final TextEditingController _emailController = TextEditingController();
   bool _isLoading = false;
+  final ApiService _apiService = Get.find<ApiService>();
 
   void _requestOtp() async {
     final email = _emailController.text.trim();
@@ -27,15 +30,12 @@ class _EmailScreenState extends State<EmailScreen> {
     });
 
     try {
-      final message = await ApiService.sendOtp(email);
+      final message = await _apiService.sendOtp(email);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
       // On success, navigate to OTP screen and pass email
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => OtpScreen(email: email)),
-      );
+      Get.to(() => OtpScreen(email: email));
     } catch (e) {
       ScaffoldMessenger.of(
         context,

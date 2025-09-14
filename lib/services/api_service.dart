@@ -1,11 +1,12 @@
 import 'dart:convert';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
-class ApiService {
+class ApiService extends GetxService {
   static const String baseUrl = 'http://localhost:3000/auth';
 
   /// Sends OTP to the given email
-  static Future<String> sendOtp(String email) async {
+  Future<String> sendOtp(String email) async {
     final url = Uri.parse('$baseUrl/signup/request-otp');
     final response = await http.post(
       url,
@@ -23,7 +24,7 @@ class ApiService {
   }
 
   /// Verifies OTP and completes signup
-  static Future<String> verifyOtp({
+  Future<String> verifyOtp({
     required String name,
     required String email,
     required String password,

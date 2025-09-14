@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import '../services/api_service.dart';
 
 class OtpScreen extends StatefulWidget {
@@ -15,6 +17,7 @@ class _OtpScreenState extends State<OtpScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
   String? _selectedRole;
+  final ApiService _apiService = Get.find<ApiService>();
   final List<String> _roles = ['Customer', 'Wholesaler', 'Retailer'];
 
   bool _isLoading = false;
@@ -50,7 +53,7 @@ class _OtpScreenState extends State<OtpScreen> {
     });
 
     try {
-      final message = await ApiService.verifyOtp(
+      final message = await _apiService.verifyOtp(
         name: name,
         email: email,
         password: password,

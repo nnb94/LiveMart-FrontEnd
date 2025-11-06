@@ -52,4 +52,36 @@ class ApiService extends GetxService {
       throw Exception(data['message'] ?? 'OTP verification failed');
     }
   }
+
+  /// Login (per backend auth.rest file)
+  /// Endpoint: POST /auth/login
+  /// Body: { "email": "user@example.com", "password": "password" }
+  /// Response: { "token": "..." }
+  Future<String> login(String email, String password) async {
+    final url = Uri.parse('$baseUrl/login/email');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final token = data['accessToken']?.toString() ?? '';
+      if (token.isEmpty) {
+        throw Exception('Login succeeded but token missing in response');
+      }
+      return token;
+    } else {
+      String message = 'Login failed';
+      try {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        message = data['message']?.toString() ?? message;
+      } catch (_) {}
+      throw Exception(message);
+    }
+  }
 }

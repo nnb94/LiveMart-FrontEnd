@@ -6,6 +6,7 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'package:live_mart_app/screens/customers/dashboard.dart';
 
+
 class AppRoutes {
   static const String email = '/email';
   static const String otp = '/otp';
@@ -13,7 +14,10 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String initial = email;
+
   static const String customersDashboard = '/customers/dashboard';
+
+
   static List<GetPage> routes = [
     GetPage(
       name: email,
@@ -51,5 +55,6 @@ class AppRoutes {
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 400),
     ),
+
   ];
 }

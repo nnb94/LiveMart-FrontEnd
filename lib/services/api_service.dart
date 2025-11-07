@@ -84,4 +84,46 @@ class ApiService extends GetxService {
       throw Exception(message);
     }
   }
+
+   /// Step 1: Request OTP for forgot password
+  Future<String> sendForgotPasswordOtp(String email) async {
+    final url = Uri.parse('$baseUrl/forgot-password/request-otp');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+
+    final data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return data['message'] ?? 'OTP sent successfully';
+    } else {
+      throw Exception(data['message'] ?? 'Failed to send OTP');
+    }
+  }
+
+  /// Step 2: Verify OTP and set new password
+  Future<String> verifyForgotPasswordOtp({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    final url = Uri.parse('$baseUrl/forgot-password/verify');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'otp': otp,
+        'newPassword': newPassword,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return data['message'] ?? 'Password reset successful';
+    } else {
+      throw Exception(data['message'] ?? 'Password reset failed');
+    }
+  }
 }

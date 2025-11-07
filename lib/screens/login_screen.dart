@@ -271,6 +271,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
+                        TextButton(
+                          onPressed: () => Get.toNamed(AppRoutes.forgotPassword),
+                          child: const Text(
+                            'Forgot Password?',
+                            style: TextStyle(
+                              color: Color(0xFF00FFF7),
+                              fontSize: 14,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),

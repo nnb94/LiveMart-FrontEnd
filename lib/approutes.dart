@@ -4,6 +4,9 @@ import 'screens/otp_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/forgot_password_screen.dart';
+import 'screens/reset_password_screen.dart';
+
 
 class AppRoutes {
   static const String email = '/email';
@@ -12,6 +15,9 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String initial = email;
+  static const String forgotPassword = '/forgot-password';
+  static const String resetPassword = '/reset-password';
+
 
   static List<GetPage> routes = [
     GetPage(
@@ -41,6 +47,18 @@ class AppRoutes {
     GetPage(
       name: register,
       page: () => const RegisterScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: forgotPassword,
+      page: () => const ForgotPasswordScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: resetPassword,
+      page: () => const ResetPasswordScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 300),
     ),

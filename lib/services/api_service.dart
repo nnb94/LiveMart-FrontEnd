@@ -126,4 +126,22 @@ class ApiService extends GetxService {
       throw Exception(data['message'] ?? 'Password reset failed');
     }
   }
+
+  Future<Map<String, dynamic>> googleLogin(String idToken) async {
+  final url = Uri.parse('$baseUrl/google-login');
+
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'token': idToken}),
+  );
+
+  if (response.statusCode == 200) {
+    // Parse the response body (expected to contain token + user)
+    return jsonDecode(response.body);
+  } else {
+    throw Exception('Google login failed: ${response.body}');
+  }
+}
+
 }

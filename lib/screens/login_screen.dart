@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../services/api_service.dart';
 import '../approutes.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in/google_sign_in.dart';
+import '../config.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -45,6 +49,40 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: googleClientId, 
+    scopes: ['email', 'profile'],
+  );
+
+  Future<void> _handleGoogleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      final user = await _googleSignIn.signIn();
+      if (user == null) {
+        setState(() => _isLoading = false);
+        return; // user canceled
+      }
+
+      final auth = await user.authentication;
+      final idToken = auth.idToken;
+      if (idToken == null) throw Exception('Google ID token is null');
+
+      final result = await _api.googleLogin(idToken);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Google login successful')),
+      );
+
+      Get.offAllNamed(AppRoutes.dashboard, arguments: {'token': result['token']});
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Google login failed: $e')),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -282,6 +320,54 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 20),
+
+                        // 🔹 Google Login Button
+                        if (kIsWeb)
+                          ElevatedButton.icon(
+                            icon: Image.asset('assets/google_logo.png', height: 20),
+                            label: const Text(
+                              'Sign in with Google',
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                              minimumSize: const Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                              elevation: 4,
+                            ),
+                            onPressed: _handleGoogleLogin,
+                          )
+                        else if (!kIsWeb && Platform.isWindows)
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.block, color: Colors.black54),
+                            label: const Text(
+                              'Google Sign-In not available on Windows',
+                              style: TextStyle(color: Colors.black54),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey.shade300,
+                              minimumSize: const Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                            ),
+                            onPressed: null,
+                          )
+                        else
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.warning),
+                            label: const Text('Google login unsupported on this platform'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey.shade300,
+                              minimumSize: const Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                            ),
+                            onPressed: null,
+                          ),
+
                       ],
                     ),
                   ),

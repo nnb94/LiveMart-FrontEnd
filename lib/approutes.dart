@@ -4,6 +4,8 @@ import 'screens/otp_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/forgot_password_screen.dart';
+import 'screens/reset_password_screen.dart';
 import 'package:live_mart_app/screens/customers/dashboard.dart';
 
 
@@ -14,6 +16,9 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String initial = email;
+  static const String forgotPassword = '/forgot-password';
+  static const String resetPassword = '/reset-password';
+
 
   static const String customersDashboard = '/customers/dashboard';
 
@@ -50,6 +55,17 @@ class AppRoutes {
       transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
+      name: forgotPassword,
+      page: () => const ForgotPasswordScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: resetPassword,
+      page: () => const ResetPasswordScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
       name: customersDashboard,
       page: () => const CustomerDashboard(), // or import the correct dashboard from customers folder here
       transition: Transition.fadeIn,

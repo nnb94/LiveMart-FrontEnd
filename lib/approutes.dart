@@ -6,7 +6,11 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
-import 'package:live_mart_app/screens/customers/dashboard.dart';
+
+// Role-based dashboards
+import 'screens/customer/dashboard.dart';
+import 'screens/retailer/dashboard.dart';
+import 'screens/wholesaler/dashboard.dart';
 
 
 class AppRoutes {
@@ -20,7 +24,9 @@ class AppRoutes {
   static const String resetPassword = '/reset-password';
 
 
-  static const String customersDashboard = '/customers/dashboard';
+  static const String customerDashboard = '/customer/dashboard';
+  static const String retailerDashboard = '/retailer/dashboard';
+  static const String wholesalerDashboard = '/wholesaler/dashboard';
 
 
   static List<GetPage> routes = [
@@ -67,8 +73,20 @@ class AppRoutes {
       transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
-      name: customersDashboard,
+      name: customerDashboard,
       page: () => const CustomerDashboard(), // or import the correct dashboard from customers folder here
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: retailerDashboard,
+      page: () => const RetailerDashboard(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: wholesalerDashboard,
+      page: () => const WholesalerDashboard(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 400),
     ),

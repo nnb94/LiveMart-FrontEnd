@@ -40,12 +40,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final token = await _api.login(email, password);
+      final result = await _api.login(email, password);
+      final token = result['token'];
+      final role = result['role']?.toString().toLowerCase().trim() ?? '';
+      
       // Show a brief success and navigate
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Login successful')),
       );
-      Get.offAllNamed(AppRoutes.dashboard, arguments: {'token': token});
+      
+      // Navigate based on role (case-insensitive comparison)
+      if (role == 'customer') {
+        Get.offAllNamed(AppRoutes.customerDashboard, arguments: {'token': token});
+      } else if (role == 'retailer') {
+        Get.offAllNamed(AppRoutes.retailerDashboard, arguments: {'token': token});
+      } else if (role == 'wholesaler') {
+        Get.offAllNamed(AppRoutes.wholesalerDashboard, arguments: {'token': token});
+      } else {
+        // fallback in case role is missing or unknown
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Unknown role: $role. Redirecting to default dashboard.')),
+        );
+        Get.offAllNamed(AppRoutes.dashboard, arguments: {'token': token});
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),

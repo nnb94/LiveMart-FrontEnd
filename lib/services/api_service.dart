@@ -57,7 +57,7 @@ class ApiService extends GetxService {
   /// Endpoint: POST /auth/login
   /// Body: { "email": "user@example.com", "password": "password" }
   /// Response: { "token": "..." }
-  Future<String> login(String email, String password) async {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     final url = Uri.parse('$baseUrl/login/email');
     final response = await http.post(
       url,
@@ -71,10 +71,11 @@ class ApiService extends GetxService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final token = data['accessToken']?.toString() ?? '';
+      final role = data['user']?['role']?.toString() ?? '';
       if (token.isEmpty) {
         throw Exception('Login succeeded but token missing in response');
       }
-      return token;
+      return {'token': token, 'role': role};
     } else {
       String message = 'Login failed';
       try {

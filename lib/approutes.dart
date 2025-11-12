@@ -66,6 +66,7 @@ class AppRoutes {
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 300),
     ),
+    GetPage(
       name: customersDashboard,
       page: () => const CustomerDashboard(), // or import the correct dashboard from customers folder here
       transition: Transition.fadeIn,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/utils.dart';
 import '../services/api_service.dart';
+import '../approutes.dart';
 import 'otp_screen.dart';
 
 class EmailScreen extends StatefulWidget {
@@ -213,6 +214,20 @@ class _EmailScreenState extends State<EmailScreen> {
                                   child: const Text('Send OTP'),
                                 ),
                               ),
+                        const SizedBox(height: 20),
+                        TextButton(
+                          onPressed: () {
+                            Get.toNamed(AppRoutes.login);
+                          },
+                          child: const Text(
+                            'Already have an account? Login',
+                            style: TextStyle(
+                              color: Color(0xFF00FFF7),
+                              fontSize: 14,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),

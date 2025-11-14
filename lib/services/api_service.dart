@@ -54,6 +54,7 @@ class ApiService extends GetxService {
     }
   }
 
+<<<<<<< HEAD
   Future<List<Order>> fetchRecentOrders(int customerId, String accessToken) async {
     final url = Uri.parse('$baseUrl/customers/orders/$customerId');
     final response = await http.get(
@@ -71,4 +72,98 @@ class ApiService extends GetxService {
       throw Exception('Failed to load orders: ${response.body}');
     }
   }
+=======
+  /// Login (per backend auth.rest file)
+  /// Endpoint: POST /auth/login
+  /// Body: { "email": "user@example.com", "password": "password" }
+  /// Response: { "token": "..." }
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    final url = Uri.parse('$baseUrl/login/email');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final token = data['accessToken']?.toString() ?? '';
+      final role = data['user']?['role']?.toString() ?? '';
+      if (token.isEmpty) {
+        throw Exception('Login succeeded but token missing in response');
+      }
+      return {'token': token, 'role': role};
+    } else {
+      String message = 'Login failed';
+      try {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        message = data['message']?.toString() ?? message;
+      } catch (_) {}
+      throw Exception(message);
+    }
+  }
+
+   /// Step 1: Request OTP for forgot password
+  Future<String> sendForgotPasswordOtp(String email) async {
+    final url = Uri.parse('$baseUrl/forgot-password/request-otp');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+
+    final data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return data['message'] ?? 'OTP sent successfully';
+    } else {
+      throw Exception(data['message'] ?? 'Failed to send OTP');
+    }
+  }
+
+  /// Step 2: Verify OTP and set new password
+  Future<String> verifyForgotPasswordOtp({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    final url = Uri.parse('$baseUrl/forgot-password/verify');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'otp': otp,
+        'newPassword': newPassword,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return data['message'] ?? 'Password reset successful';
+    } else {
+      throw Exception(data['message'] ?? 'Password reset failed');
+    }
+  }
+
+  Future<Map<String, dynamic>> googleLogin(String idToken) async {
+  final url = Uri.parse('$baseUrl/google-login');
+
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'token': idToken}),
+  );
+
+  if (response.statusCode == 200) {
+    // Parse the response body (expected to contain token + user)
+    return jsonDecode(response.body);
+  } else {
+    throw Exception('Google login failed: ${response.body}');
+  }
+}
+
+>>>>>>> 0bb10425825846f14adf649e36ea33dd7be99916
 }

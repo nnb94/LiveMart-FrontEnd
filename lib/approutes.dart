@@ -5,7 +5,12 @@ import 'screens/dashboard_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'package:live_mart_app/screens/customers/dashboard.dart';
-
+import 'package:live_mart_app/screens/customers/profile.dart';
+import 'package:live_mart_app/screens/customers/wishlist.dart';
+import 'package:live_mart_app/screens/customers/cart.dart';
+import 'package:live_mart_app/screens/customers/placeorder.dart';
+import 'package:live_mart_app/screens/customers/orders.dart';
+import 'package:live_mart_app/screens/customers/notifications.dart';
 
 class AppRoutes {
   static const String email = '/email';
@@ -14,9 +19,13 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String initial = email;
-
   static const String customersDashboard = '/customers/dashboard';
-
+  static const String customersProfile = '/customers/profile';
+  static const String customersWishlist = '/customers/wishlist';
+  static const String customersCart = '/customers/cart';
+  static const String customersPlaceOrder = '/customers/placeorder';
+  static const String customersOrders = '/customers/orders';
+  static const String customersNotifications = '/customers/notifications';
 
   static List<GetPage> routes = [
     GetPage(
@@ -55,6 +64,41 @@ class AppRoutes {
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 400),
     ),
-
+    GetPage(
+      name: customersProfile,
+      page: () => const CustomerProfile(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: customersWishlist,
+      page: () => const CustomerWishlist(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: customersCart,
+      page: () => const CustomerCart(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: customersPlaceOrder,
+      page: () => const PlaceOrder(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: customersOrders,
+      page: () => const CustomerOrders(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: customersNotifications,
+      page: () => const CustomerNotifications(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
   ];
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:live_mart_app/models/order.dart';
 
 class ApiService extends GetxService {
   static const String baseUrl = 'http://localhost:3000/auth';
@@ -53,6 +54,23 @@ class ApiService extends GetxService {
     }
   }
 
+  Future<List<Order>> fetchRecentOrders(int customerId, String accessToken) async {
+    final url = Uri.parse('$baseUrl/customers/orders/$customerId');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',  // Assuming JWT bearer token auth
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List jsonList = jsonDecode(response.body);
+      return jsonList.map((json) => Order.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load orders: ${response.body}');
+    }
+  }
   /// Login (per backend auth.rest file)
   /// Endpoint: POST /auth/login
   /// Body: { "email": "user@example.com", "password": "password" }
@@ -143,6 +161,4 @@ class ApiService extends GetxService {
   } else {
     throw Exception('Google login failed: ${response.body}');
   }
-}
-
 }

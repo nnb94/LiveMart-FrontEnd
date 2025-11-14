@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 import 'package:live_mart_app/approutes.dart';
 import '../../controllers/customer_orders_controller.dart'; 
@@ -9,6 +10,7 @@ class CustomerDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     // You should replace these with data from backend/api later
     final recommendations = ['Shoes', 'Headphones', 'Backpack'];
 
@@ -20,6 +22,14 @@ class CustomerDashboard extends StatelessWidget {
       ),
     );
 
+    // Dummy data placeholders
+    final recommendations = ['Shoes', 'Headphones', 'Backpack'];
+    final recentOrders = [
+      {'id': 'ORD123', 'status': 'Delivered'},
+      {'id': 'ORD124', 'status': 'Shipped'},
+      {'id': 'ORD125', 'status': 'Processing'},
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Customer Dashboard'),
@@ -27,7 +37,10 @@ class CustomerDashboard extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
+
               Get.toNamed(AppRoutes.customersNotifications);
+
+              Navigator.pushNamed(context, '/customers/notifications');
             },
           ),
         ],
@@ -46,16 +59,24 @@ class CustomerDashboard extends StatelessWidget {
                     icon: Icons.person,
                     label: 'Profile',
                     route: AppRoutes.customersProfile,
+                    route: '/customers/profile',
                   ),
                   _QuickAccessTile(
                     icon: Icons.favorite,
                     label: 'Wishlist',
                     route: AppRoutes.customersWishlist,
+                    route: '/customers/wishlist',
                   ),
                   _QuickAccessTile(
                     icon: Icons.shopping_cart,
                     label: 'Cart',
                     route: AppRoutes.customersCart,
+                    route: '/customers/cart',
+                  ),
+                  _QuickAccessTile(
+                    icon: Icons.rate_review,
+                    label: 'Reviews',
+                    route: '/customers/reviews/myreviews',
                   ),
                 ],
               ),
@@ -64,6 +85,7 @@ class CustomerDashboard extends StatelessWidget {
               // Recommendations
               const Text('Recommendations',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+              const Text('Recommendations', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               SizedBox(
                 height: 60,
@@ -79,6 +101,12 @@ class CustomerDashboard extends StatelessWidget {
                         ),
                       )
                       .toList(),
+                  children: recommendations.map((item) => Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Text(item),
+                    ),
+                  )).toList(),
                 ),
               ),
               const SizedBox(height: 24),
@@ -110,6 +138,21 @@ class CustomerDashboard extends StatelessWidget {
                   );
                 }
               }),
+              // Recent Orders
+              const Text('Recent Orders', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+              ...recentOrders.map((order) => ListTile(
+                title: Text('Order #${order['id']}'),
+                subtitle: Text('Status: ${order['status']}'),
+                trailing: TextButton(
+                  child: const Text('Details'),
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/customers/orders/${order['id']}',
+                    );
+                  },
+                ),
+              )),
 
               const SizedBox(height: 24),
 
@@ -120,6 +163,7 @@ class CustomerDashboard extends StatelessWidget {
                   label: const Text('Place an Order'),
                   onPressed: () {
                     Get.toNamed(AppRoutes.customersPlaceOrder);
+                    Navigator.pushNamed(context, '/customers/placeorder');
                   },
                 ),
               ),
@@ -148,6 +192,7 @@ class _QuickAccessTile extends StatelessWidget {
     return InkWell(
       onTap: () {
         Get.toNamed(route);
+        Navigator.pushNamed(context, route);
       },
       child: Column(
         children: [

@@ -54,7 +54,6 @@ class ApiService extends GetxService {
     }
   }
 
-<<<<<<< HEAD
   Future<List<Order>> fetchRecentOrders(int customerId, String accessToken) async {
     final url = Uri.parse('$baseUrl/customers/orders/$customerId');
     final response = await http.get(
@@ -72,7 +71,6 @@ class ApiService extends GetxService {
       throw Exception('Failed to load orders: ${response.body}');
     }
   }
-=======
   /// Login (per backend auth.rest file)
   /// Endpoint: POST /auth/login
   /// Body: { "email": "user@example.com", "password": "password" }
@@ -163,7 +161,4 @@ class ApiService extends GetxService {
   } else {
     throw Exception('Google login failed: ${response.body}');
   }
-}
-
->>>>>>> 0bb10425825846f14adf649e36ea33dd7be99916
 }

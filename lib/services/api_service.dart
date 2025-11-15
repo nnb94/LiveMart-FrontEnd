@@ -5,6 +5,7 @@ import 'package:live_mart_app/models/order.dart';
 import 'package:live_mart_app/models/wholesaler_inventory.dart';
 import 'package:live_mart_app/models/product.dart';
 import 'package:live_mart_app/models/wholesaler_sale.dart';
+import 'package:live_mart_app/models/retailer_inventory.dart';
 
 class ApiService extends GetxService {
   static const String baseUrl = 'http://localhost:3000/auth';
@@ -388,6 +389,176 @@ class ApiService extends GetxService {
       return WholesalerAnalytics.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to fetch analytics: ${response.body}');
+    }
+  }
+
+  // ================= RETAILER METHODS =================
+
+  /// Get retailer's inventory
+  Future<List<RetailerInventoryItem>> getRetailerInventory(String accessToken) async {
+    final url = Uri.parse('http://localhost:3000/retailers/inventory');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List jsonList = jsonDecode(response.body);
+      return jsonList.map((json) => RetailerInventoryItem.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to fetch retailer inventory: ${response.body}');
+    }
+  }
+
+  /// Update retailer inventory stock and settings
+  Future<Map<String, dynamic>> updateRetailerInventory({
+    required int productId,
+    int? quantityInStock,
+    int? reorderLevel,
+    required String accessToken,
+  }) async {
+    final url = Uri.parse('http://localhost:3000/retailers/inventory/update/$productId');
+    final response = await http.patch(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        if (quantityInStock != null) 'quantity_in_stock': quantityInStock,
+        if (reorderLevel != null) 'reorder_level': reorderLevel,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to update retailer inventory: ${response.body}');
+    }
+  }
+
+  /// Restock retailer inventory (add stock)
+  Future<Map<String, dynamic>> restockRetailerInventory({
+    required int productId,
+    required int quantity,
+    required String accessToken,
+  }) async {
+    final url = Uri.parse('http://localhost:3000/retailers/inventory/restock/$productId');
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'quantity': quantity}),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to restock retailer inventory: ${response.body}');
+    }
+  }
+
+  /// Get retailer low stock alerts
+  Future<Map<String, dynamic>> getRetailerLowStockAlerts(String accessToken) async {
+    final url = Uri.parse('http://localhost:3000/retailers/inventory/low-stock');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to fetch low stock alerts: ${response.body}');
+    }
+  }
+
+  /// Get products available for purchase (from wholesalers)
+  Future<List<Product>> getProducts({String? accessToken}) async {
+    final url = Uri.parse('http://localhost:3000/products/all');
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    if (accessToken != null) {
+      headers['Authorization'] = 'Bearer $accessToken';
+    }
+
+    final response = await http.get(url, headers: headers);
+
+    if (response.statusCode == 200) {
+      final List jsonList = jsonDecode(response.body);
+      return jsonList.map((json) => Product.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to fetch products: ${response.body}');
+    }
+  }
+
+  /// Get retailer's purchase orders (from wholesalers)
+  Future<List<RetailingPurchaseOrder>> getRetailerPurchaseOrders(String accessToken) async {
+    final url = Uri.parse('http://localhost:3000/retailers/orders/purchases');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List jsonList = jsonDecode(response.body);
+      return jsonList.map((json) => RetailingPurchaseOrder.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to fetch purchase orders: ${response.body}');
+    }
+  }
+
+  /// Place wholesale order (retailer buying from wholesalers)
+  Future<Map<String, dynamic>> placeRetailerWholesaleOrder({
+    required List<Map<String, dynamic>> products,
+    required String accessToken,
+  }) async {
+    final url = Uri.parse('http://localhost:3000/retailers/order/wholesale');
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'products': products}),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to place wholesale order: ${response.body}');
+    }
+  }
+
+  /// Get retailer's sales orders (to customers)
+  Future<List<RetailingSaleOrder>> getRetailerSalesOrders(String accessToken) async {
+    final url = Uri.parse('http://localhost:3000/retailers/orders/sales');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List jsonList = jsonDecode(response.body);
+      return jsonList.map((json) => RetailingSaleOrder.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to fetch sales orders: ${response.body}');
     }
   }
 }

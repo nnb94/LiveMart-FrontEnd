@@ -4,13 +4,13 @@ import 'screens/otp_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
-import 'package:live_mart_app/screens/customers/dashboard.dart';
-import 'package:live_mart_app/screens/customers/profile.dart';
-import 'package:live_mart_app/screens/customers/wishlist.dart';
-import 'package:live_mart_app/screens/customers/cart.dart';
-import 'package:live_mart_app/screens/customers/placeorder.dart';
-import 'package:live_mart_app/screens/customers/orders.dart';
-import 'package:live_mart_app/screens/customers/notifications.dart';
+import 'package:live_mart_app/screens/customer/dashboard.dart';
+import 'package:live_mart_app/screens/customer/profile.dart';
+import 'package:live_mart_app/screens/customer/wishlist.dart';
+import 'package:live_mart_app/screens/customer/cart.dart';
+import 'package:live_mart_app/screens/customer/placeorder.dart';
+import 'package:live_mart_app/screens/customer/orders.dart';
+import 'package:live_mart_app/screens/customer/notifications.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
 
@@ -32,16 +32,15 @@ class AppRoutes {
   static const String register = '/register';
   static const String initial = email;
 
-  static const String customersDashboard = '/customers/dashboard';
-  static const String customersProfile = '/customers/profile';
-  static const String customersWishlist = '/customers/wishlist';
-  static const String customersCart = '/customers/cart';
-  static const String customersPlaceOrder = '/customers/placeorder';
-  static const String customersOrders = '/customers/orders';
-  static const String customersNotifications = '/customers/notifications';
+  static const String customerDashboard = '/customer/dashboard';
+  static const String customerProfile = '/customer/profile';
+  static const String customerWishlist = '/customer/wishlist';
+  static const String customerCart = '/customer/cart';
+  static const String customerPlaceOrder = '/customer/placeorder';
+  static const String customerOrders = '/customer/orders';
+  static const String customerNotifications = '/customer/notifications';
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
-  static const String customerDashboard = '/customer/dashboard';
   static const String retailerDashboard = '/retailer/dashboard';
   static const String wholesalerDashboard = '/wholesaler/dashboard';
 
@@ -89,56 +88,56 @@ class AppRoutes {
       transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
-      name: customerDashboard,
+      name: AppRoutes.customerDashboard,
       page: () => const CustomerDashboard(), // or import the correct dashboard from customers folder here
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 400),
     ),
     GetPage(
 
-      name: customersProfile,
+      name: AppRoutes.customerProfile,
       page: () => const CustomerProfile(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
-      name: customersWishlist,
+      name: AppRoutes.customerWishlist,
       page: () => const CustomerWishlist(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
-      name: customersCart,
+      name: AppRoutes.customerCart,
       page: () => const CustomerCart(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
-      name: customersPlaceOrder,
+      name: AppRoutes.customerPlaceOrder,
       page: () => const PlaceOrder(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
-      name: customersOrders,
+      name: AppRoutes.customerOrders,
       page: () => const CustomerOrders(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
-      name: customersNotifications,
+      name: AppRoutes.customerNotifications,
       page: () => const CustomerNotifications(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),
-
-      name: retailerDashboard,
+    GetPage(
+      name: AppRoutes.retailerDashboard,
       page: () => const RetailerDashboard(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 400),
     ),
     GetPage(
-      name: wholesalerDashboard,
+      name: AppRoutes.wholesalerDashboard,
       page: () => const WholesalerDashboard(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 400),

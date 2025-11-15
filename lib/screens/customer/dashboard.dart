@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:live_mart_app/approutes.dart';
-import '../../controllers/customer_orders_controller.dart'; 
+import '../../controllers/customer_orders_controller.dart';
+import '../../controllers/auth_controller.dart';
 import '../../models/order.dart'; 
 
 class CustomerDashboard extends StatelessWidget {
@@ -10,6 +11,28 @@ class CustomerDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get user data from AuthController instead of LoggedInUser
+    final authController = Get.find<AuthController>();
+    
+    // Check if user is logged in
+    if (!authController.isLoggedIn) {
+      // Redirect to login if not logged in
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Please login to continue'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Get.offAllNamed(AppRoutes.login),
+                child: const Text('Go to Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     // You should replace these with data from backend/api later
     final recommendations = ['Shoes', 'Headphones', 'Backpack'];
@@ -17,13 +40,10 @@ class CustomerDashboard extends StatelessWidget {
     // Instantiate or get the controller (ensure only one instance is created!)
     final CustomerOrdersController ordersController = Get.put(
       CustomerOrdersController(
-        customerId: LoggedInUser.id, // Provide currently logged in user id
-        accessToken: LoggedInUser.accessToken, // Provide JWT access token
+        customerId: authController.userId.value, // ✅ Fixed: Use AuthController
+        accessToken: authController.accessToken.value, // ✅ Fixed: Use AuthController
       ),
     );
-
-    // Dummy data placeholders
-    final recommendations = ['Shoes', 'Headphones', 'Backpack'];
     final recentOrders = [
       {'id': 'ORD123', 'status': 'Delivered'},
       {'id': 'ORD124', 'status': 'Shipped'},
@@ -38,9 +58,9 @@ class CustomerDashboard extends StatelessWidget {
             icon: const Icon(Icons.notifications),
             onPressed: () {
 
-              Get.toNamed(AppRoutes.customersNotifications);
+              Get.toNamed(AppRoutes.customerNotifications);
 
-              Navigator.pushNamed(context, '/customers/notifications');
+              Navigator.pushNamed(context, '/customer/notifications');
             },
           ),
         ],
@@ -58,25 +78,22 @@ class CustomerDashboard extends StatelessWidget {
                   _QuickAccessTile(
                     icon: Icons.person,
                     label: 'Profile',
-                    route: AppRoutes.customersProfile,
-                    route: '/customers/profile',
+                    route: AppRoutes.customerProfile,
                   ),
                   _QuickAccessTile(
                     icon: Icons.favorite,
                     label: 'Wishlist',
-                    route: AppRoutes.customersWishlist,
-                    route: '/customers/wishlist',
+                    route: AppRoutes.customerWishlist,
                   ),
                   _QuickAccessTile(
                     icon: Icons.shopping_cart,
                     label: 'Cart',
-                    route: AppRoutes.customersCart,
-                    route: '/customers/cart',
+                    route: AppRoutes.customerCart,
                   ),
                   _QuickAccessTile(
                     icon: Icons.rate_review,
                     label: 'Reviews',
-                    route: '/customers/reviews/myreviews',
+                    route: '/customer/reviews/myreviews',
                   ),
                 ],
               ),
@@ -101,12 +118,6 @@ class CustomerDashboard extends StatelessWidget {
                         ),
                       )
                       .toList(),
-                  children: recommendations.map((item) => Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Text(item),
-                    ),
-                  )).toList(),
                 ),
               ),
               const SizedBox(height: 24),
@@ -130,7 +141,7 @@ class CustomerDashboard extends StatelessWidget {
                         trailing: TextButton(
                           child: const Text('Details'),
                           onPressed: () {
-                            Get.toNamed('${AppRoutes.customersOrders}/${order.orderId}');
+                            Get.toNamed('${AppRoutes.customerOrders}/${order.orderId}');
                           },
                         ),
                       );
@@ -148,7 +159,7 @@ class CustomerDashboard extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushNamed(
                       context,
-                      '/customers/orders/${order['id']}',
+                      '/customer/orders/${order['id']}',
                     );
                   },
                 ),
@@ -162,8 +173,8 @@ class CustomerDashboard extends StatelessWidget {
                   icon: const Icon(Icons.add_shopping_cart),
                   label: const Text('Place an Order'),
                   onPressed: () {
-                    Get.toNamed(AppRoutes.customersPlaceOrder);
-                    Navigator.pushNamed(context, '/customers/placeorder');
+                    Get.toNamed(AppRoutes.customerPlaceOrder);
+                    Navigator.pushNamed(context, '/customer/placeorder');
                   },
                 ),
               ),

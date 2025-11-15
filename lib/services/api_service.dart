@@ -25,7 +25,7 @@ class ApiService extends GetxService {
   }
 
   /// Verifies OTP and completes signup
-  Future<String> verifyOtp({
+  Future<Map<String, dynamic>> verifyOtp({
     required String name,
     required String email,
     required String password,
@@ -46,8 +46,13 @@ class ApiService extends GetxService {
     );
 
     if (response.statusCode == 201) {
-      final data = jsonDecode(response.body);
-      return 'Signup successful for ${data['user']['name']}';
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      // Return full response including token and user data
+      return {
+        'message': 'Signup successful for ${data['user']?['name'] ?? name}',
+        'token': data['token'] ?? '',
+        'user': data['user'],
+      };
     } else {
       final data = jsonDecode(response.body);
       throw Exception(data['message'] ?? 'OTP verification failed');
@@ -55,7 +60,7 @@ class ApiService extends GetxService {
   }
 
   Future<List<Order>> fetchRecentOrders(int customerId, String accessToken) async {
-    final url = Uri.parse('$baseUrl/customers/orders/$customerId');
+    final url = Uri.parse('$baseUrl/customer/orders/$customerId');
     final response = await http.get(
       url,
       headers: {
@@ -93,7 +98,12 @@ class ApiService extends GetxService {
       if (token.isEmpty) {
         throw Exception('Login succeeded but token missing in response');
       }
-      return {'token': token, 'role': role};
+      // Return full response including user data
+      return {
+        'token': token,
+        'role': role,
+        'user': data['user'],
+      };
     } else {
       String message = 'Login failed';
       try {
@@ -161,4 +171,5 @@ class ApiService extends GetxService {
   } else {
     throw Exception('Google login failed: ${response.body}');
   }
+}
 }

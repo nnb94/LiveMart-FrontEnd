@@ -34,7 +34,7 @@ class CustomerOrders extends StatelessWidget {
               ),
               onTap: () {
                 // Navigate to Order Details page with order ID
-                Navigator.pushNamed(context, '/customers/orders/${order['id']}');
+                Navigator.pushNamed(context, '/customer/orders/${order['id']}');
               },
             ),
           );

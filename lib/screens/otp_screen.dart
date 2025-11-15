@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import '../services/api_service.dart';
+import '../controllers/auth_controller.dart';
+import '../approutes.dart';
 
 class OtpScreen extends StatefulWidget {
   final String email; // Email passed from EmailScreen
@@ -53,19 +55,45 @@ class _OtpScreenState extends State<OtpScreen> {
     });
 
     try {
-      final message = await _apiService.verifyOtp(
+      final result = await _apiService.verifyOtp(
         name: name,
         email: email,
         password: password,
         role: role,
         otp: otp,
       );
+      
+      // Get user data from API response and save it
+      final authController = Get.find<AuthController>();
+      final userData = result['user'] as Map<String, dynamic>?;
+      final userId = userData?['id'] as int? ?? 0;
+      final token = result['token'] ?? '';
+      final roleLower = role.toLowerCase();
+      
+      // Save user data to AuthController
+      await authController.saveUser(
+        userId: userId,
+        token: token,
+        email: email,
+        role: roleLower,
+        name: name,
+      );
+      
+      final message = result['message'] as String? ?? 'Signup successful';
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
 
-      // On success, navigate to dashboard
-      Navigator.pushNamed(context, '/dashboard');
+      // Navigate to appropriate dashboard based on role
+      if (roleLower == 'customer') {
+        Get.offAllNamed(AppRoutes.customerDashboard);
+      } else if (roleLower == 'retailer') {
+        Get.offAllNamed(AppRoutes.retailerDashboard);
+      } else if (roleLower == 'wholesaler') {
+        Get.offAllNamed(AppRoutes.wholesalerDashboard);
+      } else {
+        Navigator.pushNamed(context, '/dashboard');
+      }
     } catch (e) {
       ScaffoldMessenger.of(
         context,

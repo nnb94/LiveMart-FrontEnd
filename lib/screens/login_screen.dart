@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../services/api_service.dart';
+import '../controllers/auth_controller.dart';
 import '../approutes.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -44,6 +45,21 @@ class _LoginScreenState extends State<LoginScreen> {
       final token = result['token'];
       final role = result['role']?.toString().toLowerCase().trim() ?? '';
       
+      // Get user data from API response and save it
+      final authController = Get.find<AuthController>();
+      final userData = result['user'] as Map<String, dynamic>?;
+      final userId = userData?['id'] as int? ?? 0;
+      final userName = userData?['name'] as String? ?? '';
+      
+      // Save user data to AuthController
+      await authController.saveUser(
+        userId: userId,
+        token: token,
+        email: email,
+        role: role,
+        name: userName,
+      );
+      
       // Show a brief success and navigate
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Login successful')),
@@ -51,17 +67,17 @@ class _LoginScreenState extends State<LoginScreen> {
       
       // Navigate based on role (case-insensitive comparison)
       if (role == 'customer') {
-        Get.offAllNamed(AppRoutes.customerDashboard, arguments: {'token': token});
+        Get.offAllNamed(AppRoutes.customerDashboard);
       } else if (role == 'retailer') {
-        Get.offAllNamed(AppRoutes.retailerDashboard, arguments: {'token': token});
+        Get.offAllNamed(AppRoutes.retailerDashboard);
       } else if (role == 'wholesaler') {
-        Get.offAllNamed(AppRoutes.wholesalerDashboard, arguments: {'token': token});
+        Get.offAllNamed(AppRoutes.wholesalerDashboard);
       } else {
         // fallback in case role is missing or unknown
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Unknown role: $role. Redirecting to default dashboard.')),
         );
-        Get.offAllNamed(AppRoutes.dashboard, arguments: {'token': token});
+        Get.offAllNamed(AppRoutes.dashboard);
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -92,11 +108,37 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final result = await _api.googleLogin(idToken);
 
+      // Save user data from Google login
+      final authController = Get.find<AuthController>();
+      final userData = result['user'] as Map<String, dynamic>?;
+      final userId = userData?['id'] as int? ?? 0;
+      final userName = userData?['name'] as String? ?? '';
+      final userEmail = userData?['email'] as String? ?? user.email;
+      final role = userData?['role']?.toString().toLowerCase().trim() ?? '';
+      final token = result['token'] ?? result['accessToken'] ?? '';
+
+      await authController.saveUser(
+        userId: userId,
+        token: token,
+        email: userEmail ?? '',
+        role: role,
+        name: userName,
+      );
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Google login successful')),
       );
 
-      Get.offAllNamed(AppRoutes.dashboard, arguments: {'token': result['token']});
+      // Navigate based on role
+      if (role == 'customer') {
+        Get.offAllNamed(AppRoutes.customerDashboard);
+      } else if (role == 'retailer') {
+        Get.offAllNamed(AppRoutes.retailerDashboard);
+      } else if (role == 'wholesaler') {
+        Get.offAllNamed(AppRoutes.wholesalerDashboard);
+      } else {
+        Get.offAllNamed(AppRoutes.dashboard);
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Google login failed: $e')),

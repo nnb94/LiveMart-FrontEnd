@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'screens/email_screen.dart';
 import 'screens/otp_screen.dart';
@@ -15,14 +16,16 @@ import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
 
 // Role-based dashboards
-import 'screens/customer/dashboard.dart';
 import 'screens/retailer/dashboard.dart';
+import 'screens/retailer/inventory.dart';
+import 'screens/retailer/purchasing.dart';
+import 'screens/retailer/sales.dart';
+import 'screens/retailer/analytics.dart';
 import 'screens/wholesaler/dashboard.dart';
-
-// Role-based dashboards
-import 'screens/customer/dashboard.dart';
-import 'screens/retailer/dashboard.dart';
-import 'screens/wholesaler/dashboard.dart';
+import 'screens/wholesaler/inventory.dart';
+import 'screens/wholesaler/sales.dart';
+import 'screens/wholesaler/products.dart';
+import 'screens/wholesaler/analytics.dart';
 
 class AppRoutes {
   static const String email = '/email';
@@ -42,7 +45,15 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
   static const String retailerDashboard = '/retailer/dashboard';
+  static const String retailerInventory = '/retailer/inventory';
+  static const String retailerPurchasing = '/retailer/purchasing';
+  static const String retailerSales = '/retailer/sales';
+  static const String retailerAnalytics = '/retailer/analytics';
   static const String wholesalerDashboard = '/wholesaler/dashboard';
+  static const String wholesalerInventory = '/wholesaler/inventory';
+  static const String wholesalerSales = '/wholesaler/sales';
+  static const String wholesalerProducts = '/wholesaler/products';
+  static const String wholesalerAnalytics = '/wholesaler/analytics';
 
   static List<GetPage> routes = [
     GetPage(
@@ -141,6 +152,54 @@ class AppRoutes {
       page: () => const WholesalerDashboard(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: AppRoutes.wholesalerInventory,
+      page: () => const WholesalerInventoryScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.wholesalerSales,
+      page: () => const WholesalerSalesScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.wholesalerProducts,
+      page: () => const WholesalerProductsScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.wholesalerAnalytics,
+      page: () => const WholesalerAnalyticsScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.retailerInventory,
+      page: () => const RetailerInventoryScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.retailerPurchasing,
+      page: () => const RetailerPurchasingScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.retailerSales,
+      page: () => const RetailerSalesScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.retailerAnalytics,
+      page: () => const RetailerAnalyticsScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
     ),
 
   ];

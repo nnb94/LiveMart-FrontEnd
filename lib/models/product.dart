@@ -44,19 +44,63 @@ class Product {
       return 0;
     }
 
+    String _parseString(dynamic value) {
+      if (value == null) return '';
+      return value.toString();
+    }
+
+    int? _parseNullableInt(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value);
+      if (value is num) return value.toInt();
+      return null;
+    }
+
+    bool? _parseNullableBool(dynamic value) {
+      if (value == null) return null;
+      if (value is bool) return value;
+      if (value is String) {
+        if (value.toLowerCase() == 'true' || value == '1') return true;
+        if (value.toLowerCase() == 'false' || value == '0') return false;
+      }
+      if (value is int) return value != 0;
+      return null;
+    }
+
     return Product(
-      id: json['id'],
-      sellerId: json['seller_id'] ?? json['sellerId'],
-      name: json['name'],
-      description: json['description'],
+      id: _parseInt(json['id']),
+      sellerId: _parseInt(json['seller_id'] ?? json['sellerId']),
+      name: _parseString(json['name']),
+      description: _parseString(json['description']),
       price: _parseDouble(json['price']),
-      category: json['category'],
-      createdAt: DateTime.tryParse(json['created_at'] ?? json['createdAt']) ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updated_at'] ?? json['updatedAt']) ?? DateTime.now(),
-      stockQuantity: _parseInt(json['stock_quantity'] ?? json['stockQuantity']),
-      minimumOrderQuantity: _parseInt(json['minimum_order_quantity'] ?? json['minimumOrderQuantity']),
-      reorderLevel: _parseInt(json['reorder_level'] ?? json['reorderLevel']),
-      needsRestock: json['needs_restock'] ?? json['needsRestock'],
+      category: _parseString(json['category']),
+      createdAt:
+          DateTime.tryParse(
+            json['created_at']?.toString() ??
+                json['createdAt']?.toString() ??
+                '',
+          ) ??
+          DateTime.now(),
+      updatedAt:
+          DateTime.tryParse(
+            json['updated_at']?.toString() ??
+                json['updatedAt']?.toString() ??
+                '',
+          ) ??
+          DateTime.now(),
+      stockQuantity: _parseNullableInt(
+        json['stock_quantity'] ?? json['stockQuantity'],
+      ),
+      minimumOrderQuantity: _parseNullableInt(
+        json['minimum_order_quantity'] ?? json['minimumOrderQuantity'],
+      ),
+      reorderLevel: _parseNullableInt(
+        json['reorder_level'] ?? json['reorderLevel'],
+      ),
+      needsRestock: _parseNullableBool(
+        json['needs_restock'] ?? json['needsRestock'],
+      ),
     );
   }
 
@@ -71,7 +115,8 @@ class Product {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       if (stockQuantity != null) 'stockQuantity': stockQuantity,
-      if (minimumOrderQuantity != null) 'minimumOrderQuantity': minimumOrderQuantity,
+      if (minimumOrderQuantity != null)
+        'minimumOrderQuantity': minimumOrderQuantity,
       if (reorderLevel != null) 'reorderLevel': reorderLevel,
       if (needsRestock != null) 'needsRestock': needsRestock,
     };

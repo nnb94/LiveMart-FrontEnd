@@ -34,15 +34,30 @@ class WholesalerInventoryItem {
       return 0;
     }
 
+    String _parseString(dynamic value) {
+      if (value == null) return '';
+      return value.toString();
+    }
+
     return WholesalerInventoryItem(
       productId: _parseInt(json['product_id'] ?? json['productId']),
-      productName: json['name'] ?? json['productName'],
-      description: json['description'],
+      productName: _parseString(json['name'] ?? json['productName']),
+      description: _parseString(json['description']),
       price: _parseDouble(json['price']),
-      category: json['category'],
-      quantityInStock: _parseInt(json['quantity_in_stock'] ?? json['quantityInStock']),
-      minimumOrderQuantity: _parseInt(json['minimum_order_quantity'] ?? json['minimumOrderQuantity']),
-      updatedAt: DateTime.tryParse(json['updated_at'] ?? json['updatedAt']) ?? DateTime.now(),
+      category: _parseString(json['category']),
+      quantityInStock: _parseInt(
+        json['quantity_in_stock'] ?? json['quantityInStock'],
+      ),
+      minimumOrderQuantity: _parseInt(
+        json['minimum_order_quantity'] ?? json['minimumOrderQuantity'],
+      ),
+      updatedAt:
+          DateTime.tryParse(
+            json['updated_at']?.toString() ??
+                json['updatedAt']?.toString() ??
+                '',
+          ) ??
+          DateTime.now(),
     );
   }
 }

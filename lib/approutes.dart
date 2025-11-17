@@ -64,8 +64,6 @@ class AppRoutes {
   static const String wholesalerSales = '/wholesaler/sales';
   static const String wholesalerProducts = '/wholesaler/products';
   static const String wholesalerAnalytics = '/wholesaler/analytics';
-
-  static const String wholesalerDashboard = '/wholesaler/dashboard';
   static const String customerEditProfile = '/customer/editprofile';
 
 
@@ -210,10 +208,14 @@ class AppRoutes {
       transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
-      name: AppRoutes.retailerAnalytics,
-      page: () => const RetailerAnalyticsScreen(),
       name: AppRoutes.customerEditProfile,
       page: () => const EditProfileScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.retailerAnalytics,
+      page: () => const RetailerAnalyticsScreen(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),

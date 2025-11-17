@@ -8,7 +8,7 @@ class CustomerOrdersController extends GetxController {
   var errorMessage = ''.obs;
 
 
-  final ApiService apiService = Get.find();
+  final ApiService apiService;
   final int customerId;
   final String accessToken;
 

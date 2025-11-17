@@ -1,6 +1,7 @@
 class Product {
   final int id;
   final int sellerId;
+  final String sellerName; // Added sellerName here
   final String name;
   final String description;
   final double price;
@@ -17,6 +18,7 @@ class Product {
   Product({
     required this.id,
     required this.sellerId,
+    required this.sellerName, // Added to constructor
     required this.name,
     required this.description,
     required this.price,
@@ -30,7 +32,6 @@ class Product {
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
-    // Helper function to safely parse numbers from strings or numbers
     double _parseDouble(dynamic value) {
       if (value is num) return value.toDouble();
       if (value is String) return double.tryParse(value) ?? 0.0;
@@ -71,23 +72,20 @@ class Product {
     return Product(
       id: _parseInt(json['id']),
       sellerId: _parseInt(json['seller_id'] ?? json['sellerId']),
+      sellerName: _parseString(json['seller_name'] ?? json['sellerName']), // Added sellerName parsing
       name: _parseString(json['name']),
       description: _parseString(json['description']),
       price: _parseDouble(json['price']),
       category: _parseString(json['category']),
-      createdAt:
-          DateTime.tryParse(
-            json['created_at']?.toString() ??
-                json['createdAt']?.toString() ??
-                '',
-          ) ??
+      createdAt: DateTime.tryParse(
+              json['created_at']?.toString() ??
+                  json['createdAt']?.toString() ??
+                  '') ??
           DateTime.now(),
-      updatedAt:
-          DateTime.tryParse(
-            json['updated_at']?.toString() ??
-                json['updatedAt']?.toString() ??
-                '',
-          ) ??
+      updatedAt: DateTime.tryParse(
+              json['updated_at']?.toString() ??
+                  json['updatedAt']?.toString() ??
+                  '') ??
           DateTime.now(),
       stockQuantity: _parseNullableInt(
         json['stock_quantity'] ?? json['stockQuantity'],
@@ -108,6 +106,7 @@ class Product {
     return {
       'id': id,
       'sellerId': sellerId,
+      'sellerName': sellerName, // Added to JSON output
       'name': name,
       'description': description,
       'price': price,
@@ -115,11 +114,9 @@ class Product {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       if (stockQuantity != null) 'stockQuantity': stockQuantity,
-      if (minimumOrderQuantity != null)
-        'minimumOrderQuantity': minimumOrderQuantity,
+      if (minimumOrderQuantity != null) 'minimumOrderQuantity': minimumOrderQuantity,
       if (reorderLevel != null) 'reorderLevel': reorderLevel,
       if (needsRestock != null) 'needsRestock': needsRestock,
     };
   }
-
 }

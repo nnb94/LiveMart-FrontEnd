@@ -56,6 +56,7 @@ class RetailerInventoryItem {
     return Product(
       id: productId,
       sellerId: 0, // Not used in this context
+      sellerName: 'Unknown',
       name: productName,
       description: description,
       price: price,

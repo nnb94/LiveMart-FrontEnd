@@ -121,4 +121,5 @@ class Product {
       if (needsRestock != null) 'needsRestock': needsRestock,
     };
   }
+
 }

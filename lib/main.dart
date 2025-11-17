@@ -7,6 +7,11 @@ import 'approutes.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+
+  Get.put(ProductService());
+
+  Get.put(AuthController());
+
   // Initialize services
   Get.put(ApiService());
   
@@ -33,6 +38,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       initialRoute: AppRoutes.email,
+
+
       getPages: AppRoutes.routes,
       defaultTransition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),

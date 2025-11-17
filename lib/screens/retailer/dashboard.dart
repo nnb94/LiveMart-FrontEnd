@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:get/get.dart';
 import '../../controllers/retailer_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../approutes.dart';
 import '../../models/retailer_inventory.dart';
 
-=======
->>>>>>> origin/customer
 class RetailerDashboard extends StatelessWidget {
   const RetailerDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
     final authController = Get.find<AuthController>();
 
     // Get retailer controller (it will be automatically initialized)
@@ -452,11 +448,3 @@ class _ActionCard extends StatelessWidget {
     );
   }
 }
-=======
-    return Scaffold(
-      appBar: AppBar(title: const Text('Retailer Dashboard')),
-      body: const Center(child: Text('Welcome, Retailer!')),
-    );
-  }
-}
->>>>>>> origin/customer

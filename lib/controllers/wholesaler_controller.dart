@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import '../models/wholesaler_inventory.dart';
 import '../models/product.dart';
 import '../models/wholesaler_sale.dart';
-import '../models/wholesaler_sale.dart';
 import '../services/api_service.dart';
 import '../controllers/auth_controller.dart';
 
@@ -31,6 +30,7 @@ class WholesalerController extends GetxController {
   // Operation loading states
   var isAddingProduct = false.obs;
   var isUpdatingProduct = false.obs;
+  var isDeletingProduct = false.obs;
   var isUpdatingInventory = false.obs;
   var isRestocking = false.obs;
   var isUpdatingOrderStatus = false.obs;
@@ -279,6 +279,35 @@ class WholesalerController extends GetxController {
       print('Error fetching analytics: $e');
     } finally {
       isLoadingAnalytics(false);
+    }
+  }
+
+  // ================= PRODUCT MANAGEMENT =================
+
+  Future<bool> deleteProduct(int productId) async {
+    try {
+      isDeletingProduct(true);
+
+      final response = await apiService.deleteProduct(
+        productId: productId,
+        accessToken: accessToken,
+      );
+
+      Get.snackbar('Success', 'Product deleted successfully');
+
+      // Remove from local products list
+      products.removeWhere((product) => product.id == productId);
+      // Also remove from inventory if exists
+      inventory.removeWhere((item) => item.productId == productId);
+
+      return true;
+
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to delete product: ${e.toString()}');
+      print('Error deleting product: $e');
+      return false;
+    } finally {
+      isDeletingProduct(false);
     }
   }
 

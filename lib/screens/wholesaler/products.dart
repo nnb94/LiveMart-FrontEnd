@@ -134,21 +134,45 @@ class WholesalerProductsScreen extends StatelessWidget {
                 decoration: const InputDecoration(labelText: 'Category'),
               ),
               const SizedBox(height: 16),
+              IgnorePointer(
+                ignoring: true,
+                child: TextField(
+                  controller: TextEditingController(text: product.id.toString()),
+                  decoration: const InputDecoration(
+                    labelText: 'Product ID',
+                    filled: true,
+                    fillColor: Color(0xFFF5F5F5),
+                  ),
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ),
+              const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
-                  'Product ID: This field cannot be edited',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                  'Product ID cannot be edited',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w500
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],
           ),
         ),
         actions: [
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            onPressed: () =>
+              _showDeleteConfirmationDialog(Get.context!, controller, product),
+            child: const Text('Delete'),
+          ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancel'),
@@ -178,6 +202,55 @@ class WholesalerProductsScreen extends StatelessWidget {
               }
             },
             child: const Text('Update'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, WholesalerController controller, Product product) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Product'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Are you sure you want to delete "${product.name}"?'),
+              const SizedBox(height: 8),
+              Text(
+                'This action cannot be undone. The product will be removed from your inventory.',
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              // Close confirmation dialog first
+              Navigator.of(context).pop();
+              // Close product dialog
+              Navigator.of(context).pop();
+
+              // Delete the product
+              final success = await controller.deleteProduct(product.id);
+              if (!success) {
+                // If deletion failed, re-show the product dialog
+                Get.snackbar('Error', 'Failed to delete product. Please try again.');
+              }
+            },
+            child: const Text(
+              'Delete Product',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),

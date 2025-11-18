@@ -149,6 +149,31 @@ class RetailerController extends GetxController {
     }
   }
 
+  Future<bool> deleteInventoryItem(int productId) async {
+    try {
+      if (accessToken.isEmpty) {
+        Get.snackbar('Error', 'Authentication required. Please log in as a retailer.');
+        return false;
+      }
+
+      final response = await apiService.deleteRetailerInventory(
+        productId: productId,
+        accessToken: accessToken,
+      );
+
+      // Remove the item from local inventory
+      inventory.removeWhere((item) => item.productId == productId);
+
+      Get.snackbar('Success', response['message'] ?? 'Product removed from inventory successfully');
+      return true;
+
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to remove product from inventory: ${e.toString()}');
+      print('Error deleting inventory item: $e');
+      return false;
+    }
+  }
+
   Future<void> fetchLowStockAlerts() async {
     try {
       isLoadingLowStock(true);
@@ -290,20 +315,44 @@ class RetailerController extends GetxController {
       isLoadingAnalytics(true);
       analyticsError('');
 
-      // For now, use a basic analytics structure
-      // This might need a separate retailer analytics endpoint
+      // Ensure we have a valid token before making the call
+      if (accessToken.isEmpty) {
+        throw Exception('No access token available. Please log in again.');
+      }
+
+      if (authController.role.value != 'retailer') {
+        throw Exception('Access denied. Only retailers can view this data.');
+      }
+
+      // Fetch sales orders and purchase orders for analytics
+      await Future.wait([
+        fetchSalesOrders(),
+        fetchPurchaseOrders(),
+      ]);
+
+      // Use real backend data from sales orders
+      final salesData = salesOrders.value;
+      final purchasesData = purchaseOrders.value;
+
+      // Calculate analytics from real sales data
+      final totalRevenue = salesData.fold<double>(0.0,
+        (sum, order) => sum + (order.orderDetails.price * order.orderDetails.quantity));
+
       analytics.value = RetailerAnalytics(
         summary: Summary(
-          totalOrders: salesOrders.length,
-          totalRevenue: salesOrders.fold<double>(0, (sum, order) => sum + (order.orderDetails.price * order.orderDetails.quantity)),
-          averageOrderValue: salesOrders.isEmpty ? 0 : salesOrders.fold<double>(0, (sum, order) => sum + (order.orderDetails.price * order.orderDetails.quantity)) / salesOrders.length,
-          totalUnitsSold: salesOrders.fold<int>(0, (sum, order) => sum + order.orderDetails.quantity),
-          uniqueBuyers: salesOrders.map((order) => order.buyerId).toSet().length,
+          totalOrders: salesData.length,
+          totalRevenue: totalRevenue,
+          averageOrderValue: salesData.isEmpty ? 0 : totalRevenue / salesData.length,
+          totalUnitsSold: salesData.fold<int>(0, (sum, order) => sum + order.orderDetails.quantity),
+          uniqueBuyers: salesData.map((order) => order.buyerId).toSet().length,
         ),
       );
 
+
+
     } catch (e) {
       analyticsError('Failed to load analytics: ${e.toString()}');
+      analytics.value = null; // Clear on error
       print('Error fetching analytics: $e');
     } finally {
       isLoadingAnalytics(false);

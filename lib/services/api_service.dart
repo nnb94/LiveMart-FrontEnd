@@ -332,6 +332,27 @@ class ApiService extends GetxService {
     }
   }
 
+  /// Delete product
+  Future<Map<String, dynamic>> deleteProduct({
+    required int productId,
+    required String accessToken,
+  }) async {
+    final url = Uri.parse('http://localhost:3000/products/delete/$productId');
+    final response = await http.delete(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to delete product: ${response.body}');
+    }
+  }
+
   /// Get wholesaler's sales orders
   Future<List<WholesalerSale>> getWholesalerSales(String accessToken) async {
     final url = Uri.parse('http://localhost:3000/wholesalers/orders/sales');
@@ -478,6 +499,27 @@ class ApiService extends GetxService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to fetch low stock alerts: ${response.body}');
+    }
+  }
+
+  /// Delete retailer inventory item (remove product from retailer's stock)
+  Future<Map<String, dynamic>> deleteRetailerInventory({
+    required int productId,
+    required String accessToken,
+  }) async {
+    final url = Uri.parse('http://localhost:3000/retailers/inventory/delete/$productId');
+    final response = await http.delete(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to delete inventory item: ${response.body}');
     }
   }
 

@@ -196,6 +196,9 @@ class RetailerInventoryScreen extends StatelessWidget {
               case 'restock':
                 _showRestockDialog(context, controller, item);
                 break;
+              case 'delete':
+                _showDeleteConfirmationDialog(context, controller, item);
+                break;
             }
           },
           itemBuilder: (BuildContext context) => [
@@ -219,6 +222,17 @@ class RetailerInventoryScreen extends StatelessWidget {
                 ],
               ),
             ),
+            const PopupMenuItem<String>(
+              value: 'delete',
+              child: Row(
+                children: [
+                  Icon(Icons.delete, color: Colors.red, size: 18),
+                  SizedBox(width: 8),
+                  Text('Remove Product',
+                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.w500)),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -233,20 +247,53 @@ class RetailerInventoryScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Update ${item.productName}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: stockController,
-              decoration: const InputDecoration(labelText: 'Current Stock'),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              controller: reorderController,
-              decoration: const InputDecoration(labelText: 'Reorder Level'),
-              keyboardType: TextInputType.number,
-            ),
-          ],
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IgnorePointer(
+                ignoring: true,
+                child: TextField(
+                  controller: TextEditingController(text: item.productId.toString()),
+                  decoration: const InputDecoration(
+                    labelText: 'Product ID',
+                    filled: true,
+                    fillColor: Color(0xFFF5F5F5),
+                  ),
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'Product ID cannot be edited',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w500
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: stockController,
+                decoration: const InputDecoration(labelText: 'Current Stock'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: reorderController,
+                decoration: const InputDecoration(labelText: 'Reorder Level'),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -287,17 +334,50 @@ class RetailerInventoryScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Restock ${item.productName}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Current Stock: ${item.quantityInStock} units'),
-            TextField(
-              controller: quantityController,
-              decoration: const InputDecoration(labelText: 'Quantity to add'),
-              keyboardType: TextInputType.number,
-              autofocus: true,
-            ),
-          ],
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IgnorePointer(
+                ignoring: true,
+                child: TextField(
+                  controller: TextEditingController(text: item.productId.toString()),
+                  decoration: const InputDecoration(
+                    labelText: 'Product ID',
+                    filled: true,
+                    fillColor: Color(0xFFF5F5F5),
+                  ),
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'Product ID (reference only)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.green,
+                    fontWeight: FontWeight.w500
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text('Current Stock: ${item.quantityInStock} units'),
+              TextField(
+                controller: quantityController,
+                decoration: const InputDecoration(labelText: 'Quantity to add'),
+                keyboardType: TextInputType.number,
+                autofocus: true,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -318,6 +398,80 @@ class RetailerInventoryScreen extends StatelessWidget {
               }
             },
             child: const Text('Restock'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, RetailerController controller, RetailerInventoryItem item) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Product from Inventory'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IgnorePointer(
+                ignoring: true,
+                child: TextField(
+                  controller: TextEditingController(text: item.productId.toString()),
+                  decoration: const InputDecoration(
+                    labelText: 'Product ID',
+                    filled: true,
+                    fillColor: Color(0xFFF5F5F5),
+                  ),
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text('Are you sure you want to remove "${item.productName}" from your inventory?'),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(Icons.warning, color: Colors.orange),
+                    const SizedBox(height: 8),
+                    Text(
+                      'This will stop selling this product to customers, but you can always add it back later. The product will remain available from wholesalers.',
+                      style: TextStyle(color: Colors.orange.shade800, fontSize: 12),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            onPressed: () async {
+              // Close confirmation dialog first
+              Navigator.of(context).pop();
+
+              // Delete the product from inventory
+              final success = await controller.deleteInventoryItem(item.productId);
+              if (!success) {
+                // If deletion failed, show error
+                Get.snackbar('Error', 'Failed to remove product. Please try again.');
+              }
+            },
+            child: const Text(
+              'Remove Product',
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),

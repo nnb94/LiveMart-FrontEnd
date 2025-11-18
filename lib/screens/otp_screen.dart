@@ -27,7 +27,7 @@ class _OtpScreenState extends State<OtpScreen> {
   void _verifyOtp() async {
     final name = _nameController.text.trim();
     final password = _passwordController.text.trim();
-    final role = _selectedRole ?? '';
+    final role = (_selectedRole ?? '').toLowerCase();  // Fix: Convert role to lowercase
     final otp = _otpController.text.trim();
     final email = widget.email.trim();
 
@@ -78,7 +78,10 @@ class _OtpScreenState extends State<OtpScreen> {
         role: roleLower,
         name: name,
       );
-      
+
+      // Small delay to ensure observables are updated before navigation
+      await Future.delayed(const Duration(milliseconds: 100));
+
       final message = result['message'] as String? ?? 'Signup successful';
       ScaffoldMessenger.of(
         context,

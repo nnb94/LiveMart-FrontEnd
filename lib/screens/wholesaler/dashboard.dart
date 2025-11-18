@@ -17,7 +17,8 @@ class WholesalerDashboard extends StatelessWidget {
     final wholesalerController = Get.put(WholesalerController());
 
     // Check authentication
-    if (!authController.isLoggedIn || authController.role.value != 'wholesaler') {
+    if (!authController.isLoggedIn ||
+        authController.role.value != 'wholesaler') {
       return Scaffold(
         body: Center(
           child: Column(
@@ -41,7 +42,8 @@ class WholesalerDashboard extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.analytics),
-            onPressed: () => _showAnalyticsDialog(context, wholesalerController),
+            onPressed: () =>
+                _showAnalyticsDialog(context, wholesalerController),
           ),
         ],
       ),
@@ -73,27 +75,33 @@ class WholesalerDashboard extends StatelessWidget {
   Widget _buildOverviewCards(WholesalerController controller) {
     return Column(
       children: [
-        const Text('Business Overview',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const Text(
+          'Business Overview',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
-              child: Obx(() => _OverviewCard(
-                title: 'Total Inventory',
-                value: '${controller.inventory.length}',
-                icon: Icons.inventory,
-                color: Colors.blue,
-              )),
+              child: Obx(
+                () => _OverviewCard(
+                  title: 'Total Inventory',
+                  value: '${controller.inventory.length}',
+                  icon: Icons.inventory,
+                  color: Colors.blue,
+                ),
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: Obx(() => _OverviewCard(
-                title: 'Low Stock Items',
-                value: '${controller.getLowStockCount()}',
-                icon: Icons.warning,
-                color: Colors.orange,
-              )),
+              child: Obx(
+                () => _OverviewCard(
+                  title: 'Low Stock Items',
+                  value: '${controller.getLowStockCount()}',
+                  icon: Icons.warning,
+                  color: Colors.orange,
+                ),
+              ),
             ),
           ],
         ),
@@ -101,21 +109,26 @@ class WholesalerDashboard extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Obx(() => _OverviewCard(
-                title: 'Total Orders',
-                value: '${controller.salesOrders.length}',
-                icon: Icons.shopping_cart,
-                color: Colors.green,
-              )),
+              child: Obx(
+                () => _OverviewCard(
+                  title: 'Total Orders',
+                  value: '${controller.salesOrders.length}',
+                  icon: Icons.shopping_cart,
+                  color: Colors.green,
+                ),
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: Obx(() => _OverviewCard(
-                title: 'Inventory Value',
-                value: '\$${controller.getTotalInventoryValue().toStringAsFixed(2)}',
-                icon: Icons.attach_money,
-                color: Colors.purple,
-              )),
+              child: Obx(
+                () => _OverviewCard(
+                  title: 'Inventory Value',
+                  value:
+                      '\$${controller.getTotalInventoryValue().toStringAsFixed(2)}',
+                  icon: Icons.attach_money,
+                  color: Colors.purple,
+                ),
+              ),
             ),
           ],
         ),
@@ -127,8 +140,10 @@ class WholesalerDashboard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Quick Actions',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const Text(
+          'Quick Actions',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -177,8 +192,10 @@ class WholesalerDashboard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Inventory Overview',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const Text(
+          'Inventory Overview',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 16),
         Obx(() {
           if (controller.isLoadingInventory.value) {
@@ -194,7 +211,10 @@ class WholesalerDashboard extends StatelessWidget {
           return ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: controller.inventory.length.clamp(0, 3), // Show first 3 items
+            itemCount: controller.inventory.length.clamp(
+              0,
+              3,
+            ), // Show first 3 items
             itemBuilder: (context, index) {
               final item = controller.inventory[index];
               return Card(
@@ -204,14 +224,18 @@ class WholesalerDashboard extends StatelessWidget {
                     child: Text(item.productName[0].toUpperCase()),
                   ),
                   title: Text(item.productName),
-                  subtitle: Text('Stock: ${item.quantityInStock} | Min Order: ${item.minimumOrderQuantity}'),
+                  subtitle: Text(
+                    'Stock: ${item.quantityInStock} | Min Order: ${item.minimumOrderQuantity}',
+                  ),
                   trailing: Chip(
                     label: Text('\$${item.price.toStringAsFixed(2)}'),
-                    backgroundColor: item.quantityInStock < item.minimumOrderQuantity
+                    backgroundColor:
+                        item.quantityInStock < item.minimumOrderQuantity
                         ? Colors.red.shade100
                         : Colors.green.shade100,
                   ),
-                  onTap: () => _showInventoryItemDialog(context, controller, item),
+                  onTap: () =>
+                      _showInventoryItemDialog(context, controller, item),
                 ),
               );
             },
@@ -225,8 +249,10 @@ class WholesalerDashboard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Recent Sales Orders',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const Text(
+          'Recent Sales Orders',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 16),
         Obx(() {
           if (controller.isLoadingSales.value) {
@@ -235,7 +261,9 @@ class WholesalerDashboard extends StatelessWidget {
 
           if (controller.salesOrders.isEmpty) {
             return const Center(
-              child: Text('No sales orders yet. Orders will appear here when retailers buy from you.'),
+              child: Text(
+                'No sales orders yet. Orders will appear here when retailers buy from you.',
+              ),
             );
           }
 
@@ -248,8 +276,12 @@ class WholesalerDashboard extends StatelessWidget {
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
-                  title: Text('${order.productInfo.productName} → ${order.retailerName}'),
-                  subtitle: Text('Qty: ${order.orderDetails.quantity} | \$${order.orderDetails.totalAmount.toStringAsFixed(2)}'),
+                  title: Text(
+                    '${order.productInfo.productName} → ${order.retailerName}',
+                  ),
+                  subtitle: Text(
+                    'Qty: ${order.orderDetails.quantity} | \$${order.orderDetails.totalAmount.toStringAsFixed(2)}',
+                  ),
                   trailing: Chip(
                     label: Text(order.status.toUpperCase()),
                     backgroundColor: _getStatusColor(order.status),
@@ -264,7 +296,10 @@ class WholesalerDashboard extends StatelessWidget {
     );
   }
 
-  void _showAnalyticsDialog(BuildContext context, WholesalerController controller) {
+  void _showAnalyticsDialog(
+    BuildContext context,
+    WholesalerController controller,
+  ) {
     controller.fetchAnalytics();
     showDialog(
       context: context,
@@ -288,8 +323,12 @@ class WholesalerDashboard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Total Orders: ${analytics.summary.totalOrders}'),
-              Text('Total Revenue: \$${analytics.summary.totalRevenue.toStringAsFixed(2)}'),
-              Text('Avg Order Value: \$${analytics.summary.averageOrderValue.toStringAsFixed(2)}'),
+              Text(
+                'Total Revenue: \$${analytics.summary.totalRevenue.toStringAsFixed(2)}',
+              ),
+              Text(
+                'Avg Order Value: \$${analytics.summary.averageOrderValue.toStringAsFixed(2)}',
+              ),
               Text('Units Sold: ${analytics.summary.totalUnitsSold}'),
               Text('Unique Buyers: ${analytics.summary.uniqueBuyers}'),
             ],
@@ -305,7 +344,10 @@ class WholesalerDashboard extends StatelessWidget {
     );
   }
 
-  void _showAddProductDialog(BuildContext context, WholesalerController controller) {
+  void _showAddProductDialog(
+    BuildContext context,
+    WholesalerController controller,
+  ) {
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
     final priceController = TextEditingController();
@@ -346,7 +388,9 @@ class WholesalerDashboard extends StatelessWidget {
               ),
               TextField(
                 controller: minOrderController,
-                decoration: const InputDecoration(labelText: 'Minimum Order Quantity'),
+                decoration: const InputDecoration(
+                  labelText: 'Minimum Order Quantity',
+                ),
                 keyboardType: TextInputType.number,
               ),
             ],
@@ -365,7 +409,8 @@ class WholesalerDashboard extends StatelessWidget {
                 price: double.tryParse(priceController.text) ?? 0.0,
                 category: categoryController.text,
                 initialStock: int.tryParse(stockController.text) ?? 0,
-                minimumOrderQuantity: int.tryParse(minOrderController.text) ?? 1,
+                minimumOrderQuantity:
+                    int.tryParse(minOrderController.text) ?? 1,
               );
               if (success) {
                 Navigator.of(context).pop();
@@ -378,9 +423,17 @@ class WholesalerDashboard extends StatelessWidget {
     );
   }
 
-  void _showInventoryItemDialog(BuildContext context, WholesalerController controller, WholesalerInventoryItem item) {
-    final stockController = TextEditingController(text: item.quantityInStock.toString());
-    final minOrderController = TextEditingController(text: item.minimumOrderQuantity.toString());
+  void _showInventoryItemDialog(
+    BuildContext context,
+    WholesalerController controller,
+    WholesalerInventoryItem item,
+  ) {
+    final stockController = TextEditingController(
+      text: item.quantityInStock.toString(),
+    );
+    final minOrderController = TextEditingController(
+      text: item.minimumOrderQuantity.toString(),
+    );
 
     showDialog(
       context: context,
@@ -396,7 +449,9 @@ class WholesalerDashboard extends StatelessWidget {
             ),
             TextField(
               controller: minOrderController,
-              decoration: const InputDecoration(labelText: 'Minimum Order Quantity'),
+              decoration: const InputDecoration(
+                labelText: 'Minimum Order Quantity',
+              ),
               keyboardType: TextInputType.number,
             ),
           ],
@@ -430,7 +485,11 @@ class WholesalerDashboard extends StatelessWidget {
     );
   }
 
-  void _showRestockDialog(BuildContext context, WholesalerController controller, WholesalerInventoryItem item) {
+  void _showRestockDialog(
+    BuildContext context,
+    WholesalerController controller,
+    WholesalerInventoryItem item,
+  ) {
     final quantityController = TextEditingController();
 
     showDialog(
@@ -450,7 +509,10 @@ class WholesalerDashboard extends StatelessWidget {
           ElevatedButton(
             onPressed: () async {
               final quantity = int.tryParse(quantityController.text) ?? 0;
-              final success = await controller.restockProduct(item.productId, quantity);
+              final success = await controller.restockProduct(
+                item.productId,
+                quantity,
+              );
               if (success) {
                 Navigator.of(context).pop();
                 Navigator.of(context).pop(); // Close inventory dialog too
@@ -463,7 +525,11 @@ class WholesalerDashboard extends StatelessWidget {
     );
   }
 
-  void _showOrderDialog(BuildContext context, WholesalerController controller, WholesalerSale order) {
+  void _showOrderDialog(
+    BuildContext context,
+    WholesalerController controller,
+    WholesalerSale order,
+  ) {
     final statusOptions = ['pending', 'shipped', 'delivered'];
     String selectedStatus = order.status;
 
@@ -478,7 +544,9 @@ class WholesalerDashboard extends StatelessWidget {
             Text('Product: ${order.productInfo.productName}'),
             Text('Customer: ${order.retailerName}'),
             Text('Quantity: ${order.orderDetails.quantity}'),
-            Text('Total: \$${order.orderDetails.totalAmount.toStringAsFixed(2)}'),
+            Text(
+              'Total: \$${order.orderDetails.totalAmount.toStringAsFixed(2)}',
+            ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: selectedStatus,
@@ -500,7 +568,10 @@ class WholesalerDashboard extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              final success = await controller.updateOrderStatus(order.orderId, selectedStatus);
+              final success = await controller.updateOrderStatus(
+                order.orderId,
+                selectedStatus,
+              );
               if (success) {
                 Navigator.of(context).pop();
               }
@@ -551,9 +622,15 @@ class _OverviewCard extends StatelessWidget {
           children: [
             Icon(icon, size: 32, color: color),
             const SizedBox(height: 8),
-            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
-            Text(title, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+            Text(
+              title,
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
           ],
         ),
       ),

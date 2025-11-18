@@ -8,7 +8,7 @@ class AuthController extends GetxController {
   final RxString email = ''.obs;
   final RxString role = ''.obs;
   final RxString name = ''.obs;
-  
+
   // Check if user is logged in
   bool get isLoggedIn => accessToken.value.isNotEmpty && userId.value > 0;
   
@@ -19,6 +19,8 @@ class AuthController extends GetxController {
     required String email,
     required String role,
     String? name,
+    String? phone,
+    String? address,
   }) async {
     this.userId.value = userId;
     this.accessToken.value = token;

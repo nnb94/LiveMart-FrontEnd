@@ -8,11 +8,12 @@ import 'package:live_mart_app/models/wholesaler_sale.dart';
 import 'package:live_mart_app/models/retailer_inventory.dart';
 
 class ApiService extends GetxService {
-  static const String baseUrl = 'http://localhost:3000/auth';
+  static const String baseUrl = 'http://localhost:3000';
 
   /// Sends OTP to the given email
   Future<String> sendOtp(String email) async {
-    final url = Uri.parse('$baseUrl/signup/request-otp');
+    final url = Uri.parse('$baseUrl/auth/signup/request-otp');
+
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -36,7 +37,7 @@ class ApiService extends GetxService {
     required String role,
     required String otp,
   }) async {
-    final url = Uri.parse('$baseUrl/signup/verify');
+    final url = Uri.parse('$baseUrl/auth/signup/verify');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -63,12 +64,16 @@ class ApiService extends GetxService {
     }
   }
 
+  /// Fetch recent orders (no /auth prefix)
   Future<List<Order>> fetchRecentOrders(int customerId, String accessToken) async {
-    final url = Uri.parse('$baseUrl/customer/orders/$customerId');
+    final orderUrl = '$baseUrl/orders'; // no /auth for this one
+    final url = Uri.parse('$baseUrl/customers/orders/$customerId');
+
+
     final response = await http.get(
       url,
       headers: {
-        'Authorization': 'Bearer $accessToken',  // Assuming JWT bearer token auth
+        'Authorization': 'Bearer $accessToken', // Assuming JWT bearer token auth
         'Content-Type': 'application/json',
       },
     );
@@ -77,15 +82,14 @@ class ApiService extends GetxService {
       final List jsonList = jsonDecode(response.body);
       return jsonList.map((json) => Order.fromJson(json)).toList();
     } else {
+      print("Order API error: ${response.body}");
       throw Exception('Failed to load orders: ${response.body}');
     }
   }
-  /// Login (per backend auth.rest file)
-  /// Endpoint: POST /auth/login
-  /// Body: { "email": "user@example.com", "password": "password" }
-  /// Response: { "token": "..." }
+
+  /// Login method
   Future<Map<String, dynamic>> login(String email, String password) async {
-    final url = Uri.parse('$baseUrl/login/email');
+    final url = Uri.parse('$baseUrl/auth/login/email');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -118,9 +122,9 @@ class ApiService extends GetxService {
     }
   }
 
-   /// Step 1: Request OTP for forgot password
+  /// Step 1: Request OTP for forgot password
   Future<String> sendForgotPasswordOtp(String email) async {
-    final url = Uri.parse('$baseUrl/forgot-password/request-otp');
+    final url = Uri.parse('$baseUrl/auth/forgot-password/request-otp');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -141,7 +145,7 @@ class ApiService extends GetxService {
     required String otp,
     required String newPassword,
   }) async {
-    final url = Uri.parse('$baseUrl/forgot-password/verify');
+    final url = Uri.parse('$baseUrl/auth/forgot-password/verify');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -601,6 +605,26 @@ class ApiService extends GetxService {
       return jsonList.map((json) => RetailingSaleOrder.fromJson(json)).toList();
     } else {
       throw Exception('Failed to fetch sales orders: ${response.body}');
+    }
+  }
+}
+
+
+class ProductService extends GetxService {
+  final RxList<Product> products = <Product>[].obs;
+
+  Future<void> fetchProducts() async {
+    try {
+      // Replace with your backend URL
+      final response = await http.get(Uri.parse('http://localhost:3000'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        products.value = data.map((e) => Product.fromJson(e)).toList();
+      } else {
+        throw Exception('Failed to load products');
+      }
+    } catch (e) {
+      print('Error fetching products: $e');
     }
   }
 }

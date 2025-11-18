@@ -7,11 +7,16 @@ class CustomerOrdersController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = ''.obs;
 
-  final ApiService apiService = Get.find();
+
+  final ApiService apiService;
   final int customerId;
   final String accessToken;
 
-  CustomerOrdersController({required this.customerId, required this.accessToken});
+  CustomerOrdersController({
+    required this.customerId,
+    required this.accessToken,
+    required this.apiService,
+  });
 
   @override
   void onInit() {
@@ -20,15 +25,23 @@ class CustomerOrdersController extends GetxController {
   }
 
   void fetchOrders() async {
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-      final orders = await apiService.fetchRecentOrders(customerId, accessToken);
-      recentOrders.value = orders;
-    } catch (e) {
+
+  try {
+    isLoading.value = true;
+    errorMessage.value = '';
+    final orders = await apiService.fetchRecentOrders(customerId, accessToken);
+    recentOrders.value = orders;
+  } catch (e) {
+    // Check for the "No orders found" message and handle gracefully
+    if (e.toString().contains('No orders found for this customer')) {
+      recentOrders.value = [];
+      errorMessage.value = ''; // Do not show error
+    } else {
       errorMessage.value = e.toString();
-    } finally {
-      isLoading.value = false;
     }
+  } finally {
+    isLoading.value = false;
   }
+}
+
 }

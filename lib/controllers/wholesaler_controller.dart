@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../models/wholesaler_inventory.dart';
 import '../models/product.dart';
@@ -44,10 +45,7 @@ class WholesalerController extends GetxController {
   }
 
   Future<void> loadInitialData() async {
-    await Future.wait([
-      fetchInventory(),
-      fetchProducts(),
-    ]);
+    await Future.wait([fetchInventory(), fetchProducts()]);
   }
 
   // ================= INVENTORY MANAGEMENT =================
@@ -58,17 +56,30 @@ class WholesalerController extends GetxController {
       inventoryError('');
 
       final response = await apiService.getWholesalerInventory(accessToken);
-      inventory.value = response;
 
+      inventory.value = response;
     } catch (e) {
-      inventoryError('Failed to load inventory: ${e.toString()}');
+      final errorMessage = 'Failed to load inventory: ${e.toString()}';
+      inventoryError(errorMessage);
       print('Error fetching inventory: $e');
+
+      Get.snackbar(
+        'Inventory Error',
+        errorMessage,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFFF3366),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 15,
+      );
     } finally {
       isLoadingInventory(false);
     }
   }
 
-  Future<bool> updateInventoryItem(int productId, {
+  Future<bool> updateInventoryItem(
+    int productId, {
     int? quantityInStock,
     int? minimumOrderQuantity,
   }) async {
@@ -91,7 +102,6 @@ class WholesalerController extends GetxController {
 
       Get.snackbar('Success', 'Inventory updated successfully');
       return true;
-
     } catch (e) {
       Get.snackbar('Error', 'Failed to update inventory: ${e.toString()}');
       print('Error updating inventory: $e');
@@ -114,13 +124,14 @@ class WholesalerController extends GetxController {
       // Update local inventory item
       final index = inventory.indexWhere((item) => item.productId == productId);
       if (index != -1) {
-        final updatedItem = WholesalerInventoryItem.fromJson(response['inventory']);
+        final updatedItem = WholesalerInventoryItem.fromJson(
+          response['inventory'],
+        );
         inventory[index] = updatedItem;
       }
 
       Get.snackbar('Success', response['message']);
       return true;
-
     } catch (e) {
       Get.snackbar('Error', 'Failed to restock: ${e.toString()}');
       print('Error restocking: $e');
@@ -139,7 +150,6 @@ class WholesalerController extends GetxController {
 
       final response = await apiService.getWholesalerProducts(accessToken);
       products.value = response;
-
     } catch (e) {
       productsError('Failed to load products: ${e.toString()}');
       print('Error fetching products: $e');
@@ -159,7 +169,7 @@ class WholesalerController extends GetxController {
     try {
       isAddingProduct(true);
 
-      final response = await apiService.addProduct(
+      await apiService.addProduct(
         name: name,
         description: description,
         price: price,
@@ -174,7 +184,6 @@ class WholesalerController extends GetxController {
       // Refresh inventory and products
       await Future.wait([fetchInventory(), fetchProducts()]);
       return true;
-
     } catch (e) {
       Get.snackbar('Error', 'Failed to add product: ${e.toString()}');
       print('Error adding product: $e');
@@ -184,7 +193,8 @@ class WholesalerController extends GetxController {
     }
   }
 
-  Future<bool> updateProduct(int productId, {
+  Future<bool> updateProduct(
+    int productId, {
     String? name,
     String? description,
     double? price,
@@ -193,7 +203,7 @@ class WholesalerController extends GetxController {
     try {
       isUpdatingProduct(true);
 
-      final response = await apiService.updateProduct(
+      await apiService.updateProduct(
         productId: productId,
         name: name,
         description: description,
@@ -207,7 +217,6 @@ class WholesalerController extends GetxController {
       // Refresh products
       await fetchProducts();
       return true;
-
     } catch (e) {
       Get.snackbar('Error', 'Failed to update product: ${e.toString()}');
       print('Error updating product: $e');
@@ -226,7 +235,6 @@ class WholesalerController extends GetxController {
 
       final response = await apiService.getWholesalerSales(accessToken);
       salesOrders.value = response;
-
     } catch (e) {
       salesError('Failed to load sales orders: ${e.toString()}');
       print('Error fetching sales: $e');
@@ -254,7 +262,6 @@ class WholesalerController extends GetxController {
 
       Get.snackbar('Success', 'Order status updated');
       return true;
-
     } catch (e) {
       Get.snackbar('Error', 'Failed to update order status: ${e.toString()}');
       print('Error updating order status: $e');
@@ -273,7 +280,6 @@ class WholesalerController extends GetxController {
 
       final response = await apiService.getWholesalerAnalytics(accessToken);
       analytics.value = response;
-
     } catch (e) {
       analyticsError('Failed to load analytics: ${e.toString()}');
       print('Error fetching analytics: $e');
@@ -322,10 +328,17 @@ class WholesalerController extends GetxController {
   }
 
   int getLowStockCount() {
-    return inventory.where((item) => item.quantityInStock < (item.minimumOrderQuantity ~/ 2)).length;
+    return inventory
+        .where(
+          (item) => item.quantityInStock < (item.minimumOrderQuantity ~/ 2),
+        )
+        .length;
   }
 
   double getTotalInventoryValue() {
-    return inventory.fold(0.0, (sum, item) => sum + (item.price * item.quantityInStock));
+    return inventory.fold(
+      0.0,
+      (sum, item) => sum + (item.price * item.quantityInStock),
+    );
   }
 }

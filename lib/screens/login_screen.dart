@@ -75,7 +75,11 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         // fallback in case role is missing or unknown
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Unknown role: $role. Redirecting to default dashboard.')),
+          SnackBar(
+            content: Text(
+              'Unknown role: $role. Redirecting to default dashboard.',
+            ),
+          ),
         );
         Get.offAllNamed(AppRoutes.dashboard);
       }
@@ -369,7 +373,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         TextButton(
-                          onPressed: () => Get.toNamed(AppRoutes.forgotPassword),
+                          onPressed: () =>
+                              Get.toNamed(AppRoutes.forgotPassword),
                           child: const Text(
                             'Forgot Password?',
                             style: TextStyle(
@@ -396,14 +401,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.black,
                               minimumSize: const Size(double.infinity, 50),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
                               elevation: 4,
                             ),
-                            onPressed: _handleGoogleLogin,
+                            onPressed: () {}, //_handleGoogleLogin,
                           )
                         else if (!kIsWeb && Platform.isWindows)
                           ElevatedButton.icon(
-                            icon: const Icon(Icons.block, color: Colors.black54),
+                            icon: const Icon(
+                              Icons.block,
+                              color: Colors.black54,
+                            ),
                             label: const Text(
                               'Google Sign-In not available on Windows',
                               style: TextStyle(color: Colors.black54),
@@ -411,22 +421,27 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.grey.shade300,
                               minimumSize: const Size(double.infinity, 50),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
                             ),
                             onPressed: null,
                           )
                         else
                           ElevatedButton.icon(
                             icon: const Icon(Icons.warning),
-                            label: const Text('Google login unsupported on this platform'),
+                            label: const Text(
+                              'Google login unsupported on this platform',
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.grey.shade300,
                               minimumSize: const Size(double.infinity, 50),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
                             ),
                             onPressed: null,
                           ),
-
                       ],
                     ),
                   ),

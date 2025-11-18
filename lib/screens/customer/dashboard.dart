@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 import 'package:live_mart_app/approutes.dart';
 import '../../controllers/customer_orders_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../models/order.dart'; 
 
+import '../../services/api_service.dart';
+import '../../models/product.dart'; 
+import 'product_card.dart'; // the ProductCard widget from previous snippet
+
+
 class CustomerDashboard extends StatelessWidget {
   const CustomerDashboard({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+
     // Get user data from AuthController instead of LoggedInUser
     final authController = Get.find<AuthController>();
     
-    // Check if user is logged in
+
+
     if (!authController.isLoggedIn) {
-      // Redirect to login if not logged in
       return Scaffold(
         body: Center(
           child: Column(
@@ -34,21 +39,16 @@ class CustomerDashboard extends StatelessWidget {
       );
     }
 
-    // You should replace these with data from backend/api later
-    final recommendations = ['Shoes', 'Headphones', 'Backpack'];
-
-    // Instantiate or get the controller (ensure only one instance is created!)
     final CustomerOrdersController ordersController = Get.put(
       CustomerOrdersController(
-        customerId: authController.userId.value, // ✅ Fixed: Use AuthController
-        accessToken: authController.accessToken.value, // ✅ Fixed: Use AuthController
+        customerId: authController.userId.value,
+        accessToken: authController.accessToken.value,
+        apiService: Get.find<ApiService>(),
       ),
     );
-    final recentOrders = [
-      {'id': 'ORD123', 'status': 'Delivered'},
-      {'id': 'ORD124', 'status': 'Shipped'},
-      {'id': 'ORD125', 'status': 'Processing'},
-    ];
+
+    final ProductService productService = Get.put(ProductService());
+    productService.fetchProducts(); // load products
 
     return Scaffold(
       appBar: AppBar(
@@ -57,10 +57,15 @@ class CustomerDashboard extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-
               Get.toNamed(AppRoutes.customerNotifications);
-
-              Navigator.pushNamed(context, '/customer/notifications');
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () async {
+              await authController.clearUser();
+              Get.offAllNamed(AppRoutes.login);
             },
           ),
         ],
@@ -99,29 +104,6 @@ class CustomerDashboard extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Recommendations
-              const Text('Recommendations',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
-              const Text('Recommendations', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 60,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: recommendations
-                      .map(
-                        (item) => Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Text(item),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-              const SizedBox(height: 24),
-
               // Recent Orders (GetX Integration)
               const Text('Recent Orders',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
@@ -129,19 +111,42 @@ class CustomerDashboard extends StatelessWidget {
                 if (ordersController.isLoading.value) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (ordersController.errorMessage.isNotEmpty) {
-                  return Center(child: Text('Error: ${ordersController.errorMessage.value}'));
+                  return Center(
+                    child: Text(
+                      'Error loading orders: ${ordersController.errorMessage.value}',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
                 } else if (ordersController.recentOrders.isEmpty) {
                   return const Center(child: Text('No recent orders found.'));
                 } else {
                   return Column(
                     children: ordersController.recentOrders.map((order) {
                       return ListTile(
-                        title: Text('Order #${order.orderId} - ${order.productInfo.name}'),
+                        title: Text(
+                            'Order #${order.orderId} - ${order.productInfo.name}'),
                         subtitle: Text('Status: ${order.orderDetails.status}'),
                         trailing: TextButton(
                           child: const Text('Details'),
                           onPressed: () {
-                            Get.toNamed('${AppRoutes.customerOrders}/${order.orderId}');
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text('Order Details'),
+                                content: Text(
+                                    'Product: ${order.productInfo.name}\n'
+                                    'Status: ${order.orderDetails.status}\n'
+                                    'Quantity: ${order.orderDetails.quantity}\n'
+                                    'Total: ${order.orderDetails.totalAmount}\n'
+                                    'Seller: ${order.sellerInfo.name} (${order.sellerInfo.email})'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('Close'),
+                                  ),
+                                ],
+                              ),
+                            );
                           },
                         ),
                       );
@@ -149,23 +154,32 @@ class CustomerDashboard extends StatelessWidget {
                   );
                 }
               }),
-              // Recent Orders
-              const Text('Recent Orders', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
-              ...recentOrders.map((order) => ListTile(
-                title: Text('Order #${order['id']}'),
-                subtitle: Text('Status: ${order['status']}'),
-                trailing: TextButton(
-                  child: const Text('Details'),
-                  onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/customer/orders/${order['id']}',
+              const SizedBox(height: 32),
+
+              // Product Listing
+              const Text('Available Products',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+              Obx(() {
+                if (productService.products.isEmpty) {
+                  return const Center(child: Text('No products available'));
+                }
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: productService.products.length,
+                  itemBuilder: (context, index) {
+                    final product = productService.products[index];
+                    return ProductCard(
+                      product: product,
+                      onTap: () {
+                        // Implement product detail or purchase navigation here
+                      },
                     );
                   },
-                ),
-              )),
+                );
+              }),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
               // Place Order Button
               Center(
@@ -174,7 +188,6 @@ class CustomerDashboard extends StatelessWidget {
                   label: const Text('Place an Order'),
                   onPressed: () {
                     Get.toNamed(AppRoutes.customerPlaceOrder);
-                    Navigator.pushNamed(context, '/customer/placeorder');
                   },
                 ),
               ),
@@ -203,7 +216,6 @@ class _QuickAccessTile extends StatelessWidget {
     return InkWell(
       onTap: () {
         Get.toNamed(route);
-        Navigator.pushNamed(context, route);
       },
       child: Column(
         children: [

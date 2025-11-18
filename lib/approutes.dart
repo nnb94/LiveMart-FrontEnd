@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'screens/email_screen.dart';
@@ -15,6 +16,7 @@ import 'package:live_mart_app/screens/customer/notifications.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
 
+
 // Role-based dashboards
 import 'screens/retailer/dashboard.dart';
 import 'screens/retailer/inventory.dart';
@@ -26,6 +28,13 @@ import 'screens/wholesaler/inventory.dart';
 import 'screens/wholesaler/sales.dart';
 import 'screens/wholesaler/products.dart';
 import 'screens/wholesaler/analytics.dart';
+
+import 'screens/customer/editprofile.dart';
+
+// Role-based dashboards
+import 'screens/customer/dashboard.dart';
+import 'screens/retailer/dashboard.dart';
+import 'screens/wholesaler/dashboard.dart';
 
 class AppRoutes {
   static const String email = '/email';
@@ -45,6 +54,7 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
   static const String retailerDashboard = '/retailer/dashboard';
+
   static const String retailerInventory = '/retailer/inventory';
   static const String retailerPurchasing = '/retailer/purchasing';
   static const String retailerSales = '/retailer/sales';
@@ -54,6 +64,8 @@ class AppRoutes {
   static const String wholesalerSales = '/wholesaler/sales';
   static const String wholesalerProducts = '/wholesaler/products';
   static const String wholesalerAnalytics = '/wholesaler/analytics';
+  static const String customerEditProfile = '/customer/editprofile';
+
 
   static List<GetPage> routes = [
     GetPage(
@@ -192,6 +204,12 @@ class AppRoutes {
     GetPage(
       name: AppRoutes.retailerSales,
       page: () => const RetailerSalesScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.customerEditProfile,
+      page: () => const EditProfileScreen(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),

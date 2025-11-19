@@ -78,15 +78,18 @@ class ApiService extends GetxService {
   }
 
   /// Fetch recent orders (no /auth prefix)
-  Future<List<Order>> fetchRecentOrders(int customerId, String accessToken) async {
+  Future<List<Order>> fetchRecentOrders(
+    int customerId,
+    String accessToken,
+  ) async {
     final orderUrl = '$baseUrl/orders'; // no /auth for this one
     final url = Uri.parse('$baseUrl/customers/orders/$customerId');
-
 
     final response = await http.get(
       url,
       headers: {
-        'Authorization': 'Bearer $accessToken', // Assuming JWT bearer token auth
+        'Authorization':
+            'Bearer $accessToken', // Assuming JWT bearer token auth
         'Content-Type': 'application/json',
       },
     );
@@ -106,10 +109,7 @@ class ApiService extends GetxService {
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-      }),
+      body: jsonEncode({'email': email, 'password': password}),
     );
 
     if (response.statusCode == 200) {
@@ -120,11 +120,7 @@ class ApiService extends GetxService {
         throw Exception('Login succeeded but token missing in response');
       }
       // Return full response including user data
-      return {
-        'token': token,
-        'role': role,
-        'user': data['user'],
-      };
+      return {'token': token, 'role': role, 'user': data['user']};
     } else {
       String message = 'Login failed';
       try {
@@ -178,26 +174,28 @@ class ApiService extends GetxService {
   }
 
   Future<Map<String, dynamic>> googleLogin(String idToken) async {
-  final url = Uri.parse('$baseUrl/google-login');
+    final url = Uri.parse('$baseUrl/google-login');
 
-  final response = await http.post(
-    url,
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({'token': idToken}),
-  );
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'token': idToken}),
+    );
 
-  if (response.statusCode == 200) {
-    // Parse the response body (expected to contain token + user)
-    return jsonDecode(response.body);
-  } else {
-    throw Exception('Google login failed: ${response.body}');
+    if (response.statusCode == 200) {
+      // Parse the response body (expected to contain token + user)
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Google login failed: ${response.body}');
+    }
   }
-}
 
   // ================= WHOLESALER METHODS =================
 
   /// Get wholesaler's inventory
-  Future<List<WholesalerInventoryItem>> getWholesalerInventory(String accessToken) async {
+  Future<List<WholesalerInventoryItem>> getWholesalerInventory(
+    String accessToken,
+  ) async {
     final url = Uri.parse('http://localhost:3000/wholesalers/inventory');
     final response = await http.get(
       url,
@@ -209,7 +207,9 @@ class ApiService extends GetxService {
 
     if (response.statusCode == 200) {
       final List jsonList = jsonDecode(response.body);
-      return jsonList.map((json) => WholesalerInventoryItem.fromJson(json)).toList();
+      return jsonList
+          .map((json) => WholesalerInventoryItem.fromJson(json))
+          .toList();
     } else {
       throw Exception('Failed to fetch inventory: ${response.body}');
     }
@@ -222,7 +222,9 @@ class ApiService extends GetxService {
     int? minimumOrderQuantity,
     required String accessToken,
   }) async {
-    final url = Uri.parse('http://localhost:3000/wholesalers/inventory/update/$productId');
+    final url = Uri.parse(
+      'http://localhost:3000/wholesalers/inventory/update/$productId',
+    );
     final response = await http.patch(
       url,
       headers: {
@@ -231,7 +233,8 @@ class ApiService extends GetxService {
       },
       body: jsonEncode({
         if (quantityInStock != null) 'quantity_in_stock': quantityInStock,
-        if (minimumOrderQuantity != null) 'minimum_order_quantity': minimumOrderQuantity,
+        if (minimumOrderQuantity != null)
+          'minimum_order_quantity': minimumOrderQuantity,
       }),
     );
 
@@ -248,7 +251,9 @@ class ApiService extends GetxService {
     required int quantity,
     required String accessToken,
   }) async {
-    final url = Uri.parse('http://localhost:3000/wholesalers/inventory/restock/$productId');
+    final url = Uri.parse(
+      'http://localhost:3000/wholesalers/inventory/restock/$productId',
+    );
     final response = await http.post(
       url,
       headers: {
@@ -307,7 +312,8 @@ class ApiService extends GetxService {
         'price': price,
         'category': category,
         'initial_stock': initialStock,
-        if (minimumOrderQuantity != null) 'minimum_order_quantity': minimumOrderQuantity,
+        if (minimumOrderQuantity != null)
+          'minimum_order_quantity': minimumOrderQuantity,
       }),
     );
 
@@ -346,27 +352,32 @@ class ApiService extends GetxService {
         ..fields['initial_stock'] = initialStock.toString();
 
       if (minimumOrderQuantity != null) {
-        request.fields['minimum_order_quantity'] = minimumOrderQuantity.toString();
+        request.fields['minimum_order_quantity'] = minimumOrderQuantity
+            .toString();
       }
 
       // Use bytes if available (preferred for web), otherwise try file path
       if (imageBytes != null) {
         // Use bytes approach (works for both web and mobile)
         final mimeType = lookupMimeType(imagePath ?? imageName) ?? 'image/png';
-        request.files.add(http.MultipartFile.fromBytes(
-          'image',
-          imageBytes,
-          filename: imageName.isNotEmpty ? imageName : 'image.png',
-          contentType: MediaType.parse(mimeType),
-        ));
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'image',
+            imageBytes,
+            filename: imageName.isNotEmpty ? imageName : 'image.png',
+            contentType: MediaType.parse(mimeType),
+          ),
+        );
       } else if (imageFile != null && imageFile.path.isNotEmpty) {
         // Fallback to file path approach (mobile/desktop)
         final mimeType = lookupMimeType(imageFile.path);
-        request.files.add(await http.MultipartFile.fromPath(
-          'image',
-          imageFile.path,
-          contentType: mimeType != null ? MediaType.parse(mimeType) : null,
-        ));
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'image',
+            imageFile.path,
+            contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+          ),
+        );
       } else {
         throw Exception('No valid image data provided');
       }
@@ -475,7 +486,9 @@ class ApiService extends GetxService {
     required String status,
     required String accessToken,
   }) async {
-    final url = Uri.parse('http://localhost:3000/wholesalers/orders/$orderId/status');
+    final url = Uri.parse(
+      'http://localhost:3000/wholesalers/orders/$orderId/status',
+    );
     final response = await http.patch(
       url,
       headers: {
@@ -513,7 +526,9 @@ class ApiService extends GetxService {
   // ================= RETAILER METHODS =================
 
   /// Get retailer's inventory
-  Future<List<RetailerInventoryItem>> getRetailerInventory(String accessToken) async {
+  Future<List<RetailerInventoryItem>> getRetailerInventory(
+    String accessToken,
+  ) async {
     final url = Uri.parse('http://localhost:3000/retailers/inventory');
     final response = await http.get(
       url,
@@ -525,7 +540,9 @@ class ApiService extends GetxService {
 
     if (response.statusCode == 200) {
       final List jsonList = jsonDecode(response.body);
-      return jsonList.map((json) => RetailerInventoryItem.fromJson(json)).toList();
+      return jsonList
+          .map((json) => RetailerInventoryItem.fromJson(json))
+          .toList();
     } else {
       throw Exception('Failed to fetch retailer inventory: ${response.body}');
     }
@@ -538,7 +555,9 @@ class ApiService extends GetxService {
     int? reorderLevel,
     required String accessToken,
   }) async {
-    final url = Uri.parse('http://localhost:3000/retailers/inventory/update/$productId');
+    final url = Uri.parse(
+      'http://localhost:3000/retailers/inventory/update/$productId',
+    );
     final response = await http.patch(
       url,
       headers: {
@@ -564,7 +583,9 @@ class ApiService extends GetxService {
     required int quantity,
     required String accessToken,
   }) async {
-    final url = Uri.parse('http://localhost:3000/retailers/inventory/restock/$productId');
+    final url = Uri.parse(
+      'http://localhost:3000/retailers/inventory/restock/$productId',
+    );
     final response = await http.post(
       url,
       headers: {
@@ -582,8 +603,12 @@ class ApiService extends GetxService {
   }
 
   /// Get retailer low stock alerts
-  Future<Map<String, dynamic>> getRetailerLowStockAlerts(String accessToken) async {
-    final url = Uri.parse('http://localhost:3000/retailers/inventory/low-stock');
+  Future<Map<String, dynamic>> getRetailerLowStockAlerts(
+    String accessToken,
+  ) async {
+    final url = Uri.parse(
+      'http://localhost:3000/retailers/inventory/low-stock',
+    );
     final response = await http.get(
       url,
       headers: {
@@ -604,7 +629,9 @@ class ApiService extends GetxService {
     required int productId,
     required String accessToken,
   }) async {
-    final url = Uri.parse('http://localhost:3000/retailers/inventory/delete/$productId');
+    final url = Uri.parse(
+      'http://localhost:3000/retailers/inventory/delete/$productId',
+    );
     final response = await http.delete(
       url,
       headers: {
@@ -623,9 +650,7 @@ class ApiService extends GetxService {
   /// Get products available for purchase (from wholesalers)
   Future<List<Product>> getProducts({String? accessToken}) async {
     final url = Uri.parse('http://localhost:3000/products/all');
-    final headers = {
-      'Content-Type': 'application/json',
-    };
+    final headers = {'Content-Type': 'application/json'};
 
     if (accessToken != null) {
       headers['Authorization'] = 'Bearer $accessToken';
@@ -642,7 +667,9 @@ class ApiService extends GetxService {
   }
 
   /// Get retailer's purchase orders (from wholesalers)
-  Future<List<RetailingPurchaseOrder>> getRetailerPurchaseOrders(String accessToken) async {
+  Future<List<RetailingPurchaseOrder>> getRetailerPurchaseOrders(
+    String accessToken,
+  ) async {
     final url = Uri.parse('http://localhost:3000/retailers/orders/purchases');
     final response = await http.get(
       url,
@@ -654,7 +681,9 @@ class ApiService extends GetxService {
 
     if (response.statusCode == 200) {
       final List jsonList = jsonDecode(response.body);
-      return jsonList.map((json) => RetailingPurchaseOrder.fromJson(json)).toList();
+      return jsonList
+          .map((json) => RetailingPurchaseOrder.fromJson(json))
+          .toList();
     } else {
       throw Exception('Failed to fetch purchase orders: ${response.body}');
     }
@@ -683,7 +712,9 @@ class ApiService extends GetxService {
   }
 
   /// Get retailer's sales orders (to customers)
-  Future<List<RetailingSaleOrder>> getRetailerSalesOrders(String accessToken) async {
+  Future<List<RetailingSaleOrder>> getRetailerSalesOrders(
+    String accessToken,
+  ) async {
     final url = Uri.parse('http://localhost:3000/retailers/orders/sales');
     final response = await http.get(
       url,
@@ -738,19 +769,42 @@ class ApiService extends GetxService {
   }
 }
 
-
 class ProductService extends GetxService {
   final RxList<Product> products = <Product>[].obs;
 
-  Future<void> fetchProducts() async {
+  Future<void> fetchProducts(String accessToken) async {
     try {
-      // Replace with your backend URL
-      final response = await http.get(Uri.parse('http://localhost:3000'));
+      final response = await http.get(
+        Uri.parse('http://localhost:3000/products/all'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
       if (response.statusCode == 200) {
+        print('DEBUG: Fetched products: ${response.body}');
         final List<dynamic> data = jsonDecode(response.body);
-        products.value = data.map((e) => Product.fromJson(e)).toList();
+        print('DEBUG: Parsed product data length: ${data.length}');
+
+        // Parse each product individually with error handling
+        final List<Product> parsedProducts = [];
+        for (var i = 0; i < data.length; i++) {
+          try {
+            print('DEBUG: Parsing product $i: ${data[i]}');
+            final product = Product.fromJson(data[i]);
+            parsedProducts.add(product);
+            print('DEBUG: Successfully parsed product: ${product.name}');
+          } catch (e, stackTrace) {
+            print('ERROR parsing product $i: $e');
+            print('Product data: ${data[i]}');
+            print('Stack trace: $stackTrace');
+          }
+        }
+
+        products.value = parsedProducts;
+        print('DEBUG: Total products loaded: ${products.length}');
       } else {
-        throw Exception('Failed to load products');
+        throw Exception('Failed to load products: ${response.body}');
       }
     } catch (e) {
       print('Error fetching products: $e');

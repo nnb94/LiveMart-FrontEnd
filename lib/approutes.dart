@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:live_mart_app/screens/splashscreen.dart';
 import 'screens/email_screen.dart';
 import 'screens/otp_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -15,7 +15,6 @@ import 'package:live_mart_app/screens/customer/orders.dart';
 import 'package:live_mart_app/screens/customer/notifications.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
-
 
 // Role-based dashboards
 import 'screens/retailer/dashboard.dart';
@@ -45,7 +44,8 @@ class AppRoutes {
   static const String dashboard = '/dashboard';
   static const String login = '/login';
   static const String register = '/register';
-  static const String initial = email;
+  static const String splashScreen = '/splash';
+  static const String initial = splashScreen;
 
   static const String customerDashboard = '/customer/dashboard';
   static const String customerProfile = '/customer/profile';
@@ -70,7 +70,6 @@ class AppRoutes {
   static const String wholesalerProducts = '/wholesaler/products';
   static const String wholesalerAnalytics = '/wholesaler/analytics';
   static const String customerEditProfile = '/customer/editprofile';
-
 
   static List<GetPage> routes = [
     GetPage(
@@ -117,12 +116,12 @@ class AppRoutes {
     ),
     GetPage(
       name: AppRoutes.customerDashboard,
-      page: () => const CustomerDashboard(), // or import the correct dashboard from customers folder here
+      page: () =>
+          const CustomerDashboard(), // or import the correct dashboard from customers folder here
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 400),
     ),
     GetPage(
-
       name: AppRoutes.customerProfile,
       page: () => const CustomerProfile(),
       transition: Transition.fadeIn,
@@ -242,6 +241,11 @@ class AppRoutes {
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),
-
+    GetPage(
+      name: splashScreen,
+      page: () => const SplashScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
   ];
 }

@@ -3,23 +3,19 @@ import 'package:get/get.dart';
 import 'package:live_mart_app/approutes.dart';
 import '../../controllers/customer_orders_controller.dart';
 import '../../controllers/auth_controller.dart';
-import '../../models/order.dart'; 
+import '../../models/order.dart';
 
 import '../../services/api_service.dart';
-import '../../models/product.dart'; 
+import '../../models/product.dart';
 import 'product_card.dart'; // the ProductCard widget from previous snippet
-
 
 class CustomerDashboard extends StatelessWidget {
   const CustomerDashboard({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-
     // Get user data from AuthController instead of LoggedInUser
     final authController = Get.find<AuthController>();
-    
-
 
     if (!authController.isLoggedIn) {
       return Scaffold(
@@ -48,7 +44,9 @@ class CustomerDashboard extends StatelessWidget {
     );
 
     final ProductService productService = Get.put(ProductService());
-    productService.fetchProducts(); // load products
+    productService.fetchProducts(
+      authController.accessToken.value,
+    ); // load products
 
     return Scaffold(
       appBar: AppBar(
@@ -105,8 +103,10 @@ class CustomerDashboard extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Recent Orders (GetX Integration)
-              const Text('Recent Orders',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+              const Text(
+                'Recent Orders',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+              ),
               Obx(() {
                 if (ordersController.isLoading.value) {
                   return const Center(child: CircularProgressIndicator());
@@ -124,7 +124,8 @@ class CustomerDashboard extends StatelessWidget {
                     children: ordersController.recentOrders.map((order) {
                       return ListTile(
                         title: Text(
-                            'Order #${order.orderId} - ${order.productInfo.name}'),
+                          'Order #${order.orderId} - ${order.productInfo.name}',
+                        ),
                         subtitle: Text('Status: ${order.orderDetails.status}'),
                         trailing: TextButton(
                           child: const Text('Details'),
@@ -134,11 +135,12 @@ class CustomerDashboard extends StatelessWidget {
                               builder: (context) => AlertDialog(
                                 title: Text('Order Details'),
                                 content: Text(
-                                    'Product: ${order.productInfo.name}\n'
-                                    'Status: ${order.orderDetails.status}\n'
-                                    'Quantity: ${order.orderDetails.quantity}\n'
-                                    'Total: ${order.orderDetails.totalAmount}\n'
-                                    'Seller: ${order.sellerInfo.name} (${order.sellerInfo.email})'),
+                                  'Product: ${order.productInfo.name}\n'
+                                  'Status: ${order.orderDetails.status}\n'
+                                  'Quantity: ${order.orderDetails.quantity}\n'
+                                  'Total: ${order.orderDetails.totalAmount}\n'
+                                  'Seller: ${order.sellerInfo.name} (${order.sellerInfo.email})',
+                                ),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
@@ -157,22 +159,37 @@ class CustomerDashboard extends StatelessWidget {
               const SizedBox(height: 32),
 
               // Product Listing
-              const Text('Available Products',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+              const Text(
+                'Available Products',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
               Obx(() {
                 if (productService.products.isEmpty) {
                   return const Center(child: Text('No products available'));
                 }
-                return ListView.builder(
+                print(
+                  'DEBUG Dashboard: Total products = ${productService.products.length}',
+                );
+                for (var i = 0; i < productService.products.length; i++) {
+                  print('Product $i: ${productService.products[i].name}');
+                }
+                return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 0.7,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
                   itemCount: productService.products.length,
                   itemBuilder: (context, index) {
                     final product = productService.products[index];
                     return ProductCard(
                       product: product,
                       onTap: () {
-                        // Implement product detail or purchase navigation here
+                        print('Tapped product: ${product.name}');
                       },
                     );
                   },
@@ -219,10 +236,7 @@ class _QuickAccessTile extends StatelessWidget {
       },
       child: Column(
         children: [
-          CircleAvatar(
-            radius: 24,
-            child: Icon(icon, size: 28),
-          ),
+          CircleAvatar(radius: 24, child: Icon(icon, size: 28)),
           const SizedBox(height: 4),
           Text(label, style: const TextStyle(fontSize: 12)),
         ],

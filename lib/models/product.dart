@@ -9,6 +9,10 @@ class Product {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  // Image fields for product images
+  final String? imageUrl;
+  final String? imagePublicId;
+
   // For existing products with inventory tracking
   final int? stockQuantity;
   final int? minimumOrderQuantity;
@@ -25,6 +29,8 @@ class Product {
     required this.category,
     required this.createdAt,
     required this.updatedAt,
+    this.imageUrl,
+    this.imagePublicId,
     this.stockQuantity,
     this.minimumOrderQuantity,
     this.reorderLevel,
@@ -69,6 +75,11 @@ class Product {
       return null;
     }
 
+    String? _parseNullableString(dynamic value) {
+      if (value == null) return null;
+      return value.toString();
+    }
+
     return Product(
       id: _parseInt(json['id']),
       sellerId: _parseInt(json['seller_id'] ?? json['sellerId']),
@@ -77,6 +88,8 @@ class Product {
       description: _parseString(json['description']),
       price: _parseDouble(json['price']),
       category: _parseString(json['category']),
+      imageUrl: _parseNullableString(json['image_url'] ?? json['imageUrl']),
+      imagePublicId: _parseNullableString(json['image_public_id'] ?? json['imagePublicId']),
       createdAt: DateTime.tryParse(
               json['created_at']?.toString() ??
                   json['createdAt']?.toString() ??
@@ -113,6 +126,8 @@ class Product {
       'category': category,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      if (imageUrl != null) 'imageUrl': imageUrl,
+      if (imagePublicId != null) 'imagePublicId': imagePublicId,
       if (stockQuantity != null) 'stockQuantity': stockQuantity,
       if (minimumOrderQuantity != null) 'minimumOrderQuantity': minimumOrderQuantity,
       if (reorderLevel != null) 'reorderLevel': reorderLevel,

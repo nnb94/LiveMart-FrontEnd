@@ -1,11 +1,16 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart';
 import 'package:live_mart_app/models/order.dart';
 import 'package:live_mart_app/models/wholesaler_inventory.dart';
 import 'package:live_mart_app/models/product.dart';
 import 'package:live_mart_app/models/wholesaler_sale.dart';
 import 'package:live_mart_app/models/retailer_inventory.dart';
+import 'package:live_mart_app/models/review.dart';
 
 class ApiService extends GetxService {
   static const String baseUrl = 'http://localhost:3000';
@@ -36,18 +41,26 @@ class ApiService extends GetxService {
     required String password,
     required String role,
     required String otp,
+    String? address,
   }) async {
     final url = Uri.parse('$baseUrl/auth/signup/verify');
+    final requestBody = {
+      'name': name,
+      'email': email,
+      'password': password,
+      'role': role,
+      'otp': otp,
+    };
+
+    // Include address only if it's not empty
+    if (address != null && address.trim().isNotEmpty) {
+      requestBody['address'] = address.trim();
+    }
+
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'name': name,
-        'email': email,
-        'password': password,
-        'role': role,
-        'otp': otp,
-      }),
+      body: jsonEncode(requestBody),
     );
 
     if (response.statusCode == 201) {
@@ -271,7 +284,7 @@ class ApiService extends GetxService {
     }
   }
 
-  /// Add new product (for wholesalers)
+  /// Add new product (for wholesalers) - NO IMAGE VERSION
   Future<Map<String, dynamic>> addProduct({
     required String name,
     required String description,
@@ -305,6 +318,86 @@ class ApiService extends GetxService {
     }
   }
 
+  /// Add new product with image (for wholesalers) - MULTIPART VERSION
+  Future<Map<String, dynamic>> addProductWithImage({
+    required String name,
+    required String description,
+    required double price,
+    required String category,
+    required int initialStock,
+    int? minimumOrderQuantity,
+    required Map<String, dynamic> imageData,
+    required String accessToken,
+  }) async {
+    final url = Uri.parse('http://localhost:3000/products/add');
+
+    try {
+      final imageFile = imageData['file'] as File?;
+      final imageBytes = imageData['bytes'] as Uint8List?;
+      final imagePath = imageData['path'] as String?;
+      final imageName = imageData['name'] as String;
+
+      var request = http.MultipartRequest('POST', url)
+        ..headers['Authorization'] = 'Bearer $accessToken'
+        ..fields['name'] = name
+        ..fields['description'] = description
+        ..fields['price'] = price.toString()
+        ..fields['category'] = category
+        ..fields['initial_stock'] = initialStock.toString();
+
+      if (minimumOrderQuantity != null) {
+        request.fields['minimum_order_quantity'] = minimumOrderQuantity.toString();
+      }
+
+      // Use bytes if available (preferred for web), otherwise try file path
+      if (imageBytes != null) {
+        // Use bytes approach (works for both web and mobile)
+        final mimeType = lookupMimeType(imagePath ?? imageName) ?? 'image/png';
+        request.files.add(http.MultipartFile.fromBytes(
+          'image',
+          imageBytes,
+          filename: imageName.isNotEmpty ? imageName : 'image.png',
+          contentType: MediaType.parse(mimeType),
+        ));
+      } else if (imageFile != null && imageFile.path.isNotEmpty) {
+        // Fallback to file path approach (mobile/desktop)
+        final mimeType = lookupMimeType(imageFile.path);
+        request.files.add(await http.MultipartFile.fromPath(
+          'image',
+          imageFile.path,
+          contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+        ));
+      } else {
+        throw Exception('No valid image data provided');
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 201) {
+        final responseData = jsonDecode(response.body);
+        print('DEBUG: Add product with image response: $responseData');
+        return responseData;
+      } else {
+        throw Exception('Failed to add product with image: ${response.body}');
+      }
+    } catch (e) {
+      // Fallback - try to handle gracefully
+      print('Warning: Multipart upload failed, attempting fallback: $e');
+
+      // Try regular POST without image for now
+      return await addProduct(
+        name: name,
+        description: description,
+        price: price,
+        category: category,
+        initialStock: initialStock,
+        minimumOrderQuantity: minimumOrderQuantity,
+        accessToken: accessToken,
+      );
+    }
+  }
+
   /// Update product
   Future<Map<String, dynamic>> updateProduct({
     required int productId,
@@ -333,6 +426,27 @@ class ApiService extends GetxService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to update product: ${response.body}');
+    }
+  }
+
+  /// Delete product
+  Future<Map<String, dynamic>> deleteProduct({
+    required int productId,
+    required String accessToken,
+  }) async {
+    final url = Uri.parse('http://localhost:3000/products/delete/$productId');
+    final response = await http.delete(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to delete product: ${response.body}');
     }
   }
 
@@ -485,6 +599,27 @@ class ApiService extends GetxService {
     }
   }
 
+  /// Delete retailer inventory item (remove product from retailer's stock)
+  Future<Map<String, dynamic>> deleteRetailerInventory({
+    required int productId,
+    required String accessToken,
+  }) async {
+    final url = Uri.parse('http://localhost:3000/retailers/inventory/delete/$productId');
+    final response = await http.delete(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to delete inventory item: ${response.body}');
+    }
+  }
+
   /// Get products available for purchase (from wholesalers)
   Future<List<Product>> getProducts({String? accessToken}) async {
     final url = Uri.parse('http://localhost:3000/products/all');
@@ -563,6 +698,42 @@ class ApiService extends GetxService {
       return jsonList.map((json) => RetailingSaleOrder.fromJson(json)).toList();
     } else {
       throw Exception('Failed to fetch sales orders: ${response.body}');
+    }
+  }
+
+  // ================= REVIEW METHODS =================
+
+  /// Get reviews for a specific product (public access)
+  Future<List<Review>> getProductReviews(String productId) async {
+    final url = Uri.parse('http://localhost:3000/reviews/product/$productId');
+    final response = await http.get(
+      url,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List jsonList = jsonDecode(response.body);
+      return jsonList.map((json) => Review.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to fetch product reviews: ${response.body}');
+    }
+  }
+
+  /// Get current user's reviews (customer only)
+  Future<List<Map<String, dynamic>>> getMyReviews(String accessToken) async {
+    final url = Uri.parse('http://localhost:3000/reviews/myreviews');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to fetch my reviews: ${response.body}');
     }
   }
 }

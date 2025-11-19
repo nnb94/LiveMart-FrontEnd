@@ -4,8 +4,8 @@ import '../../controllers/retailer_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../widgets/image_picker_components.dart';
 
-class RetailerSalesScreen extends StatelessWidget {
-  const RetailerSalesScreen({super.key});
+class RetailerPurchaseHistoryScreen extends StatelessWidget {
+  const RetailerPurchaseHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,35 +33,35 @@ class RetailerSalesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sales to Customers'),
+        title: const Text('Purchase History'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => retailerController.fetchSalesOrders(),
+            onPressed: () => retailerController.fetchPurchaseOrders(),
           ),
         ],
       ),
       body: Column(
         children: [
-          _buildSalesSummary(retailerController),
+          _buildPurchaseSummary(retailerController),
           Expanded(
             child: GetBuilder<RetailerController>(
               builder: (controller) {
-                if (controller.isLoadingSales.value) {
+                if (controller.isLoadingPurchases.value) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (controller.salesError.value.isNotEmpty) {
+                if (controller.purchasesError.value.isNotEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(Icons.error_outline, size: 48, color: Colors.red),
                         const SizedBox(height: 16),
-                        Text(controller.salesError.value),
+                        Text(controller.purchasesError.value),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => controller.fetchSalesOrders(),
+                          onPressed: () => controller.fetchPurchaseOrders(),
                           child: const Text('Retry'),
                         ),
                       ],
@@ -69,7 +69,7 @@ class RetailerSalesScreen extends StatelessWidget {
                   );
                 }
 
-                if (controller.salesOrders.isEmpty) {
+                if (controller.purchaseOrders.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -77,11 +77,11 @@ class RetailerSalesScreen extends StatelessWidget {
                         const Icon(Icons.receipt_long_outlined, size: 64, color: Colors.grey),
                         const SizedBox(height: 16),
                         Text(
-                          'No sales yet',
+                          'No purchase orders yet',
                           style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                         ),
                         Text(
-                          'Customer orders will appear here',
+                          'Orders from wholesalers will appear here',
                           style: TextStyle(color: Colors.grey[500]),
                         ),
                       ],
@@ -90,10 +90,10 @@ class RetailerSalesScreen extends StatelessWidget {
                 }
 
                 return ListView.builder(
-                  itemCount: controller.salesOrders.length,
+                  itemCount: controller.purchaseOrders.length,
                   itemBuilder: (context, index) {
-                    final order = controller.salesOrders[index];
-                    return _buildSaleOrderCard(context, controller, order);
+                    final order = controller.purchaseOrders[index];
+                    return _buildPurchaseOrderCard(context, controller, order);
                   },
                 );
               },
@@ -104,34 +104,34 @@ class RetailerSalesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSalesSummary(RetailerController controller) {
+  Widget _buildPurchaseSummary(RetailerController controller) {
     return GetBuilder<RetailerController>(
       builder: (controller) => Container(
         padding: const EdgeInsets.all(16),
-        color: Colors.green.shade50,
+        color: Colors.blue.shade50,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _SummaryItem(
-              label: 'Total Sales',
-              value: controller.salesOrders.length.toString(),
-              icon: Icons.receipt,
-              color: Colors.green,
-            ),
-            _SummaryItem(
-              label: 'Revenue',
-              value: '\$${controller.getTotalSalesValue().toStringAsFixed(2)}',
-              icon: Icons.attach_money,
+              label: 'Total Orders',
+              value: controller.purchaseOrders.length.toString(),
+              icon: Icons.shopping_cart,
               color: Colors.blue,
             ),
             _SummaryItem(
-              label: 'Customers',
-              value: controller.salesOrders
-                  .map((order) => order.buyerId)
+              label: 'Total Spent',
+              value: '\$${controller.getTotalPurchaseValue().toStringAsFixed(2)}',
+              icon: Icons.account_balance_wallet,
+              color: Colors.green,
+            ),
+            _SummaryItem(
+              label: 'Wholesalers',
+              value: controller.purchaseOrders
+                  .map((order) => order.sellerId)
                   .toSet()
                   .length
                   .toString(),
-              icon: Icons.people,
+              icon: Icons.business,
               color: Colors.purple,
             ),
           ],
@@ -140,18 +140,37 @@ class RetailerSalesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSaleOrderCard(BuildContext context, RetailerController controller, dynamic order) {
+  Widget _buildPurchaseOrderCard(BuildContext context, RetailerController controller, dynamic order) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Column(
         children: [
           ListTile(
             contentPadding: const EdgeInsets.all(16),
-            leading: ProductImageWidget(
-              imageUrl: order.productInfo?.imageUrl,
-              fallbackText: order.productInfo?.productName ?? 'Product',
-              size: 50,
-            ),
+            leading: Obx(() {
+              final productImageUrl = controller.getProductImageUrl(order.productId);
+
+              if (productImageUrl != null) {
+                // Display actual product image
+                return ProductImageWidget(
+                  imageUrl: productImageUrl,
+                  fallbackText: order.productInfo?.productName ?? 'Product',
+                  size: 50,
+                );
+              } else {
+                // Fallback to initial letter avatar
+                return CircleAvatar(
+                  backgroundColor: Colors.blue.shade100,
+                  child: Text(
+                    order.productInfo?.productName?.substring(0, 1).toUpperCase() ?? 'P',
+                    style: const TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              }
+            }),
             title: Row(
               children: [
                 Expanded(
@@ -185,7 +204,7 @@ class RetailerSalesScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 4),
                 Text(
-                  'Customer: ${order.customerName ?? 'Unknown'}',
+                  'From: ${order.wholesalerName ?? 'Unknown Supplier'}',
                   style: TextStyle(color: Colors.grey[600], fontSize: 14),
                 ),
                 const SizedBox(height: 2),
@@ -207,80 +226,39 @@ class RetailerSalesScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (order.offlineOrder == true) ...[
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'OFFLINE ORDER',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.orange,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
+                const SizedBox(height: 4),
+                Text(
+                  'Ordered: ${_formatOrderDate(order.orderDate ?? 'Unknown Date')}',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                ),
               ],
             ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showOrderDetailsDialog(context, controller, order),
+            onTap: () => _showOrderDetailsDialog(context, order),
           ),
-          if (order.deliveryDetails != null && order.deliveryDetails!.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(8),
-                  bottomRight: Radius.circular(8),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Delivery: ${order.deliveryDetails}',
-                      style: TextStyle(color: Colors.grey[700], fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );
   }
 
-  void _showOrderDetailsDialog(BuildContext context, RetailerController controller, dynamic order) {
+  void _showOrderDetailsDialog(BuildContext context, dynamic order) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Order #${order.orderId ?? 'N/A'}'),
+        title: Text('Wholesale Order #${order.orderId ?? 'N/A'}'),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               _detailRow('Product', order.productInfo?.productName ?? 'Unknown'),
-              _detailRow('Customer', order.customerName ?? 'Unknown'),
+              _detailRow('Wholesaler', order.wholesalerName ?? 'Unknown'),
               _detailRow('Quantity', '${order.orderDetails?.quantity ?? 0}'),
               _detailRow('Unit Price', '\$${order.orderDetails?.price?.toStringAsFixed(2) ?? '0.00'}'),
               _detailRow('Total Amount', '\$${order.orderDetails?.totalAmount?.toStringAsFixed(2) ?? '0.00'}'),
-              _detailRow('Order Date', order.orderDate ?? 'Unknown'),
+              _detailRow('Order Type', 'Wholesale Order'),
               _detailRow('Status', order.status ?? 'Unknown'),
-              if (order.offlineOrder == true)
-                _detailRow('Order Type', 'Offline Order'),
-              if (order.deliveryDetails != null && order.deliveryDetails!.isNotEmpty)
-                _detailRow('Delivery Address', order.deliveryDetails!),
-              if (order.expectedDeliveryDate != null && order.expectedDeliveryDate!.isNotEmpty)
-                _detailRow('Expected Delivery', order.expectedDeliveryDate!),
+              _detailRow('Order Date', _formatOrderDate(order.orderDate ?? 'Unknown')),
             ],
           ),
         ),
@@ -330,6 +308,15 @@ class RetailerSalesScreen extends StatelessWidget {
         return Colors.red;
       default:
         return Colors.grey;
+    }
+  }
+
+  String _formatOrderDate(String dateString) {
+    try {
+      final dateTime = DateTime.parse(dateString).toLocal();
+      return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return dateString; // Fallback to original if parsing fails
     }
   }
 }

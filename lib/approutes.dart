@@ -23,11 +23,14 @@ import 'screens/retailer/inventory.dart';
 import 'screens/retailer/purchasing.dart';
 import 'screens/retailer/sales.dart';
 import 'screens/retailer/analytics.dart';
+import 'screens/retailer/purchase_history.dart';
+import 'screens/retailer/review_management.dart';
 import 'screens/wholesaler/dashboard.dart';
 import 'screens/wholesaler/inventory.dart';
 import 'screens/wholesaler/sales.dart';
 import 'screens/wholesaler/products.dart';
 import 'screens/wholesaler/analytics.dart';
+import 'screens/wholesaler/review_management.dart';
 
 import 'screens/customer/editprofile.dart';
 
@@ -59,6 +62,8 @@ class AppRoutes {
   static const String retailerPurchasing = '/retailer/purchasing';
   static const String retailerSales = '/retailer/sales';
   static const String retailerAnalytics = '/retailer/analytics';
+  static const String retailerPurchaseHistory = '/retailer/purchase-history';
+  static const String retailerReviews = '/retailer/reviews';
   static const String wholesalerDashboard = '/wholesaler/dashboard';
   static const String wholesalerInventory = '/wholesaler/inventory';
   static const String wholesalerSales = '/wholesaler/sales';
@@ -190,6 +195,12 @@ class AppRoutes {
       transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
+      name: '/wholesaler/reviews',
+      page: () => const WholesalerReviewManagementScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
       name: AppRoutes.retailerInventory,
       page: () => const RetailerInventoryScreen(),
       transition: Transition.fadeIn,
@@ -216,6 +227,18 @@ class AppRoutes {
     GetPage(
       name: AppRoutes.retailerAnalytics,
       page: () => const RetailerAnalyticsScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.retailerPurchaseHistory,
+      page: () => const RetailerPurchaseHistoryScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.retailerReviews,
+      page: () => const RetailerReviewManagementScreen(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),

@@ -71,6 +71,7 @@ class RetailingPurchaseOrder {
   final int orderId;
   final int buyerId;
   final int sellerId;
+  final int? productId; // Add productId field for image caching
   final String wholesalerName;
   final ProductInfo productInfo;
   final OrderDetails orderDetails;
@@ -81,6 +82,7 @@ class RetailingPurchaseOrder {
     required this.orderId,
     required this.buyerId,
     required this.sellerId,
+    this.productId, // Optional for backward compatibility
     required this.wholesalerName,
     required this.productInfo,
     required this.orderDetails,
@@ -89,10 +91,20 @@ class RetailingPurchaseOrder {
   });
 
   factory RetailingPurchaseOrder.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely parse numbers
+    int? _parseNullableInt(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value);
+      if (value is num) return value.toInt();
+      return null;
+    }
+
     return RetailingPurchaseOrder(
       orderId: json['id'] ?? json['orderId'],
       buyerId: json['buyer_id'] ?? json['buyerId'],
       sellerId: json['seller_id'] ?? json['sellerId'],
+      productId: _parseNullableInt(json['product_id'] ?? json['productId']),
       wholesalerName: json['wholesaler_name'] ?? json['wholesalerName'],
       productInfo: ProductInfo.fromJson(json),
       orderDetails: OrderDetails.fromJson(json),

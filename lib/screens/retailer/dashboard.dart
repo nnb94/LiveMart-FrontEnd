@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:get/get.dart';
 import '../../controllers/retailer_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../approutes.dart';
 import '../../models/retailer_inventory.dart';
+import '../../widgets/image_picker_components.dart';
 
-=======
->>>>>>> origin/customer
 class RetailerDashboard extends StatelessWidget {
   const RetailerDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
     final authController = Get.find<AuthController>();
 
-    // Get retailer controller (it will be automatically initialized)
-    final retailerController = Get.put(RetailerController());
+    // Get existing retailer controller or create new one
+    final retailerController = Get.isRegistered<RetailerController>()
+        ? Get.find<RetailerController>()  // Use existing instance with data
+        : Get.put(RetailerController());  // Create new if none exists
+
+    // Ensure data is always loaded when building the dashboard (dashboard is authoritative)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (authController.role.value == 'retailer') {
+        retailerController.loadInitialData();  // Always load fresh data
+      }
+    });
 
     // Check authentication
     if (!authController.isLoggedIn || authController.role.value != 'retailer') {
@@ -149,7 +155,7 @@ class RetailerDashboard extends StatelessWidget {
               child: _ActionCard(
                 title: 'Purchase History',
                 icon: Icons.history,
-                onTap: () => Get.toNamed(AppRoutes.retailerPurchasing),
+                onTap: () => Get.toNamed(AppRoutes.retailerPurchaseHistory),
               ),
             ),
           ],
@@ -172,6 +178,20 @@ class RetailerDashboard extends StatelessWidget {
                 onTap: () => Get.toNamed(AppRoutes.retailerAnalytics),
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _ActionCard(
+                title: 'Product Reviews',
+                icon: Icons.rate_review,
+                onTap: () => Get.toNamed('/retailer/reviews'),
+              ),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(child: SizedBox()), // Placeholder
           ],
         ),
       ],
@@ -206,9 +226,32 @@ class RetailerDashboard extends StatelessWidget {
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
-                    leading: CircleAvatar(
-                      child: Text(item.productName[0].toUpperCase()),
-                    ),
+                    leading: Obx(() {
+                      final productImageUrl = controller.getProductImageUrl(item.productId);
+
+                      if (productImageUrl != null) {
+                        // Display actual product image
+                        return ProductImageWidget(
+                          imageUrl: productImageUrl,
+                          fallbackText: item.productName,
+                          size: 40,
+                        );
+                      } else {
+                        // Fallback to initial letter avatar
+                        return CircleAvatar(
+                          backgroundColor: Colors.blue.shade100,
+                          radius: 20,
+                          child: Text(
+                            item.productName.substring(0, 1).toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        );
+                      }
+                    }),
                     title: Text(item.productName),
                     subtitle: Text('Stock: ${item.quantityInStock} | Reorder: ${item.reorderLevel}'),
                     trailing: Chip(
@@ -256,16 +299,39 @@ class RetailerDashboard extends StatelessWidget {
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
-                    leading: CircleAvatar(
-                      child: Text(order.wholesalerName[0].toUpperCase()),
-                    ),
+                    leading: Obx(() {
+                      final productImageUrl = controller.getProductImageUrl(order.productId);
+
+                      if (productImageUrl != null) {
+                        // Display actual product image
+                        return ProductImageWidget(
+                          imageUrl: productImageUrl,
+                          fallbackText: order.productInfo?.productName ?? 'Product',
+                          size: 40,
+                        );
+                      } else {
+                        // Fallback to initial letter avatar
+                        return CircleAvatar(
+                          backgroundColor: Colors.blue.shade100,
+                          radius: 20,
+                          child: Text(
+                            order.productInfo?.productName?.substring(0, 1).toUpperCase() ?? 'P',
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        );
+                      }
+                    }),
                     title: Text('${order.productInfo.productName} → ${order.wholesalerName}'),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Order ID: #${order.orderId}'),
                         Text('Quantity: ${order.orderDetails.quantity} | \$${order.orderDetails.totalAmount.toStringAsFixed(2)}'),
-                        Text('Date: ${order.orderDate}'),
+                        Text('Date: ${_formatOrderDate(order.orderDate)}'),
                       ],
                     ),
                     trailing: Chip(
@@ -385,6 +451,15 @@ class RetailerDashboard extends StatelessWidget {
         return Colors.grey.shade100;
     }
   }
+
+  String _formatOrderDate(String dateString) {
+    try {
+      final dateTime = DateTime.parse(dateString).toLocal();
+      return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return dateString; // Fallback to original if parsing fails
+    }
+  }
 }
 
 class _OverviewCard extends StatelessWidget {
@@ -452,11 +527,3 @@ class _ActionCard extends StatelessWidget {
     );
   }
 }
-=======
-    return Scaffold(
-      appBar: AppBar(title: const Text('Retailer Dashboard')),
-      body: const Center(child: Text('Welcome, Retailer!')),
-    );
-  }
-}
->>>>>>> origin/customer

@@ -4,6 +4,7 @@ import '../../controllers/wholesaler_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../models/wholesaler_inventory.dart';
 import '../../models/wholesaler_sale.dart';
+import '../../widgets/image_picker_components.dart';
 import '../../approutes.dart';
 
 class WholesalerDashboard extends StatelessWidget {
@@ -15,6 +16,16 @@ class WholesalerDashboard extends StatelessWidget {
 
     // Get wholesaler controller (it will be automatically initialized)
     final wholesalerController = Get.put(WholesalerController());
+
+    // Force load data if not loaded yet (additional safety)
+    if (wholesalerController.inventory.isEmpty &&
+        wholesalerController.products.isEmpty &&
+        wholesalerController.salesOrders.isEmpty &&
+        authController.accessToken.value.isNotEmpty &&
+        authController.role.value == 'wholesaler') {
+      print('🔄 WholesalerDashboard: Data is empty, forcing load...');
+      wholesalerController.loadInitialData();
+    }
 
     // Check authentication
     if (!authController.isLoggedIn ||
@@ -124,7 +135,7 @@ class WholesalerDashboard extends StatelessWidget {
                 () => _OverviewCard(
                   title: 'Inventory Value',
                   value:
-                      '\$${controller.getTotalInventoryValue().toStringAsFixed(2)}',
+                      '₹${controller.getTotalInventoryValue().toStringAsFixed(2)}',
                   icon: Icons.attach_money,
                   color: Colors.purple,
                 ),
@@ -184,6 +195,22 @@ class WholesalerDashboard extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _ActionCard(
+                title: 'Product Reviews',
+                icon: Icons.rate_review,
+                onTap: () => Get.toNamed('/wholesaler/reviews'),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: const SizedBox(), // Placeholder for future features
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -198,7 +225,8 @@ class WholesalerDashboard extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Obx(() {
-          if (controller.isLoadingInventory.value) {
+          // Check if both inventory and products are loaded
+          if (controller.isLoadingInventory.value || controller.isLoadingProducts.value) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -208,38 +236,47 @@ class WholesalerDashboard extends StatelessWidget {
             );
           }
 
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: controller.inventory.length.clamp(
-              0,
-              3,
-            ), // Show first 3 items
-            itemBuilder: (context, index) {
-              final item = controller.inventory[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    child: Text(item.productName[0].toUpperCase()),
-                  ),
-                  title: Text(item.productName),
-                  subtitle: Text(
-                    'Stock: ${item.quantityInStock} | Min Order: ${item.minimumOrderQuantity}',
-                  ),
-                  trailing: Chip(
-                    label: Text('\$${item.price.toStringAsFixed(2)}'),
-                    backgroundColor:
-                        item.quantityInStock < item.minimumOrderQuantity
-                        ? Colors.red.shade100
-                        : Colors.green.shade100,
-                  ),
-                  onTap: () =>
-                      _showInventoryItemDialog(context, controller, item),
-                ),
-              );
-            },
-          );
+          if (controller.products.isEmpty) {
+            return const Center(
+              child: Text('Loading products data...'),
+            );
+          }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: controller.inventory.length.clamp(
+                    0,
+                    3,
+                  ), // Show first 3 items
+                  itemBuilder: (context, index) {
+                    final item = controller.inventory[index];
+                    final imageUrl = controller.getImageUrlForInventoryItem(item);
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        leading: ProductImageWidget(
+                          imageUrl: imageUrl,
+                          fallbackText: item.productName,
+                          size: 40,
+                        ),
+                        title: Text(item.productName),
+                        subtitle: Text(
+                          'Stock: ${item.quantityInStock} | Min Order: ${item.minimumOrderQuantity}',
+                        ),
+                        trailing: Chip(
+                          label: Text('₹${item.price.toStringAsFixed(2)}'),
+                          backgroundColor:
+                              item.quantityInStock < item.minimumOrderQuantity
+                              ? Colors.red.shade100
+                              : Colors.green.shade100,
+                        ),
+                        onTap: () =>
+                            _showInventoryItemDialog(context, controller, item),
+                      ),
+                    );
+                  },
+                );
         }),
       ],
     );
@@ -276,11 +313,23 @@ class WholesalerDashboard extends StatelessWidget {
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    child: Obx(() {
+                      final imageUrl = controller.getProductImageUrlByName(order.productInfo.productName);
+                      return ProductImageWidget(
+                        imageUrl: imageUrl,
+                        fallbackText: order.productInfo.productName,
+                        size: 40,
+                      );
+                    }),
+                  ),
                   title: Text(
                     '${order.productInfo.productName} → ${order.retailerName}',
                   ),
                   subtitle: Text(
-                    'Qty: ${order.orderDetails.quantity} | \$${order.orderDetails.totalAmount.toStringAsFixed(2)}',
+                    'Qty: ${order.orderDetails.quantity} | ₹${order.orderDetails.totalAmount.toStringAsFixed(2)}',
                   ),
                   trailing: Chip(
                     label: Text(order.status.toUpperCase()),
@@ -324,10 +373,10 @@ class WholesalerDashboard extends StatelessWidget {
             children: [
               Text('Total Orders: ${analytics.summary.totalOrders}'),
               Text(
-                'Total Revenue: \$${analytics.summary.totalRevenue.toStringAsFixed(2)}',
+                'Total Revenue: ₹${analytics.summary.totalRevenue.toStringAsFixed(2)}',
               ),
               Text(
-                'Avg Order Value: \$${analytics.summary.averageOrderValue.toStringAsFixed(2)}',
+                'Avg Order Value: ₹${analytics.summary.averageOrderValue.toStringAsFixed(2)}',
               ),
               Text('Units Sold: ${analytics.summary.totalUnitsSold}'),
               Text('Unique Buyers: ${analytics.summary.uniqueBuyers}'),
@@ -354,71 +403,139 @@ class WholesalerDashboard extends StatelessWidget {
     final categoryController = TextEditingController();
     final stockController = TextEditingController();
     final minOrderController = TextEditingController();
+    dynamic selectedImageFile;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add New Product'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Product Name'),
-              ),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-                maxLines: 2,
-              ),
-              TextField(
-                controller: priceController,
-                decoration: const InputDecoration(labelText: 'Price'),
-                keyboardType: TextInputType.number,
-              ),
-              TextField(
-                controller: categoryController,
-                decoration: const InputDecoration(labelText: 'Category'),
-              ),
-              TextField(
-                controller: stockController,
-                decoration: const InputDecoration(labelText: 'Initial Stock'),
-                keyboardType: TextInputType.number,
-              ),
-              TextField(
-                controller: minOrderController,
-                decoration: const InputDecoration(
-                  labelText: 'Minimum Order Quantity',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Add New Product'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Image Picker
+                ImagePickerWidget(
+                  onImageSelected: (Map<String, dynamic>? imageData) {
+                    setState(() {
+                      selectedImageFile = imageData;
+                    });
+                  },
                 ),
-                keyboardType: TextInputType.number,
-              ),
-            ],
+                const SizedBox(height: 16),
+                // Product Name
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Product Name'),
+                ),
+                const SizedBox(height: 12),
+                // Description
+                TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 12),
+                // Price
+                TextField(
+                  controller: priceController,
+                  decoration: const InputDecoration(labelText: 'Price (₹)'),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 12),
+                // Category
+                TextField(
+                  controller: categoryController,
+                  decoration: const InputDecoration(labelText: 'Category'),
+                ),
+                const SizedBox(height: 12),
+                // Initial Stock
+                TextField(
+                  controller: stockController,
+                  decoration: const InputDecoration(labelText: 'Initial Stock'),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 12),
+                // Minimum Order Quantity
+                TextField(
+                  controller: minOrderController,
+                  decoration: const InputDecoration(
+                    labelText: 'Minimum Order Quantity',
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                // Validate required fields
+                final name = nameController.text.trim();
+                final description = descriptionController.text.trim();
+                final price = double.tryParse(priceController.text);
+                final category = categoryController.text.trim();
+                final stock = int.tryParse(stockController.text) ?? 0;
+                final minOrder = int.tryParse(minOrderController.text) ?? 1;
+
+                if (name.isEmpty || description.isEmpty || price == null ||
+                    category.isEmpty || stock < 0) {
+                  Get.snackbar('Error', 'Please fill all required fields correctly');
+                  return;
+                }
+
+                // TODO: Re-enable image validation once File import is available
+                // Validate image if selected
+                // if (selectedImageFile != null) {
+                //   final file = selectedImageFile['file'] as File?;
+                //   final imageError = await ImageValidator.validateImage(file);
+                //   if (imageError != null) {
+                //     Get.snackbar('Error', imageError);
+                //     return;
+                //   }
+                // }
+
+                try {
+                  bool success;
+                  if (selectedImageFile != null) {
+                    // Pass the complete image data to controller
+                    success = await controller.addProductWithImage(
+                      name: name,
+                      description: description,
+                      price: price,
+                      category: category,
+                      initialStock: stock,
+                      minimumOrderQuantity: minOrder,
+                      imageData: selectedImageFile,
+                    );
+                  } else {
+                    // Use regular JSON upload without image
+                    success = await controller.addProduct(
+                      name: name,
+                      description: description,
+                      price: price,
+                      category: category,
+                      initialStock: stock,
+                      minimumOrderQuantity: minOrder,
+                    );
+                  }
+
+                  if (success) {
+                    Navigator.of(context).pop();
+                    Get.snackbar('Success', 'Product added successfully!');
+                  }
+                } catch (e) {
+                  Get.snackbar('Error', 'Failed to add product: $e');
+                }
+              },
+              child: const Text('Add Product'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final success = await controller.addProduct(
-                name: nameController.text,
-                description: descriptionController.text,
-                price: double.tryParse(priceController.text) ?? 0.0,
-                category: categoryController.text,
-                initialStock: int.tryParse(stockController.text) ?? 0,
-                minimumOrderQuantity:
-                    int.tryParse(minOrderController.text) ?? 1,
-              );
-              if (success) {
-                Navigator.of(context).pop();
-              }
-            },
-            child: const Text('Add Product'),
-          ),
-        ],
       ),
     );
   }
@@ -545,7 +662,7 @@ class WholesalerDashboard extends StatelessWidget {
             Text('Customer: ${order.retailerName}'),
             Text('Quantity: ${order.orderDetails.quantity}'),
             Text(
-              'Total: \$${order.orderDetails.totalAmount.toStringAsFixed(2)}',
+              'Total: ₹${order.orderDetails.totalAmount.toStringAsFixed(2)}',
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(

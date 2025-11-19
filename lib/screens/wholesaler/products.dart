@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../controllers/wholesaler_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../models/product.dart';
+import '../../widgets/image_picker_components.dart';
 
 class WholesalerProductsScreen extends StatelessWidget {
   const WholesalerProductsScreen({super.key});
@@ -75,8 +76,10 @@ class WholesalerProductsScreen extends StatelessWidget {
             return Card(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: ListTile(
-                leading: CircleAvatar(
-                  child: Text(product.name[0].toUpperCase()),
+                leading: ProductImageWidget(
+                  imageUrl: product.imageUrl,
+                  fallbackText: product.name,
+                  size: 40,
                 ),
                 title: Text(product.name),
                 subtitle: Column(
@@ -84,7 +87,7 @@ class WholesalerProductsScreen extends StatelessWidget {
                   children: [
                     Text(product.description),
                     Text('Category: ${product.category}'),
-                    Text('Price: \$${product.price.toStringAsFixed(2)}'),
+                    Text('Price: ₹${product.price.toStringAsFixed(2)}'),
                   ],
                 ),
                 trailing: Chip(
@@ -115,6 +118,27 @@ class WholesalerProductsScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Product Image Display
+              Center(
+                child: Column(
+                  children: [
+                    ProductImageWidget(
+                      imageUrl: product.imageUrl,
+                      fallbackText: product.name,
+                      size: 100, // Larger size for product details
+                    ),
+                    const SizedBox(height: 8),
+                    if (product.imageUrl == null || product.imageUrl!.isEmpty)
+                      const Text(
+                        'No image uploaded',
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 8),
               TextField(
                 controller: nameController,
                 decoration: const InputDecoration(labelText: 'Product Name'),

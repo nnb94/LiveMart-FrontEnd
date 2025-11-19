@@ -113,7 +113,7 @@ class WholesalerAnalyticsScreen extends StatelessWidget {
                     Expanded(
                       child: _AnalyticsCard(
                         title: 'Total Revenue',
-                        value: '\$${analytics.summary.totalRevenue.toStringAsFixed(2)}',
+                        value: '₹${analytics.summary.totalRevenue.toStringAsFixed(2)}',
                         icon: Icons.attach_money,
                         color: Colors.green,
                       ),
@@ -126,7 +126,7 @@ class WholesalerAnalyticsScreen extends StatelessWidget {
                     Expanded(
                       child: _AnalyticsCard(
                         title: 'Avg Order Value',
-                        value: '\$${analytics.summary.averageOrderValue.toStringAsFixed(2)}',
+                        value: '₹${analytics.summary.averageOrderValue.toStringAsFixed(2)}',
                         icon: Icons.trending_up,
                         color: Colors.purple,
                       ),
@@ -224,7 +224,7 @@ class WholesalerAnalyticsScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    '\$${product.totalRevenue.toStringAsFixed(2)}',
+                                    '₹${product.totalRevenue.toStringAsFixed(2)}',
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -263,11 +263,11 @@ class WholesalerAnalyticsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            '• Your top product "${analytics.topProducts[0].name}" generated \$${analytics.topProducts[0].totalRevenue.toStringAsFixed(2)} in revenue',
+                            '• Your top product "${analytics.topProducts[0].name}" generated ₹${analytics.topProducts[0].totalRevenue.toStringAsFixed(2)} in revenue',
                           ),
                           if (analytics.topProducts.length > 1)
                             Text(
-                              '• Together, your top 3 products account for \$${analytics.topProducts.take(3).fold<double>(0, (sum, p) => sum + p.totalRevenue).toStringAsFixed(2)} in total revenue',
+                              '• Together, your top 3 products account for ₹${analytics.topProducts.take(3).fold<double>(0, (sum, p) => sum + p.totalRevenue).toStringAsFixed(2)} in total revenue',
                             ),
                           Text(
                             '• Average ${analytics.summary.totalUnitsSold > 1 ? (analytics.summary.totalUnitsSold / analytics.summary.totalOrders).toStringAsFixed(1) : "0"} units sold per order',
@@ -426,7 +426,7 @@ class _RevenueChart extends StatelessWidget {
                         showTitles: true,
                         reservedSize: 40,
                         getTitlesWidget: (value, meta) => Text(
-                          '\$${value.toInt()}',
+                          '₹${value.toInt()}',
                           style: const TextStyle(fontSize: 12),
                         ),
                       ),
@@ -651,7 +651,7 @@ class _TopProductsChart extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    '\$${product.totalRevenue.toStringAsFixed(0)}',
+                                    '₹${product.totalRevenue.toStringAsFixed(0)}',
                                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                   ),
                                 ],

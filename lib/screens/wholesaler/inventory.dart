@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../controllers/wholesaler_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../models/wholesaler_inventory.dart';
+import '../../widgets/image_picker_components.dart';
 
 class WholesalerInventoryScreen extends StatelessWidget {
   const WholesalerInventoryScreen({super.key});
@@ -72,11 +73,14 @@ class WholesalerInventoryScreen extends StatelessWidget {
           itemCount: wholesalerController.inventory.length,
           itemBuilder: (context, index) {
             final item = wholesalerController.inventory[index];
+            final imageUrl = wholesalerController.getImageUrlForInventoryItem(item);
             return Card(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: ListTile(
-                leading: CircleAvatar(
-                  child: Text(item.productName[0].toUpperCase()),
+                leading: ProductImageWidget(
+                  imageUrl: imageUrl,
+                  fallbackText: item.productName,
+                  size: 50, // Appropriate size for inventory management
                 ),
                 title: Text(item.productName),
                 subtitle: Column(

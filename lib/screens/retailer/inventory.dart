@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../controllers/retailer_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../models/retailer_inventory.dart';
+import '../../widgets/image_picker_components.dart';
 
 class RetailerInventoryScreen extends StatelessWidget {
   const RetailerInventoryScreen({super.key});
@@ -144,18 +145,32 @@ class RetailerInventoryScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
-        leading: CircleAvatar(
-          radius: 30,
-          backgroundColor: item.needsRestock ? Colors.red.shade100 : Colors.green.shade100,
-          child: Text(
-            item.productName[0].toUpperCase(),
-            style: TextStyle(
-              color: item.needsRestock ? Colors.red.shade800 : Colors.green.shade800,
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
-          ),
-        ),
+        leading: Obx(() {
+          final productImageUrl = controller.getProductImageUrl(item.productId);
+
+          if (productImageUrl != null) {
+            // Display actual product image
+            return ProductImageWidget(
+              imageUrl: productImageUrl,
+              fallbackText: item.productName,
+              size: 60,
+            );
+          } else {
+            // Fallback to initial letter avatar
+            return CircleAvatar(
+              backgroundColor: Colors.blue.shade100,
+              radius: 30,
+              child: Text(
+                item.productName.substring(0, 1).toUpperCase(),
+                style: const TextStyle(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            );
+          }
+        }),
         title: Text(
           item.productName,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -505,9 +520,32 @@ class RetailerInventoryScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final item = lowStockItems[index];
                   return ListTile(
-                    leading: CircleAvatar(
-                      child: Text(item.productName[0].toUpperCase()),
-                    ),
+                    leading: Obx(() {
+                      final productImageUrl = controller.getProductImageUrl(item.productId);
+
+                      if (productImageUrl != null) {
+                        // Display actual product image
+                        return ProductImageWidget(
+                          imageUrl: productImageUrl,
+                          fallbackText: item.productName,
+                          size: 40,
+                        );
+                      } else {
+                        // Fallback to initial letter avatar
+                        return CircleAvatar(
+                          backgroundColor: Colors.blue.shade100,
+                          radius: 20,
+                          child: Text(
+                            item.productName.substring(0, 1).toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        );
+                      }
+                    }),
                     title: Text(item.productName),
                     subtitle: Text(
                       'Stock: ${item.currentStock} / Reorder: ${item.reorderLevel} • \$${item.price.toStringAsFixed(2)}'

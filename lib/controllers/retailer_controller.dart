@@ -187,7 +187,14 @@ class RetailerController extends GetxController {
       lowStockError('');
 
       final response = await apiService.getRetailerLowStockAlerts(accessToken);
-      lowStockAlerts.value = response['low_stock_items'] ?? [];
+      final items = response['low_stock_items'] ?? [];
+      if (items is List) {
+        lowStockAlerts.value = items
+            .map((item) => LowStockAlert.fromJson(item as Map<String, dynamic>))
+            .toList();
+      } else {
+        lowStockAlerts.value = [];
+      }
 
     } catch (e) {
       lowStockError('Failed to load low stock alerts: ${e.toString()}');
@@ -295,12 +302,31 @@ class RetailerController extends GetxController {
     try {
       isPlacingOrder(true);
 
+      // Extract transaction ID if provided (from payment flow)
+      final transactionId = products.isNotEmpty ? products.first['transaction_id']?.toString() : null;
+
+      // Remove transaction_id from products before sending to API
+      // Each individual product might have transaction_id, so create clean products array
+      final cleanProducts = products.map((product) {
+        final cleanProduct = Map<String, dynamic>.from(product);
+        cleanProduct.remove('transaction_id'); // Remove transaction_id if present
+        return cleanProduct;
+      }).toList();
+
       final response = await apiService.placeRetailerWholesaleOrder(
-        products: products,
+        products: cleanProducts, // Send clean products without transaction_id
         accessToken: accessToken,
       );
 
-      Get.snackbar('Success', 'Wholesale order placed successfully!');
+      if (transactionId != null) {
+        Get.snackbar(
+          'Success',
+          'Payment processed and order placed successfully!',
+          duration: const Duration(seconds: 4),
+        );
+      } else {
+        Get.snackbar('Success', 'Wholesale order placed successfully!');
+      }
 
       // Refresh inventory and purchase orders
       await Future.wait([

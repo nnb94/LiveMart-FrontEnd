@@ -3,9 +3,11 @@ import 'package:get/get.dart';
 import '../../controllers/retailer_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../models/retailer_inventory.dart';
+import '../../models/payment.dart';
 import '../../models/review.dart';
 import '../../services/api_service.dart';
 import '../../widgets/image_picker_components.dart';
+import '../../widgets/payment_dialog.dart';
 
 class RetailerPurchasingScreen extends StatefulWidget {
   const RetailerPurchasingScreen({super.key});
@@ -20,8 +22,7 @@ class _RetailerPurchasingScreenState extends State<RetailerPurchasingScreen> {
 
   // Computed property that applies search and sort filters
   List<AvailableWholesaleProduct> get _filteredProducts {
-    final controller = Get.find<RetailerController>();
-    final products = controller.availableWholesaleProducts;
+    final products = _retailerController.availableWholesaleProducts;
 
     // Apply search filter
     final filtered = _searchText.isEmpty
@@ -49,14 +50,18 @@ class _RetailerPurchasingScreenState extends State<RetailerPurchasingScreen> {
     return filtered;
   }
 
+  late final RetailerController _retailerController;
+
   @override
   void initState() {
     super.initState();
+    // Get controller reference once
+    _retailerController = Get.find<RetailerController>();
+
     // Load products when screen opens if not already loaded
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final controller = Get.find<RetailerController>();
-      if (controller.availableWholesaleProducts.isEmpty && !controller.isLoadingWholesaleProducts.value) {
-        controller.fetchWholesaleProducts();
+      if (_retailerController.availableWholesaleProducts.isEmpty && !_retailerController.isLoadingWholesaleProducts.value) {
+        _retailerController.fetchWholesaleProducts();
       }
     });
   }
@@ -64,7 +69,6 @@ class _RetailerPurchasingScreenState extends State<RetailerPurchasingScreen> {
   @override
   Widget build(BuildContext context) {
     final authController = Get.find<AuthController>();
-    final retailerController = Get.find<RetailerController>();
 
     // Check authentication
     if (!authController.isLoggedIn || authController.role.value != 'retailer') {
@@ -91,7 +95,7 @@ class _RetailerPurchasingScreenState extends State<RetailerPurchasingScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => retailerController.fetchWholesaleProducts(),
+            onPressed: () => _retailerController.fetchWholesaleProducts(),
           ),
         ],
       ),
@@ -155,7 +159,7 @@ class _RetailerPurchasingScreenState extends State<RetailerPurchasingScreen> {
           ),
         ],
       ),
-      floatingActionButton: _buildCartFab(retailerController),
+      floatingActionButton: _buildCartFab(_retailerController),
     );
   }
 
@@ -309,72 +313,147 @@ class _RetailerPurchasingScreenState extends State<RetailerPurchasingScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Order ${item.product.name}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Seller: ${item.sellerName}'),
-            Text('Price: \$${item.product.price.toStringAsFixed(2)} per unit'),
-            Text('Available Stock: ${item.availableStock} units'),
-            Text('Minimum Order: ${item.minimumOrderQuantity} units'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: quantityController,
-              decoration: InputDecoration(
-                labelText: 'Quantity to order',
-                hintText: 'Min: ${item.minimumOrderQuantity}',
-              ),
-              keyboardType: TextInputType.number,
-              autofocus: true,
+      builder: (context) => ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400, maxHeight: 400),
+        child: AlertDialog(
+          title: Text('Order ${item.product.name}'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Seller: ${item.sellerName}'),
+                Text('Price: \$${item.product.price.toStringAsFixed(2)} per unit'),
+                Text('Available Stock: ${item.availableStock} units'),
+                Text('Minimum Order: ${item.minimumOrderQuantity} units'),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: quantityController,
+                  decoration: InputDecoration(
+                    labelText: 'Quantity to order',
+                    hintText: 'Min: ${item.minimumOrderQuantity}',
+                  ),
+                  keyboardType: TextInputType.number,
+                  autofocus: true,
+                  onChanged: (value) {
+                    // Force rebuild of dialog to update cost calculation
+                    (context as Element).markNeedsBuild();
+                  },
+                ),
+                const SizedBox(height: 8),
+                // Show cost calculation - simple calculation, no GetX reactive widget
+                Builder(
+                  builder: (context) {
+                    final quantity = int.tryParse(quantityController.text) ?? 0;
+                    final totalCost = quantity * item.product.price;
+                    return Row(
+                      children: [
+                        const Icon(Icons.attach_money, size: 20, color: Colors.green),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            quantity == 0
+                                ? 'Enter quantity to see cost'
+                                : 'Total Cost: \$${totalCost.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final quantity = int.tryParse(quantityController.text);
+                if (quantity == null || quantity <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter a valid quantity')),
+                  );
+                  return;
+                }
+
+                if (quantity < item.minimumOrderQuantity) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Minimum order quantity is ${item.minimumOrderQuantity} units')),
+                  );
+                  return;
+                }
+
+                if (quantity > item.availableStock) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Only ${item.availableStock} units available in stock')),
+                  );
+                  return;
+                }
+
+                // Close quantity dialog and show payment dialog
+                Navigator.of(context).pop();
+                _showPaymentDialog(context, controller, item, quantity);
+              },
+              child: const Text('Proceed to Payment'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final quantity = int.tryParse(quantityController.text);
-              if (quantity == null || quantity <= 0) {
-                Get.snackbar('Error', 'Please enter a valid quantity');
-                return;
-              }
+      ),
+    );
+  }
 
-              if (quantity < item.minimumOrderQuantity) {
-                Get.snackbar(
-                  'Error',
-                  'Minimum order quantity is ${item.minimumOrderQuantity} units'
-                );
-                return;
-              }
+  void _showPaymentDialog(BuildContext context, RetailerController controller, AvailableWholesaleProduct item, int quantity) {
+    final totalAmount = quantity * item.product.price;
 
-              if (quantity > item.availableStock) {
-                Get.snackbar(
-                  'Error',
-                  'Only ${item.availableStock} units available in stock'
-                );
-                return;
-              }
+    showDialog(
+      context: context,
+      builder: (context) => PaymentDialog(
+        amount: totalAmount,
+        onPaymentSuccess: (PaymentTransaction transaction) async {
+          // Payment successful - now place the wholesale order
+          Get.snackbar(
+            'Payment Successful',
+            'Processing your wholesale order...',
+            snackPosition: SnackPosition.TOP,
+            duration: const Duration(seconds: 3),
+          );
 
-              // Place the order
-              final success = await controller.placeWholesaleOrder([
-                {
-                  'product_id': item.product.id,
-                  'quantity': quantity,
-                  'seller_id': item.sellerId,
-                }
-              ]);
+          final success = await controller.placeWholesaleOrder([
+            {
+              'product_id': item.product.id,
+              'quantity': quantity,
+              'seller_id': item.sellerId,
+              'transaction_id': transaction.id, // Include transaction ID
+            }
+          ]);
 
-              if (success) {
-                Navigator.of(context).pop();
-              }
-            },
-            child: const Text('Place Order'),
-          ),
-        ],
+          if (success) {
+            Get.snackbar(
+              'Order Confirmed',
+              '${quantity} units of ${item.product.name} ordered successfully!',
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.green.shade100,
+              duration: const Duration(seconds: 4),
+            );
+          }
+        },
+        onPaymentError: (String error) {
+          // Payment failed - show error but don't place order
+          Get.snackbar(
+            'Payment Failed',
+            error,
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red.shade100,
+            duration: const Duration(seconds: 4),
+          );
+        },
       ),
     );
   }
@@ -467,9 +546,32 @@ class _RetailerPurchasingScreenState extends State<RetailerPurchasingScreen> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              // Close detail dialog and open order dialog
+                              // Validate quantity from the details dialog
+                              final quantity = int.tryParse(quantityController.text);
+                              if (quantity == null || quantity <= 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Please enter a valid quantity')),
+                                );
+                                return;
+                              }
+
+                              if (quantity < item.minimumOrderQuantity) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Minimum order quantity is ${item.minimumOrderQuantity} units')),
+                                );
+                                return;
+                              }
+
+                              if (quantity > item.availableStock) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Only ${item.availableStock} units available in stock')),
+                                );
+                                return;
+                              }
+
+                              // Close details dialog and go directly to payment
                               Navigator.of(context).pop();
-                              _showBulkOrderDialog(context, controller, item);
+                              _showPaymentDialog(context, controller, item, quantity);
                             },
                             icon: const Icon(Icons.shopping_cart),
                             label: const Text('Place Order'),

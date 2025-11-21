@@ -1,0 +1,189 @@
+class PaymentTransaction {
+  final String id;
+  final double amount;
+  final String status;
+  final String? processor;
+  final DateTime? createdAt;
+  final String? errorMessage;
+  final Map<String, dynamic>? rawResponse;
+
+  PaymentTransaction({
+    required this.id,
+    required this.amount,
+    required this.status,
+    this.processor,
+    this.createdAt,
+    this.errorMessage,
+    this.rawResponse,
+  });
+
+  factory PaymentTransaction.fromJson(Map<String, dynamic> json) {
+    return PaymentTransaction(
+      id: json['id']?.toString() ?? '',
+      amount: double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0,
+      status: json['status']?.toString() ?? 'unknown',
+      processor: json['processor']?.toString(),
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString())
+          : null,
+      errorMessage: json['errorMessage']?.toString() ??
+          json['error']?.toString(),
+      rawResponse: json,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'amount': amount,
+      'status': status,
+      'processor': processor,
+      'createdAt': createdAt?.toIso8601String(),
+      'errorMessage': errorMessage,
+      'rawResponse': rawResponse,
+    };
+  }
+
+  bool get isSuccess => status.toLowerCase() == 'success' ||
+                       status.toLowerCase() == 'completed' ||
+                       status.toLowerCase() == 'submitted_for_settlement';
+
+  bool get isFailed => status.toLowerCase().contains('failed') ||
+                       status.toLowerCase().contains('declined') ||
+                       status.toLowerCase().contains('error');
+
+  @override
+  String toString() {
+    return 'PaymentTransaction(id: $id, amount: $amount, status: $status, error: $errorMessage)';
+  }
+}
+
+class CardPaymentData {
+  final String cardNumber;
+  final String expiryMonth;
+  final String expiryYear;
+  final String cvv;
+  final String cardholderName;
+
+  CardPaymentData({
+    required this.cardNumber,
+    required this.expiryMonth,
+    required this.expiryYear,
+    required this.cvv,
+    required this.cardholderName,
+  });
+
+  // Clean card number (remove spaces and dashes)
+  String get cleanCardNumber => cardNumber.replaceAll(RegExp(r'\s+|-'), '');
+
+  // Validate card number using Luhn algorithm (basic check)
+  bool get isValidCardNumber {
+    final cleaned = cleanCardNumber;
+    if (cleaned.length < 13 || cleaned.length > 19) return false;
+
+    int sum = 0;
+    bool alternate = false;
+
+    for (int i = cleaned.length - 1; i >= 0; i--) {
+      int digit = int.tryParse(cleaned[i]) ?? 0;
+
+      if (alternate) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+
+      sum += digit;
+      alternate = !alternate;
+    }
+
+    return sum % 10 == 0;
+  }
+
+  // Validate expiry date
+  bool get isValidExpiry {
+    final now = DateTime.now();
+    final currentYear = now.year % 100; // Last two digits
+    final currentMonth = now.month;
+    final expMonth = int.tryParse(expiryMonth) ?? 0;
+    final expYear = int.tryParse(expiryYear) ?? 0;
+
+    if (expMonth < 1 || expMonth > 12) return false;
+
+    if (expYear < currentYear) return false;
+    if (expYear == currentYear && expMonth < currentMonth) return false;
+
+    return true;
+  }
+
+  // Validate CVV
+  bool get isValidCvv {
+    final cvvNum = int.tryParse(cvv) ?? 0;
+    return cvv.length >= 3 && cvv.length <= 4 && cvvNum > 0;
+  }
+
+  // Get card brand
+  String get cardBrand {
+    final cleaned = cleanCardNumber;
+    if (cleaned.startsWith('4')) return 'Visa';
+    if (cleaned.startsWith('5') || cleaned.startsWith('2')) return 'Mastercard';
+    if (cleaned.startsWith('3')) return 'American Express';
+    if (cleaned.startsWith('6')) return 'Discover';
+    return 'Unknown';
+  }
+
+  // Format card display (XXXX XXXX XXXX XXXX)
+  String get formattedCardNumber {
+    final cleaned = cleanCardNumber;
+    if (cleaned.length < 4) return cleaned;
+
+    final groups = <String>[];
+    for (int i = 0; i < cleaned.length; i += 4) {
+      final end = (i + 4 > cleaned.length) ? cleaned.length : i + 4;
+      final group = cleaned.substring(i, end);
+      if (i < cleaned.length - 4) {
+        // Mask middle digits for display
+        if (groups.length == 1 || groups.length == 2) {
+          groups.add('••••');
+        } else {
+          groups.add(group);
+        }
+      } else {
+        groups.add(group);
+      }
+    }
+    return groups.join(' ');
+  }
+
+  bool get isComplete {
+    return cleanCardNumber.isNotEmpty &&
+           expiryMonth.isNotEmpty &&
+           expiryYear.isNotEmpty &&
+           cvv.isNotEmpty &&
+           cardholderName.trim().isNotEmpty;
+  }
+
+  bool get isValid => isValidCardNumber && isValidExpiry && isValidCvv;
+
+  Map<String, dynamic> toPaymentPayload() {
+    return {
+      'paymentMethodNonce': {
+        // For demo/trial - simulate nonce generation
+        // In production, this would be generated by Braintree SDK
+        'card_number': cleanCardNumber,
+        'expiration_month': expiryMonth,
+        'expiration_year': expiryYear,
+        'cvv': cvv,
+        'cardholder_name': cardholderName,
+        'brand': cardBrand,
+      },
+      'options': {
+        'submitForSettlement': true
+      }
+    };
+  }
+
+  @override
+  String toString() {
+    return 'CardPaymentData(brand: $cardBrand, number: ${formattedCardNumber}, expiry: $expiryMonth/$expiryYear)';
+  }
+}

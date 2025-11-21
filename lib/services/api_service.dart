@@ -736,6 +736,134 @@ class ApiService extends GetxService {
       throw Exception('Failed to fetch my reviews: ${response.body}');
     }
   }
+
+  // ================= PAYMENT METHODS =================
+
+  /// Generate client token for Braintree (required before payment)
+  Future<String> generateClientToken(String accessToken) async {
+    final url = Uri.parse('http://localhost:3000/api/payments/client-token');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['clientToken']?.toString() ?? '';
+    } else {
+      throw Exception('Failed to generate client token: ${response.body}');
+    }
+  }
+
+  /// Process payment for retailer's wholesale order
+  Future<Map<String, dynamic>> processPayment({
+    required String cardNumber,
+    required String expiryMonth,
+    required String expiryYear,
+    required String cvv,
+    required String cardholderName,
+    required double amount,
+    int? orderId,
+    String? accessToken,
+  }) async {
+    final url = Uri.parse('http://localhost:3000/api/payments/checkout');
+
+    // Create payment payload (simulating Braintree nonce generation)
+    final paymentData = {
+      'paymentMethodNonce': {
+        'card_number': cardNumber,
+        'expiration_month': expiryMonth,
+        'expiration_year': expiryYear,
+        'cvv': cvv,
+        'cardholder_name': cardholderName,
+      },
+      'amount': amount.toStringAsFixed(2),
+      if (orderId != null) 'orderId': orderId.toString(),
+      'options': {'submitForSettlement': true}
+    };
+
+    final headers = {'Content-Type': 'application/json'};
+    if (accessToken != null && accessToken.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $accessToken';
+    }
+
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: jsonEncode(paymentData),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        return data;
+      } else {
+        throw Exception(data['error'] ?? 'Payment failed');
+      }
+    } else {
+      final data = jsonDecode(response.body);
+      throw Exception(data['error'] ?? 'Payment processing failed: ${response.body}');
+    }
+  }
+
+  /// Get transaction details by ID
+  Future<Map<String, dynamic>> getTransaction(String transactionId, String accessToken) async {
+    final url = Uri.parse('http://localhost:3000/api/payments/transaction/$transactionId');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to get transaction: ${response.body}');
+    }
+  }
+
+  /// Refund a transaction (full or partial)
+  Future<Map<String, dynamic>> refundTransaction({
+    required String transactionId,
+    double? amount,
+    required String accessToken,
+  }) async {
+    final url = Uri.parse('http://localhost:3000/api/payments/transaction/$transactionId/refund');
+
+    final body = amount != null ? {'amount': amount.toStringAsFixed(2)} : {};
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: amount != null ? jsonEncode(body) : null,
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to refund transaction: ${response.body}');
+    }
+  }
+
+  /// Payment gateway health check
+  Future<Map<String, dynamic>> checkPaymentServiceHealth() async {
+    final url = Uri.parse('http://localhost:3000/api/payments/health');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Payment service health check failed');
+    }
+  }
 }
 
 

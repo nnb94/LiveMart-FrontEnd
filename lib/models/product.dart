@@ -1,7 +1,7 @@
 class Product {
   final int id;
   final int sellerId;
-  final String sellerName; // Added sellerName here
+  final String sellerName;
   final String name;
   final String description;
   final double price;
@@ -13,6 +13,10 @@ class Product {
   final String? imageUrl;
   final String? imagePublicId;
 
+  // Additional seller info
+  final String? sellerEmail;
+  final String? sellerRole;
+
   // For existing products with inventory tracking
   final int? stockQuantity;
   final int? minimumOrderQuantity;
@@ -22,7 +26,7 @@ class Product {
   Product({
     required this.id,
     required this.sellerId,
-    required this.sellerName, // Added to constructor
+    required this.sellerName,
     required this.name,
     required this.description,
     required this.price,
@@ -31,6 +35,8 @@ class Product {
     required this.updatedAt,
     this.imageUrl,
     this.imagePublicId,
+    this.sellerEmail,
+    this.sellerRole,
     this.stockQuantity,
     this.minimumOrderQuantity,
     this.reorderLevel,
@@ -83,22 +89,34 @@ class Product {
     return Product(
       id: _parseInt(json['id']),
       sellerId: _parseInt(json['seller_id'] ?? json['sellerId']),
-      sellerName: _parseString(json['seller_name'] ?? json['sellerName']), // Added sellerName parsing
+      sellerName: _parseString(json['seller_name'] ?? json['sellerName']),
       name: _parseString(json['name']),
       description: _parseString(json['description']),
       price: _parseDouble(json['price']),
       category: _parseString(json['category']),
       imageUrl: _parseNullableString(json['image_url'] ?? json['imageUrl']),
-      imagePublicId: _parseNullableString(json['image_public_id'] ?? json['imagePublicId']),
-      createdAt: DateTime.tryParse(
-              json['created_at']?.toString() ??
-                  json['createdAt']?.toString() ??
-                  '') ??
+      imagePublicId: _parseNullableString(
+        json['image_public_id'] ?? json['imagePublicId'],
+      ),
+      sellerEmail: _parseNullableString(
+        json['seller_email'] ?? json['sellerEmail'],
+      ),
+      sellerRole: _parseNullableString(
+        json['seller_role'] ?? json['sellerRole'],
+      ),
+      createdAt:
+          DateTime.tryParse(
+            json['created_at']?.toString() ??
+                json['createdAt']?.toString() ??
+                '',
+          ) ??
           DateTime.now(),
-      updatedAt: DateTime.tryParse(
-              json['updated_at']?.toString() ??
-                  json['updatedAt']?.toString() ??
-                  '') ??
+      updatedAt:
+          DateTime.tryParse(
+            json['updated_at']?.toString() ??
+                json['updatedAt']?.toString() ??
+                '',
+          ) ??
           DateTime.now(),
       stockQuantity: _parseNullableInt(
         json['stock_quantity'] ?? json['stockQuantity'],
@@ -129,7 +147,8 @@ class Product {
       if (imageUrl != null) 'imageUrl': imageUrl,
       if (imagePublicId != null) 'imagePublicId': imagePublicId,
       if (stockQuantity != null) 'stockQuantity': stockQuantity,
-      if (minimumOrderQuantity != null) 'minimumOrderQuantity': minimumOrderQuantity,
+      if (minimumOrderQuantity != null)
+        'minimumOrderQuantity': minimumOrderQuantity,
       if (reorderLevel != null) 'reorderLevel': reorderLevel,
       if (needsRestock != null) 'needsRestock': needsRestock,
     };

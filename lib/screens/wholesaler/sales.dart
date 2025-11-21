@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../controllers/wholesaler_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../models/wholesaler_sale.dart';
+import '../../widgets/image_picker_components.dart';
 
 class WholesalerSalesScreen extends StatelessWidget {
   const WholesalerSalesScreen({super.key});
@@ -75,8 +76,17 @@ class WholesalerSalesScreen extends StatelessWidget {
             return Card(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: ListTile(
-                leading: CircleAvatar(
-                  child: Text(order.retailerName[0].toUpperCase()),
+                leading: Container(
+                  width: 50,
+                  height: 50,
+                  child: Obx(() {
+                    final productImageUrl = wholesalerController.getProductImageUrlByName(order.productInfo.productName);
+                    return ProductImageWidget(
+                      imageUrl: productImageUrl,
+                      fallbackText: order.productInfo.productName,
+                      size: 50,
+                    );
+                  }),
                 ),
                 title: Text('${order.productInfo.productName} → ${order.retailerName}'),
                 subtitle: Column(
@@ -85,7 +95,7 @@ class WholesalerSalesScreen extends StatelessWidget {
                     Text('Order ID: #${order.orderId}'),
                     Text('Quantity: ${order.orderDetails.quantity}'),
                     Text('Total: \$${order.orderDetails.totalAmount.toStringAsFixed(2)}'),
-                    Text('Date: ${order.orderDate}'),
+                    Text('Date: ${_formatOrderDate(order.orderDate)}'),
                   ],
                 ),
                 trailing: Chip(
@@ -119,7 +129,7 @@ class WholesalerSalesScreen extends StatelessWidget {
               Text('Customer: ${order.retailerName}'),
               Text('Quantity: ${order.orderDetails.quantity}'),
               Text('Total: \$${order.orderDetails.totalAmount.toStringAsFixed(2)}'),
-              Text('Order Date: ${order.orderDate}'),
+              Text('Order Date: ${_formatOrderDate(order.orderDate)}'),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: selectedStatus,
@@ -152,6 +162,23 @@ class WholesalerSalesScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatOrderDate(String dateString) {
+    try {
+      // Try parsing as ISO 8601 format first (common for APIs)
+      DateTime dateTime = DateTime.parse(dateString);
+
+      // Format the date nicely
+      return '${dateTime.day.toString().padLeft(2, '0')}/'
+             '${dateTime.month.toString().padLeft(2, '0')}/'
+             '${dateTime.year} '
+             '${dateTime.hour.toString().padLeft(2, '0')}:'
+             '${dateTime.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      // If parsing fails, return the original string
+      return dateString;
+    }
   }
 
   String _formatDate(DateTime date) {

@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:live_mart_app/screens/splashscreen.dart';
 import 'screens/email_screen.dart';
 import 'screens/otp_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -16,18 +16,20 @@ import 'package:live_mart_app/screens/customer/notifications.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
 
-
 // Role-based dashboards
 import 'screens/retailer/dashboard.dart';
 import 'screens/retailer/inventory.dart';
 import 'screens/retailer/purchasing.dart';
 import 'screens/retailer/sales.dart';
 import 'screens/retailer/analytics.dart';
+import 'screens/retailer/purchase_history.dart';
+import 'screens/retailer/review_management.dart';
 import 'screens/wholesaler/dashboard.dart';
 import 'screens/wholesaler/inventory.dart';
 import 'screens/wholesaler/sales.dart';
 import 'screens/wholesaler/products.dart';
 import 'screens/wholesaler/analytics.dart';
+import 'screens/wholesaler/review_management.dart';
 
 import 'screens/customer/editprofile.dart';
 
@@ -42,7 +44,8 @@ class AppRoutes {
   static const String dashboard = '/dashboard';
   static const String login = '/login';
   static const String register = '/register';
-  static const String initial = email;
+  static const String splashScreen = '/splash';
+  static const String initial = splashScreen;
 
   static const String customerDashboard = '/customer/dashboard';
   static const String customerProfile = '/customer/profile';
@@ -59,13 +62,14 @@ class AppRoutes {
   static const String retailerPurchasing = '/retailer/purchasing';
   static const String retailerSales = '/retailer/sales';
   static const String retailerAnalytics = '/retailer/analytics';
+  static const String retailerPurchaseHistory = '/retailer/purchase-history';
+  static const String retailerReviews = '/retailer/reviews';
   static const String wholesalerDashboard = '/wholesaler/dashboard';
   static const String wholesalerInventory = '/wholesaler/inventory';
   static const String wholesalerSales = '/wholesaler/sales';
   static const String wholesalerProducts = '/wholesaler/products';
   static const String wholesalerAnalytics = '/wholesaler/analytics';
   static const String customerEditProfile = '/customer/editprofile';
-
 
   static List<GetPage> routes = [
     GetPage(
@@ -112,12 +116,12 @@ class AppRoutes {
     ),
     GetPage(
       name: AppRoutes.customerDashboard,
-      page: () => const CustomerDashboard(), // or import the correct dashboard from customers folder here
+      page: () =>
+          const CustomerDashboard(), // or import the correct dashboard from customers folder here
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 400),
     ),
     GetPage(
-
       name: AppRoutes.customerProfile,
       page: () => const CustomerProfile(),
       transition: Transition.fadeIn,
@@ -190,6 +194,12 @@ class AppRoutes {
       transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
+      name: '/wholesaler/reviews',
+      page: () => const WholesalerReviewManagementScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
       name: AppRoutes.retailerInventory,
       page: () => const RetailerInventoryScreen(),
       transition: Transition.fadeIn,
@@ -219,6 +229,23 @@ class AppRoutes {
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),
-
+    GetPage(
+      name: AppRoutes.retailerPurchaseHistory,
+      page: () => const RetailerPurchaseHistoryScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.retailerReviews,
+      page: () => const RetailerReviewManagementScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: splashScreen,
+      page: () => const SplashScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
   ];
 }

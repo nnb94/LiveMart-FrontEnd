@@ -5,65 +5,104 @@ class ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback? onTap; // optional tap action
 
-  const ProductCard({
-    Key? key,
-    required this.product,
-    this.onTap,
-  }) : super(key: key);
+  const ProductCard({Key? key, required this.product, this.onTap})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      margin: const EdgeInsets.all(8),
       elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 80,
-                height: 80,
+        borderRadius: BorderRadius.circular(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Large product image
+            Expanded(
+              flex: 7,
+              child: Container(
+                width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey[200],
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    topRight: Radius.circular(8),
+                  ),
                 ),
-                // Placeholder for product image if any
-                child: const Icon(Icons.image, size: 48, color: Colors.grey),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    topRight: Radius.circular(8),
+                  ),
+                  child:
+                      product.imageUrl != null && product.imageUrl!.isNotEmpty
+                      ? Image.network(
+                          product.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.image,
+                              size: 64,
+                              color: Colors.grey,
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value:
+                                    loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            );
+                          },
+                        )
+                      : const Icon(Icons.image, size: 64, color: Colors.grey),
+                ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
+            ),
+            // Product details below image
+            Expanded(
+              flex: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  //mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(product.name,
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 6),
                     Text(
-                      product.description,
-                      maxLines: 2,
+                      product.name,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: Colors.grey[700]),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    const SizedBox(height: 6),
-                    Text('Seller: ${product.sellerName}',
-                        style: const TextStyle(fontSize: 12)),
+                    Text(
+                      '₹${product.price.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    Text(
+                      product.sellerName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                    ),
                   ],
                 ),
               ),
-              Text(
-                '₹${product.price.toStringAsFixed(2)}',
-                style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

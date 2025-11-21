@@ -6,7 +6,7 @@ import '../approutes.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
-import '../config.dart';
+//import '../config.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,18 +24,18 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-    
+
     if (email.isEmpty || !email.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a valid email')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter a valid email')));
       return;
     }
-    
+
     if (password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter your password')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter your password')));
       return;
     }
 
@@ -44,13 +44,13 @@ class _LoginScreenState extends State<LoginScreen> {
       final result = await _api.login(email, password);
       final token = result['token'];
       final role = result['role']?.toString().toLowerCase().trim() ?? '';
-      
+
       // Get user data from API response and save it
       final authController = Get.find<AuthController>();
       final userData = result['user'] as Map<String, dynamic>?;
       final userId = userData?['id'] as int? ?? 0;
       final userName = userData?['name'] as String? ?? '';
-      
+
       // Save user data to AuthController
       await authController.saveUser(
         userId: userId,
@@ -59,12 +59,12 @@ class _LoginScreenState extends State<LoginScreen> {
         role: role,
         name: userName,
       );
-      
+
       // Show a brief success and navigate
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login successful')),
-      );
-      
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Login successful')));
+
       // Navigate based on role (case-insensitive comparison)
       if (role == 'customer') {
         Get.offAllNamed(AppRoutes.customerDashboard);
@@ -84,73 +84,73 @@ class _LoginScreenState extends State<LoginScreen> {
         Get.offAllNamed(AppRoutes.dashboard);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: googleClientId, 
-    scopes: ['email', 'profile'],
-  );
+  // final GoogleSignIn _googleSignIn = GoogleSignIn(
+  //   clientId: googleClientId,
+  //   scopes: ['email', 'profile'],
+  // );
 
-  Future<void> _handleGoogleLogin() async {
-    setState(() => _isLoading = true);
-    try {
-      final user = await _googleSignIn.signIn();
-      if (user == null) {
-        setState(() => _isLoading = false);
-        return; // user canceled
-      }
+  // Future<void> _handleGoogleLogin() async {
+  //   setState(() => _isLoading = true);
+  //   try {
+  //     final user = await _googleSignIn.signIn();
+  //     if (user == null) {
+  //       setState(() => _isLoading = false);
+  //       return; // user canceled
+  //     }
 
-      final auth = await user.authentication;
-      final idToken = auth.idToken;
-      if (idToken == null) throw Exception('Google ID token is null');
+  //     final auth = await user.authentication;
+  //     final idToken = auth.idToken;
+  //     if (idToken == null) throw Exception('Google ID token is null');
 
-      final result = await _api.googleLogin(idToken);
+  //     final result = await _api.googleLogin(idToken);
 
-      // Save user data from Google login
-      final authController = Get.find<AuthController>();
-      final userData = result['user'] as Map<String, dynamic>?;
-      final userId = userData?['id'] as int? ?? 0;
-      final userName = userData?['name'] as String? ?? '';
-      final userEmail = userData?['email'] as String? ?? user.email;
-      final role = userData?['role']?.toString().toLowerCase().trim() ?? '';
-      final token = result['token'] ?? result['accessToken'] ?? '';
+  //     // Save user data from Google login
+  //     final authController = Get.find<AuthController>();
+  //     final userData = result['user'] as Map<String, dynamic>?;
+  //     final userId = userData?['id'] as int? ?? 0;
+  //     final userName = userData?['name'] as String? ?? '';
+  //     final userEmail = userData?['email'] as String? ?? user.email;
+  //     final role = userData?['role']?.toString().toLowerCase().trim() ?? '';
+  //     final token = result['token'] ?? result['accessToken'] ?? '';
 
-      await authController.saveUser(
-        userId: userId,
-        token: token,
-        email: userEmail ?? '',
-        role: role,
-        name: userName,
-      );
+  //     await authController.saveUser(
+  //       userId: userId,
+  //       token: token,
+  //       email: userEmail ?? '',
+  //       role: role,
+  //       name: userName,
+  //     );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google login successful')),
-      );
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Google login successful')),
+  //     );
 
-      // Navigate based on role
-      if (role == 'customer') {
-        Get.offAllNamed(AppRoutes.customerDashboard);
-      } else if (role == 'retailer') {
-        Get.offAllNamed(AppRoutes.retailerDashboard);
-      } else if (role == 'wholesaler') {
-        Get.offAllNamed(AppRoutes.wholesalerDashboard);
-      } else {
-        Get.offAllNamed(AppRoutes.dashboard);
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google login failed: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
+  //     // Navigate based on role
+  //     if (role == 'customer') {
+  //       Get.offAllNamed(AppRoutes.customerDashboard);
+  //     } else if (role == 'retailer') {
+  //       Get.offAllNamed(AppRoutes.retailerDashboard);
+  //     } else if (role == 'wholesaler') {
+  //       Get.offAllNamed(AppRoutes.wholesalerDashboard);
+  //     } else {
+  //       Get.offAllNamed(AppRoutes.dashboard);
+  //     }
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Google login failed: $e')),
+  //     );
+  //   } finally {
+  //     if (mounted) setState(() => _isLoading = false);
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -389,7 +389,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         // 🔹 Google Login Button
                         if (kIsWeb)
                           ElevatedButton.icon(
-                            icon: Image.asset('assets/google_logo.png', height: 20),
+                            icon: Image.asset(
+                              'assets/google_logo.png',
+                              height: 20,
+                            ),
                             label: const Text(
                               'Sign in with Google',
                               style: TextStyle(

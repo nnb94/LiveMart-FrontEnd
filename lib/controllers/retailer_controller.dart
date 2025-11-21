@@ -17,6 +17,9 @@ class RetailerController extends GetxController {
   var lowStockAlerts = <LowStockAlert>[].obs;
   var analytics = Rxn<RetailerAnalytics>();
 
+  // Product cache for images in purchase history
+  var productCache = <int, Product>{}.obs;
+
   // Loading states
   var isLoadingInventory = false.obs;
   var isLoadingPurchases = false.obs;
@@ -53,6 +56,9 @@ class RetailerController extends GetxController {
     await Future.wait([
       fetchInventory(),
       fetchWholesaleProducts(),
+      fetchLowStockAlerts(),
+      fetchPurchaseOrders(),
+      fetchSalesOrders(),
     ]);
   }
 
@@ -79,6 +85,7 @@ class RetailerController extends GetxController {
       print('Error fetching inventory: $e');
     } finally {
       isLoadingInventory(false);
+      update(); // Force UI update
     }
   }
 
@@ -149,6 +156,31 @@ class RetailerController extends GetxController {
     }
   }
 
+  Future<bool> deleteInventoryItem(int productId) async {
+    try {
+      if (accessToken.isEmpty) {
+        Get.snackbar('Error', 'Authentication required. Please log in as a retailer.');
+        return false;
+      }
+
+      final response = await apiService.deleteRetailerInventory(
+        productId: productId,
+        accessToken: accessToken,
+      );
+
+      // Remove the item from local inventory
+      inventory.removeWhere((item) => item.productId == productId);
+
+      Get.snackbar('Success', response['message'] ?? 'Product removed from inventory successfully');
+      return true;
+
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to remove product from inventory: ${e.toString()}');
+      print('Error deleting inventory item: $e');
+      return false;
+    }
+  }
+
   Future<void> fetchLowStockAlerts() async {
     try {
       isLoadingLowStock(true);
@@ -177,21 +209,18 @@ class RetailerController extends GetxController {
         return;
       }
 
-      // Get products route returns all products but we filter for wholesalers
-      final allProducts = await apiService.getProducts(accessToken: accessToken);
+      // Backend already filters products based on user role!
+      // Retailers get only wholesaler products with complete inventory data
+      final products = await apiService.getProducts(accessToken: accessToken);
 
-      // Filter for products from wholesalers only
-      final wholesaleProducts = allProducts.where((product) {
-        // This filtering might need backend support, for now we'll get all
-        return true; // Backend should handle role-based filtering
-      }).map((product) {
-        // Ensure product has valid values to prevent null errors
+      // Map directly to AvailableWholesaleProduct using backend-provided data
+      final wholesaleProducts = products.map((product) {
         return AvailableWholesaleProduct(
           product: product,
           sellerId: product.sellerId,
-          sellerName: '', // Need to get from backend
-          availableStock: product.stockQuantity ?? 0,
-          minimumOrderQuantity: product.minimumOrderQuantity ?? 10,
+          sellerName: product.sellerName ?? 'Unknown Seller', // Backend provides this
+          availableStock: product.stockQuantity ?? 0, // Backend provides wholesaler stock
+          minimumOrderQuantity: product.minimumOrderQuantity ?? 10, // Backend provides min qty
           reorderLevel: product.reorderLevel ?? 10,
           needsRestock: product.needsRestock ?? false,
         );
@@ -215,12 +244,51 @@ class RetailerController extends GetxController {
       final response = await apiService.getRetailerPurchaseOrders(accessToken);
       purchaseOrders.value = response;
 
+      // Pre-cache product images after loading orders
+      await fetchAndCacheProductsForPurchaseHistory(response);
+
     } catch (e) {
       purchasesError('Failed to load purchase orders: ${e.toString()}');
       print('Error fetching purchase orders: $e');
     } finally {
       isLoadingPurchases(false);
+      update(); // Force UI update
     }
+  }
+
+  // Product image caching for purchase history
+  Future<void> fetchAndCacheProductsForPurchaseHistory(List<RetailingPurchaseOrder> orders) async {
+    try {
+      // Extract unique product IDs from all orders (product_id is directly on the order object)
+      final productIds = orders.map((order) => order.productId ?? 0)
+                               .where((id) => id > 0)
+                               .toSet();
+
+      if (productIds.isEmpty) return;
+
+      // Fetch all available wholesale products (retailers see only wholesaler products)
+      final allProducts = await apiService.getProducts(accessToken: accessToken);
+
+      // Create cache map for the products we've purchased
+      final newCache = <int, Product>{};
+      for (final product in allProducts) {
+        if (productIds.contains(product.id)) {
+          newCache[product.id] = product;
+        }
+      }
+
+      productCache.value = newCache;
+
+    } catch (e) {
+      print('Error caching products for purchase history: $e');
+      // Don't throw error - images are nice to have but not critical
+    }
+  }
+
+  // Helper method to get product image URL for purchase history
+  String? getProductImageUrl(int? productId) {
+    if (productId == null) return null;
+    return productCache[productId]?.imageUrl;
   }
 
   Future<bool> placeWholesaleOrder(List<Map<String, dynamic>> products) async {
@@ -266,6 +334,7 @@ class RetailerController extends GetxController {
       print('Error fetching sales orders: $e');
     } finally {
       isLoadingSales(false);
+      update(); // Force UI update
     }
   }
 
@@ -290,20 +359,44 @@ class RetailerController extends GetxController {
       isLoadingAnalytics(true);
       analyticsError('');
 
-      // For now, use a basic analytics structure
-      // This might need a separate retailer analytics endpoint
+      // Ensure we have a valid token before making the call
+      if (accessToken.isEmpty) {
+        throw Exception('No access token available. Please log in again.');
+      }
+
+      if (authController.role.value != 'retailer') {
+        throw Exception('Access denied. Only retailers can view this data.');
+      }
+
+      // Fetch sales orders and purchase orders for analytics
+      await Future.wait([
+        fetchSalesOrders(),
+        fetchPurchaseOrders(),
+      ]);
+
+      // Use real backend data from sales orders
+      final salesData = salesOrders.value;
+      final purchasesData = purchaseOrders.value;
+
+      // Calculate analytics from real sales data
+      final totalRevenue = salesData.fold<double>(0.0,
+        (sum, order) => sum + (order.orderDetails.price * order.orderDetails.quantity));
+
       analytics.value = RetailerAnalytics(
         summary: Summary(
-          totalOrders: salesOrders.length,
-          totalRevenue: salesOrders.fold<double>(0, (sum, order) => sum + (order.orderDetails.price * order.orderDetails.quantity)),
-          averageOrderValue: salesOrders.isEmpty ? 0 : salesOrders.fold<double>(0, (sum, order) => sum + (order.orderDetails.price * order.orderDetails.quantity)) / salesOrders.length,
-          totalUnitsSold: salesOrders.fold<int>(0, (sum, order) => sum + order.orderDetails.quantity),
-          uniqueBuyers: salesOrders.map((order) => order.buyerId).toSet().length,
+          totalOrders: salesData.length,
+          totalRevenue: totalRevenue,
+          averageOrderValue: salesData.isEmpty ? 0 : totalRevenue / salesData.length,
+          totalUnitsSold: salesData.fold<int>(0, (sum, order) => sum + order.orderDetails.quantity),
+          uniqueBuyers: salesData.map((order) => order.buyerId).toSet().length,
         ),
       );
 
+
+
     } catch (e) {
       analyticsError('Failed to load analytics: ${e.toString()}');
+      analytics.value = null; // Clear on error
       print('Error fetching analytics: $e');
     } finally {
       isLoadingAnalytics(false);

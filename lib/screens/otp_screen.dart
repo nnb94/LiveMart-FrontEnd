@@ -17,6 +17,7 @@ class OtpScreen extends StatefulWidget {
 class _OtpScreenState extends State<OtpScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
   String? _selectedRole;
   final ApiService _apiService = Get.find<ApiService>();
@@ -27,7 +28,8 @@ class _OtpScreenState extends State<OtpScreen> {
   void _verifyOtp() async {
     final name = _nameController.text.trim();
     final password = _passwordController.text.trim();
-    final role = _selectedRole ?? '';
+    final address = _addressController.text.trim();
+    final role = (_selectedRole ?? '').toLowerCase();  // Fix: Convert role to lowercase
     final otp = _otpController.text.trim();
     final email = widget.email.trim();
 
@@ -61,6 +63,7 @@ class _OtpScreenState extends State<OtpScreen> {
         password: password,
         role: role,
         otp: otp,
+        address: address.isNotEmpty ? address : null,
       );
       
       // Get user data from API response and save it
@@ -78,7 +81,10 @@ class _OtpScreenState extends State<OtpScreen> {
         role: roleLower,
         name: name,
       );
-      
+
+      // Small delay to ensure observables are updated before navigation
+      await Future.delayed(const Duration(milliseconds: 100));
+
       final message = result['message'] as String? ?? 'Signup successful';
       ScaffoldMessenger.of(
         context,
@@ -254,6 +260,47 @@ class _OtpScreenState extends State<OtpScreen> {
                             ),
                           ),
                           obscureText: true,
+                        ),
+                        const SizedBox(height: 20),
+                        TextField(
+                          controller: _addressController,
+                          style: const TextStyle(
+                            color: Color(0xFF00FFF7),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFF18192B),
+                            labelText: 'Address (Optional)',
+                            labelStyle: const TextStyle(
+                              color: Color(0xFFFF00C8),
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.1,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF00FFF7),
+                                width: 2,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFFF00C8),
+                                width: 2.5,
+                              ),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 16,
+                            ),
+                          ),
+                          maxLines: 2,
+                          keyboardType: TextInputType.multiline,
                         ),
                         const SizedBox(height: 20),
                         DropdownButtonFormField<String>(

@@ -39,16 +39,25 @@ class RetailerInventoryItem {
       return 0;
     }
 
+    String _parseString(dynamic value) {
+      if (value == null) return '';
+      return value.toString();
+    }
+
     return RetailerInventoryItem(
       productId: _parseInt(json['product_id'] ?? json['productId']),
-      productName: json['name'] ?? json['productName'],
-      description: json['description'],
+      productName: _parseString(json['name'] ?? json['productName']),
+      description: _parseString(json['description']),
       price: _parseDouble(json['price']),
-      category: json['category'],
-      quantityInStock: _parseInt(json['quantity_in_stock'] ?? json['quantityInStock']),
+      category: _parseString(json['category']),
+      quantityInStock: _parseInt(
+        json['quantity_in_stock'] ?? json['quantityInStock'],
+      ),
       reorderLevel: _parseInt(json['reorder_level'] ?? json['reorderLevel']),
       needsRestock: json['needs_restock'] ?? false,
-      updatedAt: DateTime.tryParse(json['updated_at'] ?? json['updatedAt']) ?? DateTime.now(),
+      updatedAt:
+          DateTime.tryParse(json['updated_at'] ?? json['updatedAt'] ?? '') ??
+          DateTime.now(),
     );
   }
 
@@ -71,6 +80,7 @@ class RetailingPurchaseOrder {
   final int orderId;
   final int buyerId;
   final int sellerId;
+  final int? productId; // Add productId field for image caching
   final String wholesalerName;
   final ProductInfo productInfo;
   final OrderDetails orderDetails;
@@ -81,6 +91,7 @@ class RetailingPurchaseOrder {
     required this.orderId,
     required this.buyerId,
     required this.sellerId,
+    this.productId, // Optional for backward compatibility
     required this.wholesalerName,
     required this.productInfo,
     required this.orderDetails,
@@ -89,10 +100,20 @@ class RetailingPurchaseOrder {
   });
 
   factory RetailingPurchaseOrder.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely parse numbers
+    int? _parseNullableInt(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value);
+      if (value is num) return value.toInt();
+      return null;
+    }
+
     return RetailingPurchaseOrder(
       orderId: json['id'] ?? json['orderId'],
       buyerId: json['buyer_id'] ?? json['buyerId'],
       sellerId: json['seller_id'] ?? json['sellerId'],
+      productId: _parseNullableInt(json['product_id'] ?? json['productId']),
       wholesalerName: json['wholesaler_name'] ?? json['wholesalerName'],
       productInfo: ProductInfo.fromJson(json),
       orderDetails: OrderDetails.fromJson(json),
@@ -141,7 +162,8 @@ class RetailingSaleOrder {
       status: json['status'],
       offlineOrder: json['offline_order'] ?? json['offlineOrder'] ?? false,
       deliveryDetails: json['delivery_details'] ?? json['deliveryDetails'],
-      expectedDeliveryDate: json['expected_delivery_date'] ?? json['expectedDeliveryDate'],
+      expectedDeliveryDate:
+          json['expected_delivery_date'] ?? json['expectedDeliveryDate'],
     );
   }
 }
@@ -184,8 +206,14 @@ class AvailableWholesaleProduct {
       product: Product.fromJson(json),
       sellerId: _parseInt(json['seller_id'] ?? json['sellerId']),
       sellerName: json['seller_name'] ?? json['sellerName'],
-      availableStock: _parseInt(json['stock_quantity'] ?? json['quantity_in_stock'] ?? json['availableStock']),
-      minimumOrderQuantity: _parseInt(json['minimum_order_quantity'] ?? json['minimumOrderQuantity']),
+      availableStock: _parseInt(
+        json['stock_quantity'] ??
+            json['quantity_in_stock'] ??
+            json['availableStock'],
+      ),
+      minimumOrderQuantity: _parseInt(
+        json['minimum_order_quantity'] ?? json['minimumOrderQuantity'],
+      ),
       reorderLevel: _parseInt(json['reorder_level'] ?? json['reorderLevel']),
       needsRestock: json['needs_restock'] ?? false,
     );
@@ -241,13 +269,9 @@ class LowStockAlert {
 class RetailerAnalytics {
   final Summary summary;
 
-  RetailerAnalytics({
-    required this.summary,
-  });
+  RetailerAnalytics({required this.summary});
 
   factory RetailerAnalytics.fromJson(Map<String, dynamic> json) {
-    return RetailerAnalytics(
-      summary: Summary.fromJson(json['summary']),
-    );
+    return RetailerAnalytics(summary: Summary.fromJson(json['summary']));
   }
 }

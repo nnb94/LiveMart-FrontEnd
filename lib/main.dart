@@ -3,13 +3,13 @@ import 'package:get/get.dart';
 import 'package:live_mart_app/services/api_service.dart';
 import 'package:live_mart_app/controllers/auth_controller.dart';
 import 'approutes.dart';
+import 'package:live_mart_app/controllers/cart_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Get.put(CartController());
 
   Get.put(ProductService());
-
-  Get.put(AuthController());
 
   // Initialize services
   Get.put(ApiService());

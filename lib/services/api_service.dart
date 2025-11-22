@@ -190,6 +190,41 @@ class ApiService extends GetxService {
     }
   }
 
+  Future<List<Product>> fetchWishlist(String accessToken) async {
+    final url = Uri.parse('$baseUrl/wishlists/list');
+
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((item) => Product.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to load wishlist: ${response.body}');
+    }
+  }
+
+  Future<bool> removeFromWishlist(String accessToken, int productId) async {
+    final url = Uri.parse('$baseUrl/wishlists/remove');
+
+    final response = await http.delete(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({'productId': productId}),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   // ================= WHOLESALER METHODS =================
 
   /// Get wholesaler's inventory
@@ -767,7 +802,22 @@ class ApiService extends GetxService {
       throw Exception('Failed to fetch my reviews: ${response.body}');
     }
   }
+  Future<bool> addToWishlist(String accessToken, int productId) async {
+    final url = Uri.parse('http://localhost:3000/wishlists/add');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({'productId': productId}),
+    );
+
+    return response.statusCode == 201;
+  }
 }
+
 
 class ProductService extends GetxService {
   final RxList<Product> products = <Product>[].obs;

@@ -36,6 +36,11 @@ class CustomerProfile extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             )),
 
+            Obx(() => Text(
+              'Address: ${authController.address.value.isNotEmpty ? authController.address.value : "Not provided"}',
+              style: Theme.of(context).textTheme.titleMedium,
+            )),
+
             const Spacer(),
 
             Center(

@@ -8,6 +8,7 @@ class AuthController extends GetxController {
   final RxString email = ''.obs;
   final RxString role = ''.obs;
   final RxString name = ''.obs;
+  final RxString address = ''.obs;
 
   // Check if user is logged in
   bool get isLoggedIn => accessToken.value.isNotEmpty && userId.value > 0;
@@ -27,6 +28,7 @@ class AuthController extends GetxController {
     this.email.value = email;
     this.role.value = role;
     if (name != null) this.name.value = name;
+    if (address != null) this.address.value = address;
     
     // Persist to SharedPreferences
     final prefs = await SharedPreferences.getInstance();
@@ -35,6 +37,7 @@ class AuthController extends GetxController {
     await prefs.setString('email', email);
     await prefs.setString('role', role);
     if (name != null) await prefs.setString('name', name);
+    if (address != null) await prefs.setString('address', address);
   }
   
   // Load user data on app start
@@ -45,6 +48,7 @@ class AuthController extends GetxController {
     final savedEmail = prefs.getString('email');
     final savedRole = prefs.getString('role');
     final savedName = prefs.getString('name');
+    final savedAddress = prefs.getString('address');
     
     if (savedUserId != null && savedToken != null) {
       userId.value = savedUserId;
@@ -52,6 +56,7 @@ class AuthController extends GetxController {
       email.value = savedEmail ?? '';
       role.value = savedRole ?? '';
       name.value = savedName ?? '';
+      address.value = savedAddress ?? '';
     }
   }
   
@@ -62,6 +67,7 @@ class AuthController extends GetxController {
     email.value = '';
     role.value = '';
     name.value = '';
+    address.value = '';
     
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();

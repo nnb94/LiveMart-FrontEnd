@@ -33,82 +33,177 @@ class RetailerInventoryScreen extends StatelessWidget {
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0A0E27),
       appBar: AppBar(
-        title: const Text('Inventory Management'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => retailerController.fetchInventory(),
+        backgroundColor: const Color(0xFF0F1729),
+        elevation: 0,
+        title: const Text(
+          'Inventory Management',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Low stock alerts banner
-          _buildLowStockAlertsBanner(retailerController),
-
-          // Inventory list
-          Expanded(
-            child: GetBuilder<RetailerController>(
-              builder: (controller) {
-                if (controller.isLoadingInventory.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (controller.inventoryError.value.isNotEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                        const SizedBox(height: 16),
-                        Text(controller.inventoryError.value),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () => controller.fetchInventory(),
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                if (controller.inventory.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No products in inventory',
-                          style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                        ),
-                        Text(
-                          'Order from wholesalers first',
-                          style: TextStyle(color: Colors.grey[500]),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  itemCount: controller.inventory.length,
-                  itemBuilder: (context, index) {
-                    final item = controller.inventory[index];
-                    return _buildInventoryItemCard(context, controller, item);
-                  },
-                );
-              },
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF0F1729),
+                const Color(0xFF0F1729).withOpacity(0.8),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF17A2B8), Color(0xFF0FB5D4)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: () => retailerController.fetchInventory(),
             ),
           ),
         ],
       ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0A0E27),
+              Color(0xFF0F1729),
+              Color(0xFF1A2332),
+              Color(0xFF0F1729),
+              Color(0xFF050A1A),
+            ],
+            stops: [0.1, 0.3, 0.6, 0.8, 1.0],
+          ),
+        ),
+        child: Column(
+          children: [
+            // Low stock alerts banner
+            _buildLowStockAlertsBanner(retailerController),
+
+            // Inventory list
+            Expanded(
+              child: GetBuilder<RetailerController>(
+                builder: (controller) {
+                  if (controller.isLoadingInventory.value) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xFF17A2B8),
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (controller.inventoryError.value.isNotEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            size: 48,
+                            color: Color(0xFFEF4444),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            controller.inventoryError.value,
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () => controller.fetchInventory(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF17A2B8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  if (controller.inventory.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF17A2B8).withOpacity(0.2),
+                                  const Color(0xFF0FB5D4).withOpacity(0.1),
+                                ],
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.inventory_2_outlined,
+                              size: 80,
+                              color: Color(0xFF17A2B8),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'No products in inventory',
+                            style: TextStyle(
+                              fontSize: 22,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Order from wholesalers first',
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    itemCount: controller.inventory.length,
+                    itemBuilder: (context, index) {
+                      final item = controller.inventory[index];
+                      return _buildInventoryItemCard(context, controller, item);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Get.toNamed('/retailer/purchasing'),
-        icon: const Icon(Icons.add_shopping_cart),
-        label: const Text('Order Stock'),
+        backgroundColor: const Color(0xFF17A2B8),
+        elevation: 8,
+        icon: const Icon(Icons.add_shopping_cart, color: Colors.white),
+        label: const Text(
+          'Order Stock',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
@@ -116,33 +211,91 @@ class RetailerInventoryScreen extends StatelessWidget {
   Widget _buildLowStockAlertsBanner(RetailerController controller) {
     return GetBuilder<RetailerController>(
       builder: (controller) => controller.getLowStockCount() == 0
-        ? const SizedBox.shrink()
-        : Container(
-            color: Colors.orange.shade50,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Icon(Icons.warning_amber, color: Colors.orange.shade700),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    '${controller.getLowStockCount()} products are low on stock',
-                    style: TextStyle(color: Colors.orange.shade900, fontWeight: FontWeight.w500),
+          ? const SizedBox.shrink()
+          : Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFF6B35).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
-                ),
-                TextButton(
-                  onPressed: () => _showLowStockAlertsDialog(),
-                  child: const Text('View'),
-                ),
-              ],
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.warning_amber,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      '${controller.getLowStockCount()} products are low on stock',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _showLowStockAlertsDialog(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFFFF6B35),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('View'),
+                  ),
+                ],
+              ),
             ),
-          ),
     );
   }
 
-  Widget _buildInventoryItemCard(BuildContext context, RetailerController controller, RetailerInventoryItem item) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  Widget _buildInventoryItemCard(
+    BuildContext context,
+    RetailerController controller,
+    RetailerInventoryItem item,
+  ) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0F1729),
+            const Color(0xFF1A2332).withOpacity(0.5),
+          ],
+        ),
+        border: Border.all(
+          color: const Color(0xFF17A2B8).withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
         leading: Obx(() {
@@ -173,27 +326,43 @@ class RetailerInventoryScreen extends StatelessWidget {
         }),
         title: Text(
           item.productName,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text('Price: \$${item.price.toStringAsFixed(2)}'),
+            Text(
+              'Price: \$${item.price.toStringAsFixed(2)}',
+              style: TextStyle(color: Colors.grey[300]),
+            ),
             const SizedBox(height: 2),
-            Text('Stock: ${item.quantityInStock} units'),
-            Text('Reorder Level: ${item.reorderLevel} units'),
+            Text(
+              'Stock: ${item.quantityInStock} units',
+              style: TextStyle(color: Colors.grey[400]),
+            ),
+            Text(
+              'Reorder Level: ${item.reorderLevel} units',
+              style: TextStyle(color: Colors.grey[400]),
+            ),
             if (item.needsRestock) ...[
               const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade100,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFEF4444), Color(0xFFF87171)],
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(
                   'LOW STOCK',
                   style: TextStyle(
+                    color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -243,8 +412,13 @@ class RetailerInventoryScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.delete, color: Colors.red, size: 18),
                   SizedBox(width: 8),
-                  Text('Remove Product',
-                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.w500)),
+                  Text(
+                    'Remove Product',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -254,14 +428,29 @@ class RetailerInventoryScreen extends StatelessWidget {
     );
   }
 
-  void _showUpdateInventoryDialog(BuildContext context, RetailerController controller, RetailerInventoryItem item) {
-    final stockController = TextEditingController(text: item.quantityInStock.toString());
-    final reorderController = TextEditingController(text: item.reorderLevel.toString());
+  void _showUpdateInventoryDialog(
+    BuildContext context,
+    RetailerController controller,
+    RetailerInventoryItem item,
+  ) {
+    final stockController = TextEditingController(
+      text: item.quantityInStock.toString(),
+    );
+    final reorderController = TextEditingController(
+      text: item.reorderLevel.toString(),
+    );
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Update ${item.productName}'),
+        backgroundColor: const Color(0xFF0F1729),
+        title: Text(
+          'Update ${item.productName}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: SizedBox(
           width: double.maxFinite,
           child: Column(
@@ -270,7 +459,9 @@ class RetailerInventoryScreen extends StatelessWidget {
               IgnorePointer(
                 ignoring: true,
                 child: TextField(
-                  controller: TextEditingController(text: item.productId.toString()),
+                  controller: TextEditingController(
+                    text: item.productId.toString(),
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Product ID',
                     filled: true,
@@ -291,7 +482,7 @@ class RetailerInventoryScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.blue,
-                    fontWeight: FontWeight.w500
+                    fontWeight: FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -299,12 +490,47 @@ class RetailerInventoryScreen extends StatelessWidget {
               const SizedBox(height: 16),
               TextField(
                 controller: stockController,
-                decoration: const InputDecoration(labelText: 'Current Stock'),
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Current Stock',
+                  labelStyle: const TextStyle(color: Color(0xFF17A2B8)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF17A2B8)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF17A2B8),
+                      width: 2,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFF0A0E27),
+                ),
                 keyboardType: TextInputType.number,
               ),
+              const SizedBox(height: 12),
               TextField(
                 controller: reorderController,
-                decoration: const InputDecoration(labelText: 'Reorder Level'),
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Reorder Level',
+                  labelStyle: const TextStyle(color: Color(0xFF17A2B8)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF17A2B8)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF17A2B8),
+                      width: 2,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFF0A0E27),
+                ),
                 keyboardType: TextInputType.number,
               ),
             ],
@@ -342,13 +568,24 @@ class RetailerInventoryScreen extends StatelessWidget {
     );
   }
 
-  void _showRestockDialog(BuildContext context, RetailerController controller, RetailerInventoryItem item) {
+  void _showRestockDialog(
+    BuildContext context,
+    RetailerController controller,
+    RetailerInventoryItem item,
+  ) {
     final quantityController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Restock ${item.productName}'),
+        backgroundColor: const Color(0xFF0F1729),
+        title: Text(
+          'Restock ${item.productName}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: SizedBox(
           width: double.maxFinite,
           child: Column(
@@ -357,7 +594,9 @@ class RetailerInventoryScreen extends StatelessWidget {
               IgnorePointer(
                 ignoring: true,
                 child: TextField(
-                  controller: TextEditingController(text: item.productId.toString()),
+                  controller: TextEditingController(
+                    text: item.productId.toString(),
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Product ID',
                     filled: true,
@@ -378,7 +617,7 @@ class RetailerInventoryScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.green,
-                    fontWeight: FontWeight.w500
+                    fontWeight: FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -407,7 +646,10 @@ class RetailerInventoryScreen extends StatelessWidget {
                 return;
               }
 
-              final success = await controller.restockProduct(item.productId, quantity);
+              final success = await controller.restockProduct(
+                item.productId,
+                quantity,
+              );
               if (success) {
                 Navigator.of(context).pop();
               }
@@ -419,11 +661,19 @@ class RetailerInventoryScreen extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmationDialog(BuildContext context, RetailerController controller, RetailerInventoryItem item) {
+  void _showDeleteConfirmationDialog(
+    BuildContext context,
+    RetailerController controller,
+    RetailerInventoryItem item,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove Product from Inventory'),
+        backgroundColor: const Color(0xFF0F1729),
+        title: const Text(
+          'Remove Product from Inventory',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         content: SizedBox(
           width: double.maxFinite,
           child: Column(
@@ -432,7 +682,9 @@ class RetailerInventoryScreen extends StatelessWidget {
               IgnorePointer(
                 ignoring: true,
                 child: TextField(
-                  controller: TextEditingController(text: item.productId.toString()),
+                  controller: TextEditingController(
+                    text: item.productId.toString(),
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Product ID',
                     filled: true,
@@ -442,7 +694,9 @@ class RetailerInventoryScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Are you sure you want to remove "${item.productName}" from your inventory?'),
+              Text(
+                'Are you sure you want to remove "${item.productName}" from your inventory?',
+              ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -456,7 +710,10 @@ class RetailerInventoryScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       'This will stop selling this product to customers, but you can always add it back later. The product will remain available from wholesalers.',
-                      style: TextStyle(color: Colors.orange.shade800, fontSize: 12),
+                      style: TextStyle(
+                        color: Colors.orange.shade800,
+                        fontSize: 12,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -477,10 +734,15 @@ class RetailerInventoryScreen extends StatelessWidget {
               Navigator.of(context).pop();
 
               // Delete the product from inventory
-              final success = await controller.deleteInventoryItem(item.productId);
+              final success = await controller.deleteInventoryItem(
+                item.productId,
+              );
               if (!success) {
                 // If deletion failed, show error
-                Get.snackbar('Error', 'Failed to remove product. Please try again.');
+                Get.snackbar(
+                  'Error',
+                  'Failed to remove product. Please try again.',
+                );
               }
             },
             child: const Text(
@@ -498,7 +760,11 @@ class RetailerInventoryScreen extends StatelessWidget {
 
     Get.dialog(
       AlertDialog(
-        title: const Text('Low Stock Alerts'),
+        backgroundColor: const Color(0xFF0F1729),
+        title: const Text(
+          'Low Stock Alerts',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         content: SizedBox(
           width: double.maxFinite,
           child: GetBuilder<RetailerController>(
@@ -509,9 +775,7 @@ class RetailerInventoryScreen extends StatelessWidget {
 
               final lowStockItems = controller.lowStockAlerts;
               if (lowStockItems.isEmpty) {
-                return const Center(
-                  child: Text('No low stock alerts found'),
-                );
+                return const Center(child: Text('No low stock alerts found'));
               }
 
               return ListView.builder(
@@ -521,7 +785,9 @@ class RetailerInventoryScreen extends StatelessWidget {
                   final item = lowStockItems[index];
                   return ListTile(
                     leading: Obx(() {
-                      final productImageUrl = controller.getProductImageUrl(item.productId);
+                      final productImageUrl = controller.getProductImageUrl(
+                        item.productId,
+                      );
 
                       if (productImageUrl != null) {
                         // Display actual product image
@@ -548,20 +814,26 @@ class RetailerInventoryScreen extends StatelessWidget {
                     }),
                     title: Text(item.productName),
                     subtitle: Text(
-                      'Stock: ${item.currentStock} / Reorder: ${item.reorderLevel} • \$${item.price.toStringAsFixed(2)}'
+                      'Stock: ${item.currentStock} / Reorder: ${item.reorderLevel} • \$${item.price.toStringAsFixed(2)}',
                     ),
                     trailing: ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        _showRestockDialog(context, controller,
-                            controller.inventory.firstWhere((inv) => inv.productId == item.productId));
+                        _showRestockDialog(
+                          context,
+                          controller,
+                          controller.inventory.firstWhere(
+                            (inv) => inv.productId == item.productId,
+                          ),
+                        );
                       },
                       child: const Text('Restock'),
                     ),
                   );
                 },
               );
-            }),
+            },
+          ),
         ),
         actions: [
           TextButton(
@@ -570,10 +842,7 @@ class RetailerInventoryScreen extends StatelessWidget {
             },
             child: const Text('Refresh'),
           ),
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Close'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('Close')),
         ],
       ),
     );

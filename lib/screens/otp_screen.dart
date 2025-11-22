@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:pinput/pinput.dart';
 import '../services/api_service.dart';
 import '../controllers/auth_controller.dart';
 import '../approutes.dart';
@@ -29,7 +30,7 @@ class _OtpScreenState extends State<OtpScreen> {
     final name = _nameController.text.trim();
     final password = _passwordController.text.trim();
     final address = _addressController.text.trim();
-    final role = (_selectedRole ?? '').toLowerCase();  // Fix: Convert role to lowercase
+    final role = (_selectedRole ?? '').toLowerCase();
     final otp = _otpController.text.trim();
     final email = widget.email.trim();
 
@@ -65,15 +66,13 @@ class _OtpScreenState extends State<OtpScreen> {
         otp: otp,
         address: address.isNotEmpty ? address : null,
       );
-      
-      // Get user data from API response and save it
+
       final authController = Get.find<AuthController>();
       final userData = result['user'] as Map<String, dynamic>?;
       final userId = userData?['id'] as int? ?? 0;
       final token = result['token'] ?? '';
       final roleLower = role.toLowerCase();
-      
-      // Save user data to AuthController
+
       await authController.saveUser(
         userId: userId,
         token: token,
@@ -82,7 +81,6 @@ class _OtpScreenState extends State<OtpScreen> {
         name: name,
       );
 
-      // Small delay to ensure observables are updated before navigation
       await Future.delayed(const Duration(milliseconds: 100));
 
       final message = result['message'] as String? ?? 'Signup successful';
@@ -90,7 +88,6 @@ class _OtpScreenState extends State<OtpScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
 
-      // Navigate to appropriate dashboard based on role
       if (roleLower == 'customer') {
         Get.offAllNamed(AppRoutes.customerDashboard);
       } else if (roleLower == 'retailer') {
@@ -113,29 +110,35 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F1021),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1B41),
-        elevation: 8,
-        title: const Text(
-          'Enter OTP & Details',
-          style: TextStyle(
-            color: Color(0xFF00FFF7),
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-            fontSize: 22,
-            shadows: [
-              Shadow(
-                color: Color(0xFFFF00C8),
-                blurRadius: 8,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-        ),
-        centerTitle: true,
+    final defaultPinTheme = PinTheme(
+      width: 56,
+      height: 56,
+      textStyle: const TextStyle(
+        fontSize: 20,
+        color: Color(0xFF0A0E27),
+        fontWeight: FontWeight.w600,
       ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF17A2B8), width: 2),
+        color: Colors.white,
+      ),
+    );
+
+    final focusedPinTheme = defaultPinTheme.copyDecorationWith(
+      border: Border.all(color: const Color(0xFF17A2B8), width: 2.5),
+      borderRadius: BorderRadius.circular(12),
+      color: Colors.white,
+    );
+
+    final submittedPinTheme = defaultPinTheme.copyDecorationWith(
+      border: Border.all(color: const Color(0xFF17A2B8), width: 2),
+      borderRadius: BorderRadius.circular(12),
+      color: Colors.white,
+    );
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0E27),
       body: Container(
         height: double.infinity,
         width: double.infinity,
@@ -144,11 +147,11 @@ class _OtpScreenState extends State<OtpScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF0F1021),
-              Color(0xFF1A1B41),
-              Color(0xFFFF00C8),
-              Color(0xFF00FFF7),
-              Color(0xFF232946),
+              Color(0xFF0A0E27),
+              Color(0xFF0F1729),
+              Color(0xFF1A2332),
+              Color(0xFF0F1729),
+              Color(0xFF050A1A),
             ],
             stops: [0.1, 0.3, 0.6, 0.8, 1.0],
           ),
@@ -167,17 +170,17 @@ class _OtpScreenState extends State<OtpScreen> {
                       horizontal: 18,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xCC232946),
+                      color: const Color(0xFF0F1729),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFF00C8).withOpacity(0.25),
+                          color: const Color(0xFF17A2B8).withOpacity(0.2),
                           blurRadius: 24,
                           offset: const Offset(0, 8),
                         ),
                       ],
                       border: Border.all(
-                        color: const Color(0xFF00FFF7),
+                        color: const Color(0xFF17A2B8),
                         width: 2,
                       ),
                     ),
@@ -186,29 +189,29 @@ class _OtpScreenState extends State<OtpScreen> {
                         TextField(
                           controller: _nameController,
                           style: const TextStyle(
-                            color: Color(0xFF00FFF7),
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: const Color(0xFF18192B),
+                            fillColor: const Color(0xFF0A0E27),
                             labelText: 'Name',
                             labelStyle: const TextStyle(
-                              color: Color(0xFFFF00C8),
+                              color: Color(0xFF17A2B8),
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.1,
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFF00FFF7),
+                                color: Color(0xFF17A2B8),
                                 width: 2,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFFFF00C8),
+                                color: Color(0xFF17A2B8),
                                 width: 2.5,
                               ),
                             ),
@@ -225,29 +228,29 @@ class _OtpScreenState extends State<OtpScreen> {
                         TextField(
                           controller: _passwordController,
                           style: const TextStyle(
-                            color: Color(0xFF00FFF7),
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: const Color(0xFF18192B),
+                            fillColor: const Color(0xFF0A0E27),
                             labelText: 'Password',
                             labelStyle: const TextStyle(
-                              color: Color(0xFFFF00C8),
+                              color: Color(0xFF17A2B8),
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.1,
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFF00FFF7),
+                                color: Color(0xFF17A2B8),
                                 width: 2,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFFFF00C8),
+                                color: Color(0xFF17A2B8),
                                 width: 2.5,
                               ),
                             ),
@@ -265,29 +268,29 @@ class _OtpScreenState extends State<OtpScreen> {
                         TextField(
                           controller: _addressController,
                           style: const TextStyle(
-                            color: Color(0xFF00FFF7),
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: const Color(0xFF18192B),
+                            fillColor: const Color(0xFF0A0E27),
                             labelText: 'Address (Optional)',
                             labelStyle: const TextStyle(
-                              color: Color(0xFFFF00C8),
+                              color: Color(0xFF17A2B8),
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.1,
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFF00FFF7),
+                                color: Color(0xFF17A2B8),
                                 width: 2,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFFFF00C8),
+                                color: Color(0xFF17A2B8),
                                 width: 2.5,
                               ),
                             ),
@@ -312,24 +315,24 @@ class _OtpScreenState extends State<OtpScreen> {
                           },
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: const Color(0xFF18192B),
+                            fillColor: const Color(0xFF0A0E27),
                             labelText: 'Role',
                             labelStyle: const TextStyle(
-                              color: Color(0xFFFF00C8),
+                              color: Color(0xFF17A2B8),
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.1,
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFF00FFF7),
+                                color: Color(0xFF17A2B8),
                                 width: 2,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFFFF00C8),
+                                color: Color(0xFF17A2B8),
                                 width: 2.5,
                               ),
                             ),
@@ -341,13 +344,13 @@ class _OtpScreenState extends State<OtpScreen> {
                               vertical: 16,
                             ),
                           ),
-                          dropdownColor: const Color(0xFF232946),
+                          dropdownColor: const Color(0xFF0F1729),
                           icon: const Icon(
                             Icons.keyboard_arrow_down,
-                            color: Color(0xFF00FFF7),
+                            color: Color(0xFF17A2B8),
                           ),
                           style: const TextStyle(
-                            color: Color(0xFF00FFF7),
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
                           items: _roles.map<DropdownMenuItem<String>>((
@@ -358,26 +361,26 @@ class _OtpScreenState extends State<OtpScreen> {
                               child: Text(
                                 value,
                                 style: const TextStyle(
-                                  color: Color(0xFF00FFF7),
+                                  color: Colors.white,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             );
                           }).toList(),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 30),
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF232946),
+                            color: const Color(0xFF0A0E27),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: const Color(0xFFFF00C8),
+                              color: const Color(0xFF17A2B8),
                               width: 2,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFFF00C8).withOpacity(0.3),
+                                color: const Color(0xFF17A2B8).withOpacity(0.2),
                                 blurRadius: 15,
                                 offset: const Offset(0, 5),
                               ),
@@ -388,54 +391,25 @@ class _OtpScreenState extends State<OtpScreen> {
                               const Text(
                                 'Enter OTP',
                                 style: TextStyle(
-                                  color: Color(0xFF00FFF7),
+                                  color: Colors.white,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 1.2,
                                 ),
                               ),
-                              const SizedBox(height: 15),
-                              TextField(
+                              const SizedBox(height: 20),
+                              Pinput(
                                 controller: _otpController,
-                                style: const TextStyle(
-                                  color: Color(0xFF00FFF7),
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 18,
-                                  letterSpacing: 2,
-                                ),
-                                textAlign: TextAlign.center,
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: const Color(0xFF18192B),
-                                  hintText: '000000',
-                                  hintStyle: const TextStyle(
-                                    color: Color(0xFF666666),
-                                    letterSpacing: 2,
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFF00FFF7),
-                                      width: 2,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFFFF00C8),
-                                      width: 2.5,
-                                    ),
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 16,
-                                  ),
-                                ),
-                                keyboardType: TextInputType.number,
-                                maxLength: 6,
+                                length: 6,
+                                defaultPinTheme: defaultPinTheme,
+                                focusedPinTheme: focusedPinTheme,
+                                submittedPinTheme: submittedPinTheme,
+                                pinputAutovalidateMode:
+                                    PinputAutovalidateMode.onSubmit,
+                                showCursor: true,
+                                onCompleted: (pin) {
+                                  print('OTP Completed: $pin');
+                                },
                               ),
                             ],
                           ),
@@ -446,9 +420,9 @@ class _OtpScreenState extends State<OtpScreen> {
                                 padding: const EdgeInsets.all(20),
                                 child: const CircularProgressIndicator(
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color(0xFF00FFF7),
+                                    Color(0xFF17A2B8),
                                   ),
-                                  backgroundColor: Color(0xFF18192B),
+                                  backgroundColor: Color(0xFF0A0E27),
                                   strokeWidth: 3,
                                 ),
                               )
@@ -458,8 +432,8 @@ class _OtpScreenState extends State<OtpScreen> {
                                   borderRadius: BorderRadius.circular(25),
                                   gradient: const LinearGradient(
                                     colors: [
-                                      Color(0xFFFF00C8),
-                                      Color(0xFFFF3366),
+                                      Color(0xFF17A2B8),
+                                      Color(0xFF0FB5D4),
                                     ],
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
@@ -467,7 +441,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                   boxShadow: [
                                     BoxShadow(
                                       color: const Color(
-                                        0xFFFF00C8,
+                                        0xFF17A2B8,
                                       ).withOpacity(0.4),
                                       blurRadius: 20,
                                       offset: const Offset(0, 10),
@@ -500,14 +474,14 @@ class _OtpScreenState extends State<OtpScreen> {
                   ),
                   const SizedBox(height: 40),
                   const Text(
-                    'Neo-Tokyo Identity Check',
+                    'Complete Your Registration',
                     style: TextStyle(
-                      color: Color(0xFF00FFF7),
+                      color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
                       shadows: [
-                        Shadow(color: Color(0xFFFF00C8), blurRadius: 12),
+                        Shadow(color: Color(0xFF17A2B8), blurRadius: 12),
                       ],
                     ),
                   ),

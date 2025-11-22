@@ -51,28 +51,28 @@ class _EmailScreenState extends State<EmailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1021),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1B41),
-        elevation: 8,
-        title: const Text(
-          'Signup - Enter Email',
-          style: TextStyle(
-            color: Color(0xFF00FFF7),
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-            fontSize: 22,
-            shadows: [
-              Shadow(
-                color: Color(0xFFFF00C8),
-                blurRadius: 8,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-        ),
-        centerTitle: true,
-      ),
+      backgroundColor: const Color(0xFF0A0E27),
+      // appBar: AppBar(
+      //   backgroundColor: const Color(0xFF0F1729),
+      //   elevation: 8,
+      //   // title: const Text(
+      //   //   'Signup - Enter Email',
+      //   //   style: TextStyle(
+      //   //     color: Colors.white,
+      //   //     fontWeight: FontWeight.bold,
+      //   //     letterSpacing: 1.2,
+      //   //     fontSize: 22,
+      //   //     shadows: [
+      //   //       Shadow(
+      //   //         color: Color(0xFF17A2B8),
+      //   //         blurRadius: 8,
+      //   //         offset: Offset(0, 2),
+      //   //       ),
+      //   //     ],
+      //   //   ),
+      //   // ),
+      //   centerTitle: true,
+      // ),
       body: Container(
         height: double.infinity,
         width: double.infinity,
@@ -81,11 +81,11 @@ class _EmailScreenState extends State<EmailScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF0F1021),
-              Color(0xFF1A1B41),
-              Color(0xFFFF00C8),
-              Color(0xFF00FFF7),
-              Color(0xFF232946),
+              Color(0xFF0A0E27),
+              Color(0xFF0F1729),
+              Color(0xFF1A2332),
+              Color(0xFF0F1729),
+              Color(0xFF050A1A),
             ],
             stops: [0.1, 0.3, 0.6, 0.8, 1.0],
           ),
@@ -99,22 +99,43 @@ class _EmailScreenState extends State<EmailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
+                    height: 180,
+                    width: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF17A2B8), Color(0xFF0FB5D4)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF17A2B8).withOpacity(0.4),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Image.asset('assets/logo.png'),
+                  ),
+                  const SizedBox(height: 40),
+                  Container(
                     padding: const EdgeInsets.symmetric(
                       vertical: 24,
                       horizontal: 18,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xCC232946),
+                      color: const Color(0xFF0F1729),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFF00C8).withOpacity(0.25),
+                          color: const Color(0xFF17A2B8).withOpacity(0.2),
                           blurRadius: 24,
                           offset: const Offset(0, 8),
                         ),
                       ],
                       border: Border.all(
-                        color: const Color(0xFF00FFF7),
+                        color: const Color(0xFF17A2B8),
                         width: 2,
                       ),
                     ),
@@ -123,29 +144,29 @@ class _EmailScreenState extends State<EmailScreen> {
                         TextField(
                           controller: _emailController,
                           style: const TextStyle(
-                            color: Color(0xFF00FFF7),
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: const Color(0xFF18192B),
+                            fillColor: const Color(0xFF0A0E27),
                             labelText: 'Email',
                             labelStyle: const TextStyle(
-                              color: Color(0xFFFF00C8),
+                              color: Color(0xFF17A2B8),
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.1,
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFF00FFF7),
+                                color: Color(0xFF17A2B8),
                                 width: 2,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFFFF00C8),
+                                color: Color(0xFF17A2B8),
                                 width: 2.5,
                               ),
                             ),
@@ -165,9 +186,9 @@ class _EmailScreenState extends State<EmailScreen> {
                                 padding: const EdgeInsets.all(20),
                                 child: const CircularProgressIndicator(
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color(0xFF00FFF7),
+                                    Color(0xFF17A2B8),
                                   ),
-                                  backgroundColor: Color(0xFF18192B),
+                                  backgroundColor: Color(0xFF0A0E27),
                                   strokeWidth: 3,
                                 ),
                               )
@@ -177,8 +198,8 @@ class _EmailScreenState extends State<EmailScreen> {
                                   borderRadius: BorderRadius.circular(25),
                                   gradient: const LinearGradient(
                                     colors: [
-                                      Color(0xFFFF00C8),
-                                      Color(0xFFFF3366),
+                                      Color(0xFF17A2B8),
+                                      Color(0xFF0FB5D4),
                                     ],
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
@@ -186,7 +207,7 @@ class _EmailScreenState extends State<EmailScreen> {
                                   boxShadow: [
                                     BoxShadow(
                                       color: const Color(
-                                        0xFFFF00C8,
+                                        0xFF17A2B8,
                                       ).withOpacity(0.4),
                                       blurRadius: 20,
                                       offset: const Offset(0, 10),
@@ -222,7 +243,7 @@ class _EmailScreenState extends State<EmailScreen> {
                           child: const Text(
                             'Already have an account? Login',
                             style: TextStyle(
-                              color: Color(0xFF00FFF7),
+                              color: Color(0xFF17A2B8),
                               fontSize: 14,
                               decoration: TextDecoration.underline,
                             ),
@@ -233,14 +254,14 @@ class _EmailScreenState extends State<EmailScreen> {
                   ),
                   const SizedBox(height: 40),
                   const Text(
-                    'Welcome to Neo-Tokyo',
+                    'Welcome to LiveMart',
                     style: TextStyle(
-                      color: Color(0xFF00FFF7),
+                      color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
                       shadows: [
-                        Shadow(color: Color(0xFFFF00C8), blurRadius: 12),
+                        Shadow(color: Color(0xFF17A2B8), blurRadius: 12),
                       ],
                     ),
                   ),

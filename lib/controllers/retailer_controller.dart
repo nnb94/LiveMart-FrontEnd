@@ -46,7 +46,8 @@ class RetailerController extends GetxController {
     super.onInit();
     // Don't load data automatically - wait for auth state
     debounce(authController.accessToken, (_) {
-      if (authController.accessToken.value.isNotEmpty && authController.role.value == 'retailer') {
+      if (authController.accessToken.value.isNotEmpty &&
+          authController.role.value == 'retailer') {
         loadInitialData();
       }
     }, time: const Duration(milliseconds: 100));
@@ -79,7 +80,6 @@ class RetailerController extends GetxController {
 
       final response = await apiService.getRetailerInventory(accessToken);
       inventory.value = response;
-
     } catch (e) {
       inventoryError('Failed to load inventory: ${e.toString()}');
       print('Error fetching inventory: $e');
@@ -89,7 +89,8 @@ class RetailerController extends GetxController {
     }
   }
 
-  Future<bool> updateInventoryItem(int productId, {
+  Future<bool> updateInventoryItem(
+    int productId, {
     int? quantityInStock,
     int? reorderLevel,
   }) async {
@@ -97,7 +98,10 @@ class RetailerController extends GetxController {
       isUpdatingInventory(true);
 
       if (accessToken.isEmpty) {
-        Get.snackbar('Error', 'Authentication required. Please log in as a retailer.');
+        Get.snackbar(
+          'Error',
+          'Authentication required. Please log in as a retailer.',
+        );
         return false;
       }
 
@@ -111,13 +115,14 @@ class RetailerController extends GetxController {
       // Update local inventory item
       final index = inventory.indexWhere((item) => item.productId == productId);
       if (index != -1) {
-        final updatedItem = RetailerInventoryItem.fromJson(response['inventory'] ?? response);
+        final updatedItem = RetailerInventoryItem.fromJson(
+          response['inventory'] ?? response,
+        );
         inventory[index] = updatedItem;
       }
 
       Get.snackbar('Success', 'Inventory updated successfully');
       return true;
-
     } catch (e) {
       Get.snackbar('Error', 'Failed to update inventory: ${e.toString()}');
       print('Error updating inventory: $e');
@@ -140,13 +145,17 @@ class RetailerController extends GetxController {
       // Update local inventory item
       final index = inventory.indexWhere((item) => item.productId == productId);
       if (index != -1) {
-        final updatedItem = RetailerInventoryItem.fromJson(response['inventory'] ?? response);
+        final updatedItem = RetailerInventoryItem.fromJson(
+          response['inventory'] ?? response,
+        );
         inventory[index] = updatedItem;
       }
 
-      Get.snackbar('Success', response['message'] ?? 'Product restocked successfully');
+      Get.snackbar(
+        'Success',
+        response['message'] ?? 'Product restocked successfully',
+      );
       return true;
-
     } catch (e) {
       Get.snackbar('Error', 'Failed to restock: ${e.toString()}');
       print('Error restocking: $e');
@@ -159,7 +168,10 @@ class RetailerController extends GetxController {
   Future<bool> deleteInventoryItem(int productId) async {
     try {
       if (accessToken.isEmpty) {
-        Get.snackbar('Error', 'Authentication required. Please log in as a retailer.');
+        Get.snackbar(
+          'Error',
+          'Authentication required. Please log in as a retailer.',
+        );
         return false;
       }
 
@@ -171,11 +183,16 @@ class RetailerController extends GetxController {
       // Remove the item from local inventory
       inventory.removeWhere((item) => item.productId == productId);
 
-      Get.snackbar('Success', response['message'] ?? 'Product removed from inventory successfully');
+      Get.snackbar(
+        'Success',
+        response['message'] ?? 'Product removed from inventory successfully',
+      );
       return true;
-
     } catch (e) {
-      Get.snackbar('Error', 'Failed to remove product from inventory: ${e.toString()}');
+      Get.snackbar(
+        'Error',
+        'Failed to remove product from inventory: ${e.toString()}',
+      );
       print('Error deleting inventory item: $e');
       return false;
     }
@@ -187,8 +204,10 @@ class RetailerController extends GetxController {
       lowStockError('');
 
       final response = await apiService.getRetailerLowStockAlerts(accessToken);
-      lowStockAlerts.value = response['low_stock_items'] ?? [];
-
+      final items = response['low_stock_items'] as List<dynamic>? ?? [];
+      lowStockAlerts.value = items
+          .map((item) => LowStockAlert.fromJson(item as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       lowStockError('Failed to load low stock alerts: ${e.toString()}');
       print('Error fetching low stock alerts: $e');
@@ -218,18 +237,22 @@ class RetailerController extends GetxController {
         return AvailableWholesaleProduct(
           product: product,
           sellerId: product.sellerId,
-          sellerName: product.sellerName ?? 'Unknown Seller', // Backend provides this
-          availableStock: product.stockQuantity ?? 0, // Backend provides wholesaler stock
-          minimumOrderQuantity: product.minimumOrderQuantity ?? 10, // Backend provides min qty
+          sellerName:
+              product.sellerName ?? 'Unknown Seller', // Backend provides this
+          availableStock:
+              product.stockQuantity ?? 0, // Backend provides wholesaler stock
+          minimumOrderQuantity:
+              product.minimumOrderQuantity ?? 10, // Backend provides min qty
           reorderLevel: product.reorderLevel ?? 10,
           needsRestock: product.needsRestock ?? false,
         );
       }).toList();
 
       availableWholesaleProducts.value = wholesaleProducts;
-
     } catch (e) {
-      wholesaleProductsError('Failed to load wholesale products: ${e.toString()}');
+      wholesaleProductsError(
+        'Failed to load wholesale products: ${e.toString()}',
+      );
       print('Error fetching wholesale products: $e');
     } finally {
       isLoadingWholesaleProducts(false);
@@ -246,7 +269,6 @@ class RetailerController extends GetxController {
 
       // Pre-cache product images after loading orders
       await fetchAndCacheProductsForPurchaseHistory(response);
-
     } catch (e) {
       purchasesError('Failed to load purchase orders: ${e.toString()}');
       print('Error fetching purchase orders: $e');
@@ -257,17 +279,22 @@ class RetailerController extends GetxController {
   }
 
   // Product image caching for purchase history
-  Future<void> fetchAndCacheProductsForPurchaseHistory(List<RetailingPurchaseOrder> orders) async {
+  Future<void> fetchAndCacheProductsForPurchaseHistory(
+    List<RetailingPurchaseOrder> orders,
+  ) async {
     try {
       // Extract unique product IDs from all orders (product_id is directly on the order object)
-      final productIds = orders.map((order) => order.productId ?? 0)
-                               .where((id) => id > 0)
-                               .toSet();
+      final productIds = orders
+          .map((order) => order.productId ?? 0)
+          .where((id) => id > 0)
+          .toSet();
 
       if (productIds.isEmpty) return;
 
       // Fetch all available wholesale products (retailers see only wholesaler products)
-      final allProducts = await apiService.getProducts(accessToken: accessToken);
+      final allProducts = await apiService.getProducts(
+        accessToken: accessToken,
+      );
 
       // Create cache map for the products we've purchased
       final newCache = <int, Product>{};
@@ -278,7 +305,6 @@ class RetailerController extends GetxController {
       }
 
       productCache.value = newCache;
-
     } catch (e) {
       print('Error caching products for purchase history: $e');
       // Don't throw error - images are nice to have but not critical
@@ -289,6 +315,20 @@ class RetailerController extends GetxController {
   String? getProductImageUrl(int? productId) {
     if (productId == null) return null;
     return productCache[productId]?.imageUrl;
+  }
+
+  // Helper method to get product image URL by product name
+  String? getProductImageUrlByName(String? productName) {
+    if (productName == null || productName.isEmpty) return null;
+    try {
+      final product = productCache.values.firstWhere(
+        (p) => p.name.toLowerCase() == productName.toLowerCase(),
+      );
+      return product.imageUrl;
+    } catch (e) {
+      // Product not found in cache
+      return null;
+    }
   }
 
   Future<bool> placeWholesaleOrder(List<Map<String, dynamic>> products) async {
@@ -303,13 +343,9 @@ class RetailerController extends GetxController {
       Get.snackbar('Success', 'Wholesale order placed successfully!');
 
       // Refresh inventory and purchase orders
-      await Future.wait([
-        fetchInventory(),
-        fetchPurchaseOrders(),
-      ]);
+      await Future.wait([fetchInventory(), fetchPurchaseOrders()]);
 
       return true;
-
     } catch (e) {
       Get.snackbar('Error', 'Failed to place order: ${e.toString()}');
       print('Error placing wholesale order: $e');
@@ -321,6 +357,29 @@ class RetailerController extends GetxController {
 
   // ================= RETAIL SALES =================
 
+  Future<bool> updateSalesOrderStatus(int orderId, String status) async {
+    try {
+      await apiService.updateRetailerSaleStatus(
+        orderId: orderId,
+        status: status,
+        accessToken: accessToken,
+      );
+
+      // Update local state
+      final index = salesOrders.indexWhere((order) => order.orderId == orderId);
+      if (index != -1) {
+        await fetchSalesOrders(); // Refresh to get updated data
+      }
+
+      Get.snackbar('Success', 'Order status updated to $status');
+      return true;
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to update status: ${e.toString()}');
+      print('Error updating sales order status: $e');
+      return false;
+    }
+  }
+
   Future<void> fetchSalesOrders() async {
     try {
       isLoadingSales(true);
@@ -328,7 +387,6 @@ class RetailerController extends GetxController {
 
       final response = await apiService.getRetailerSalesOrders(accessToken);
       salesOrders.value = response;
-
     } catch (e) {
       salesError('Failed to load sales orders: ${e.toString()}');
       print('Error fetching sales orders: $e');
@@ -344,7 +402,6 @@ class RetailerController extends GetxController {
       // This might need a separate retailer endpoint
       Get.snackbar('Info', 'Order status management coming soon');
       return true;
-
     } catch (e) {
       Get.snackbar('Error', 'Failed to update order status: ${e.toString()}');
       print('Error updating sale order status: $e');
@@ -369,31 +426,33 @@ class RetailerController extends GetxController {
       }
 
       // Fetch sales orders and purchase orders for analytics
-      await Future.wait([
-        fetchSalesOrders(),
-        fetchPurchaseOrders(),
-      ]);
+      await Future.wait([fetchSalesOrders(), fetchPurchaseOrders()]);
 
       // Use real backend data from sales orders
       final salesData = salesOrders.value;
       final purchasesData = purchaseOrders.value;
 
       // Calculate analytics from real sales data
-      final totalRevenue = salesData.fold<double>(0.0,
-        (sum, order) => sum + (order.orderDetails.price * order.orderDetails.quantity));
+      final totalRevenue = salesData.fold<double>(
+        0.0,
+        (sum, order) =>
+            sum + (order.orderDetails.price * order.orderDetails.quantity),
+      );
 
       analytics.value = RetailerAnalytics(
         summary: Summary(
           totalOrders: salesData.length,
           totalRevenue: totalRevenue,
-          averageOrderValue: salesData.isEmpty ? 0 : totalRevenue / salesData.length,
-          totalUnitsSold: salesData.fold<int>(0, (sum, order) => sum + order.orderDetails.quantity),
+          averageOrderValue: salesData.isEmpty
+              ? 0
+              : totalRevenue / salesData.length,
+          totalUnitsSold: salesData.fold<int>(
+            0,
+            (sum, order) => sum + order.orderDetails.quantity,
+          ),
           uniqueBuyers: salesData.map((order) => order.buyerId).toSet().length,
         ),
       );
-
-
-
     } catch (e) {
       analyticsError('Failed to load analytics: ${e.toString()}');
       analytics.value = null; // Clear on error
@@ -410,18 +469,31 @@ class RetailerController extends GetxController {
   }
 
   int getLowStockCount() {
-    return inventory.where((item) => item.quantityInStock <= item.reorderLevel).length;
+    return inventory
+        .where((item) => item.quantityInStock <= item.reorderLevel)
+        .length;
   }
 
   double getTotalInventoryValue() {
-    return inventory.fold<double>(0.0, (sum, item) => sum + (item.price * item.quantityInStock));
+    return inventory.fold<double>(
+      0.0,
+      (sum, item) => sum + (item.price * item.quantityInStock),
+    );
   }
 
   double getTotalPurchaseValue() {
-    return purchaseOrders.fold<double>(0.0, (sum, order) => sum + (order.orderDetails.price * order.orderDetails.quantity));
+    return purchaseOrders.fold<double>(
+      0.0,
+      (sum, order) =>
+          sum + (order.orderDetails.price * order.orderDetails.quantity),
+    );
   }
 
   double getTotalSalesValue() {
-    return salesOrders.fold<double>(0.0, (sum, order) => sum + (order.orderDetails.price * order.orderDetails.quantity));
+    return salesOrders.fold<double>(
+      0.0,
+      (sum, order) =>
+          sum + (order.orderDetails.price * order.orderDetails.quantity),
+    );
   }
 }

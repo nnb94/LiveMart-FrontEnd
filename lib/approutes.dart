@@ -24,6 +24,7 @@ import 'screens/retailer/sales.dart';
 import 'screens/retailer/analytics.dart';
 import 'screens/retailer/purchase_history.dart';
 import 'screens/retailer/review_management.dart';
+import 'screens/retailer/wishlist.dart';
 import 'screens/wholesaler/dashboard.dart';
 import 'screens/wholesaler/inventory.dart';
 import 'screens/wholesaler/sales.dart';
@@ -32,11 +33,6 @@ import 'screens/wholesaler/analytics.dart';
 import 'screens/wholesaler/review_management.dart';
 
 import 'screens/customer/editprofile.dart';
-
-// Role-based dashboards
-import 'screens/customer/dashboard.dart';
-import 'screens/retailer/dashboard.dart';
-import 'screens/wholesaler/dashboard.dart';
 
 class AppRoutes {
   static const String email = '/email';
@@ -57,6 +53,7 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
   static const String retailerDashboard = '/retailer/dashboard';
+  static const String retailerWishlist = '/retailer/wishlist';
 
   static const String retailerInventory = '/retailer/inventory';
   static const String retailerPurchasing = '/retailer/purchasing';
@@ -162,6 +159,12 @@ class AppRoutes {
       page: () => const RetailerDashboard(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: AppRoutes.retailerWishlist,
+      page: () => const RetailerWishlistScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
       name: AppRoutes.wholesalerDashboard,

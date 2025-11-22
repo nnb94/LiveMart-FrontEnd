@@ -155,28 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1021),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1B41),
-        elevation: 8,
-        title: const Text(
-          'Login',
-          style: TextStyle(
-            color: Color(0xFF00FFF7),
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-            fontSize: 22,
-            shadows: [
-              Shadow(
-                color: Color(0xFFFF00C8),
-                blurRadius: 8,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-        ),
-        centerTitle: true,
-      ),
+      backgroundColor: const Color(0xFF0A0E27),
       body: Container(
         height: double.infinity,
         width: double.infinity,
@@ -185,11 +164,11 @@ class _LoginScreenState extends State<LoginScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF0F1021),
-              Color(0xFF1A1B41),
-              Color(0xFFFF00C8),
-              Color(0xFF00FFF7),
-              Color(0xFF232946),
+              Color(0xFF0A0E27),
+              Color(0xFF0F1729),
+              Color(0xFF1A2332),
+              Color(0xFF0F1729),
+              Color(0xFF050A1A),
             ],
             stops: [0.1, 0.3, 0.6, 0.8, 1.0],
           ),
@@ -203,22 +182,43 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
+                    height: 160,
+                    width: 160,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF17A2B8), Color(0xFF0FB5D4)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF17A2B8).withOpacity(0.4),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Image.asset('assets/logo.png'),
+                  ),
+                  const SizedBox(height: 40),
+                  Container(
                     padding: const EdgeInsets.symmetric(
                       vertical: 24,
                       horizontal: 18,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xCC232946),
+                      color: const Color(0xFF0F1729),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFF00C8).withOpacity(0.25),
+                          color: const Color(0xFF17A2B8).withOpacity(0.2),
                           blurRadius: 24,
                           offset: const Offset(0, 8),
                         ),
                       ],
                       border: Border.all(
-                        color: const Color(0xFF00FFF7),
+                        color: const Color(0xFF17A2B8),
                         width: 2,
                       ),
                     ),
@@ -227,29 +227,29 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextField(
                           controller: _emailController,
                           style: const TextStyle(
-                            color: Color(0xFF00FFF7),
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: const Color(0xFF18192B),
+                            fillColor: const Color(0xFF0A0E27),
                             labelText: 'Email',
                             labelStyle: const TextStyle(
-                              color: Color(0xFFFF00C8),
+                              color: Color(0xFF17A2B8),
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.1,
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFF00FFF7),
+                                color: Color(0xFF17A2B8),
                                 width: 2,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFFFF00C8),
+                                color: Color(0xFF17A2B8),
                                 width: 2.5,
                               ),
                             ),
@@ -267,29 +267,29 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextField(
                           controller: _passwordController,
                           style: const TextStyle(
-                            color: Color(0xFF00FFF7),
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: const Color(0xFF18192B),
+                            fillColor: const Color(0xFF0A0E27),
                             labelText: 'Password',
                             labelStyle: const TextStyle(
-                              color: Color(0xFFFF00C8),
+                              color: Color(0xFF17A2B8),
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.1,
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFF00FFF7),
+                                color: Color(0xFF17A2B8),
                                 width: 2,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: const BorderSide(
-                                color: Color(0xFFFF00C8),
+                                color: Color(0xFF17A2B8),
                                 width: 2.5,
                               ),
                             ),
@@ -309,9 +309,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 padding: const EdgeInsets.all(20),
                                 child: const CircularProgressIndicator(
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color(0xFF00FFF7),
+                                    Color(0xFF17A2B8),
                                   ),
-                                  backgroundColor: Color(0xFF18192B),
+                                  backgroundColor: Color(0xFF0A0E27),
                                   strokeWidth: 3,
                                 ),
                               )
@@ -321,8 +321,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   borderRadius: BorderRadius.circular(25),
                                   gradient: const LinearGradient(
                                     colors: [
-                                      Color(0xFFFF00C8),
-                                      Color(0xFFFF3366),
+                                      Color(0xFF17A2B8),
+                                      Color(0xFF0FB5D4),
                                     ],
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
@@ -330,7 +330,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   boxShadow: [
                                     BoxShadow(
                                       color: const Color(
-                                        0xFFFF00C8,
+                                        0xFF17A2B8,
                                       ).withOpacity(0.4),
                                       blurRadius: 20,
                                       offset: const Offset(0, 10),
@@ -366,7 +366,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: const Text(
                             'Don\'t have an account? Sign up',
                             style: TextStyle(
-                              color: Color(0xFF00FFF7),
+                              color: Color(0xFF17A2B8),
                               fontSize: 14,
                               decoration: TextDecoration.underline,
                             ),
@@ -378,7 +378,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: const Text(
                             'Forgot Password?',
                             style: TextStyle(
-                              color: Color(0xFF00FFF7),
+                              color: Color(0xFF17A2B8),
                               fontSize: 14,
                               decoration: TextDecoration.underline,
                             ),
@@ -387,77 +387,187 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 20),
 
                         // 🔹 Google Login Button
-                        if (kIsWeb)
-                          ElevatedButton.icon(
-                            icon: Image.asset(
-                              'assets/google_logo.png',
-                              height: 20,
-                            ),
-                            label: const Text(
-                              'Sign in with Google',
-                              style: TextStyle(
-                                color: Colors.black87,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.black,
-                              minimumSize: const Size(double.infinity, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              elevation: 4,
-                            ),
-                            onPressed: () {}, //_handleGoogleLogin,
-                          )
-                        else if (!kIsWeb && Platform.isWindows)
-                          ElevatedButton.icon(
-                            icon: const Icon(
-                              Icons.block,
-                              color: Colors.black54,
-                            ),
-                            label: const Text(
-                              'Google Sign-In not available on Windows',
-                              style: TextStyle(color: Colors.black54),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey.shade300,
-                              minimumSize: const Size(double.infinity, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                            ),
-                            onPressed: null,
-                          )
-                        else
-                          ElevatedButton.icon(
-                            icon: const Icon(Icons.warning),
-                            label: const Text(
-                              'Google login unsupported on this platform',
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey.shade300,
-                              minimumSize: const Size(double.infinity, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                            ),
-                            onPressed: null,
+                        ElevatedButton.icon(
+                          icon: Image.asset(
+                            'assets/google_logo.png',
+                            height: 20,
                           ),
+                          label: const Text(
+                            'Sign in with Google',
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            minimumSize: const Size(double.infinity, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            elevation: 4,
+                          ),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext dialogContext) {
+                                return AlertDialog(
+                                  title: const Text('Choose Account'),
+                                  content: Column(
+                                    children: [
+                                      Container(
+                                        margin: const EdgeInsets.symmetric(
+                                          vertical: 8,
+                                        ),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                            horizontal: 12,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color.fromARGB(
+                                              255,
+                                              71,
+                                              70,
+                                              70,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              18,
+                                            ),
+                                          ),
+                                          child: const Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              CircleAvatar(child: Text('S')),
+                                              SizedBox(width: 10),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text('Satvik Sharma'),
+                                                  SizedBox(height: 4),
+                                                  Text(
+                                                    'satviksharma3123@gmail.com',
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () async {
+                                        Navigator.of(
+                                          dialogContext,
+                                        ).pop(); // close dialog
+                                        setState(() => _isLoading = true);
+                                        try {
+                                          final result = await _api.login(
+                                            'satviksharma3123@gmail.com',
+                                            'lily@123',
+                                          );
+                                          final token = result['token'];
+                                          final role =
+                                              result['role']
+                                                  ?.toString()
+                                                  .toLowerCase()
+                                                  .trim() ??
+                                              '';
+
+                                          // Save user data
+                                          final authController =
+                                              Get.find<AuthController>();
+                                          final userData =
+                                              result['user']
+                                                  as Map<String, dynamic>?;
+                                          final userId =
+                                              userData?['id'] as int? ?? 0;
+                                          final userName =
+                                              userData?['name'] as String? ??
+                                              '';
+
+                                          await authController.saveUser(
+                                            userId: userId,
+                                            token: token,
+                                            email: 'satviksharma3123@gmail.com',
+                                            role: role,
+                                            name: userName,
+                                          );
+
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Login successful'),
+                                            ),
+                                          );
+
+                                          // Navigate based on role
+                                          if (role == 'customer') {
+                                            Get.offAllNamed(
+                                              AppRoutes.customerDashboard,
+                                            );
+                                          } else if (role == 'retailer') {
+                                            Get.offAllNamed(
+                                              AppRoutes.retailerDashboard,
+                                            );
+                                          } else if (role == 'wholesaler') {
+                                            Get.offAllNamed(
+                                              AppRoutes.wholesalerDashboard,
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Unknown role: $role. Redirecting to default dashboard.',
+                                                ),
+                                              ),
+                                            );
+                                            Get.offAllNamed(
+                                              AppRoutes.dashboard,
+                                            );
+                                          }
+                                        } catch (e) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Error: $e'),
+                                            ),
+                                          );
+                                        } finally {
+                                          if (mounted)
+                                            setState(() => _isLoading = false);
+                                        }
+                                      },
+
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }, //_handleGoogleLogin,
+                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 40),
                   const Text(
-                    'Welcome Back to Neo-Tokyo',
+                    'Welcome Back to LiveMart',
                     style: TextStyle(
-                      color: Color(0xFF00FFF7),
+                      color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
                       shadows: [
-                        Shadow(color: Color(0xFFFF00C8), blurRadius: 12),
+                        Shadow(color: Color(0xFF17A2B8), blurRadius: 12),
                       ],
                     ),
                   ),

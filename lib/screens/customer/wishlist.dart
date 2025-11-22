@@ -21,9 +21,7 @@ class CustomerWishlist extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Wishlist'),
-      ),
+      appBar: AppBar(title: const Text('Wishlist')),
       body: Obx(() {
         if (wishlistController.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
@@ -53,11 +51,19 @@ class CustomerWishlist extends StatelessWidget {
                       await wishlistController.removeFromWishlist(product.id);
                       if (wishlistController.errorMessage.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('${product.name} removed from wishlist')),
+                          SnackBar(
+                            content: Text(
+                              '${product.name} removed from wishlist',
+                            ),
+                          ),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: ${wishlistController.errorMessage.value}')),
+                          SnackBar(
+                            content: Text(
+                              'Error: ${wishlistController.errorMessage.value}',
+                            ),
+                          ),
                         );
                       }
                     },

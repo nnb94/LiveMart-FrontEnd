@@ -9,7 +9,8 @@ class RetailerAnalyticsScreen extends StatefulWidget {
   const RetailerAnalyticsScreen({super.key});
 
   @override
-  State<RetailerAnalyticsScreen> createState() => _RetailerAnalyticsScreenState();
+  State<RetailerAnalyticsScreen> createState() =>
+      _RetailerAnalyticsScreenState();
 }
 
 class _RetailerAnalyticsScreenState extends State<RetailerAnalyticsScreen> {
@@ -35,7 +36,11 @@ class _RetailerAnalyticsScreenState extends State<RetailerAnalyticsScreen> {
               const SizedBox(height: 16),
               const Text(
                 'Access Denied',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -57,24 +62,64 @@ class _RetailerAnalyticsScreenState extends State<RetailerAnalyticsScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        backgroundColor: const Color(0xFF0A0E27),
         appBar: AppBar(
-          title: const Text('Business Analytics'),
+          backgroundColor: const Color(0xFF0F1729),
+          elevation: 0,
+          title: const Text(
+            'Business Analytics',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF0F1729),
+                  const Color(0xFF0F1729).withOpacity(0.8),
+                ],
+              ),
+            ),
+          ),
           bottom: const TabBar(
+            indicatorColor: Color(0xFF17A2B8),
+            indicatorWeight: 3,
+            labelColor: Color(0xFF17A2B8),
+            unselectedLabelColor: Colors.white60,
+            labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             tabs: [
               Tab(text: 'Summary'),
               Tab(text: 'Charts'),
             ],
           ),
         ),
-        body: TabBarView(
-          children: [
-            _buildSummaryTab(),
-            _buildChartsTab(),
-          ],
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF0A0E27),
+                Color(0xFF0F1729),
+                Color(0xFF1A2332),
+                Color(0xFF0F1729),
+                Color(0xFF050A1A),
+              ],
+              stops: [0.1, 0.3, 0.6, 0.8, 1.0],
+            ),
+          ),
+          child: TabBarView(children: [_buildSummaryTab(), _buildChartsTab()]),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _loadAnalytics(),
-          child: const Icon(Icons.refresh),
+          backgroundColor: const Color(0xFF17A2B8),
+          elevation: 8,
+          child: const Icon(Icons.refresh, color: Colors.white),
         ),
       ),
     );
@@ -95,21 +140,52 @@ class _RetailerAnalyticsScreenState extends State<RetailerAnalyticsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF17A2B8).withOpacity(0.2),
+                      const Color(0xFF0FB5D4).withOpacity(0.1),
+                    ],
+                  ),
+                ),
+                child: const Icon(
+                  Icons.analytics_outlined,
+                  size: 80,
+                  color: Color(0xFF17A2B8),
+                ),
+              ),
+              const SizedBox(height: 24),
               const Text(
                 'No analytics data available',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: _loadAnalytics,
                 icon: const Icon(Icons.refresh),
                 label: const Text('Load Analytics'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF17A2B8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
                   controller.analyticsError.value,
-                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                  style: const TextStyle(
+                    color: Color(0xFFEF4444),
+                    fontSize: 12,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -161,34 +237,95 @@ class _RetailerAnalyticsScreenState extends State<RetailerAnalyticsScreen> {
     });
   }
 
-  Widget _buildMetricCard({required String title, required String value, required IconData icon, required Color color}) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
+  LinearGradient _getMetricGradient(Color color) {
+    if (color == Colors.green) {
+      return const LinearGradient(
+        colors: [Color(0xFF10B981), Color(0xFF34D399)],
+      );
+    } else if (color == Colors.blue) {
+      return const LinearGradient(
+        colors: [Color(0xFF17A2B8), Color(0xFF0FB5D4)],
+      );
+    } else if (color == Colors.orange) {
+      return const LinearGradient(
+        colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
+      );
+    } else if (color == Colors.purple) {
+      return const LinearGradient(
+        colors: [Color(0xFFA855F7), Color(0xFFD946EF)],
+      );
+    } else if (color == Colors.teal) {
+      return const LinearGradient(
+        colors: [Color(0xFF14B8A6), Color(0xFF2DD4BF)],
+      );
+    }
+    return LinearGradient(colors: [color, color]);
+  }
+
+  Widget _buildMetricCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    final gradient = _getMetricGradient(color);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0F1729),
+            const Color(0xFF1A2332).withOpacity(0.5),
+          ],
+        ),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 26), // 0.1 * 255
-                borderRadius: BorderRadius.circular(8),
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: Icon(icon, color: color, size: 28),
+              child: Icon(icon, color: Colors.white, size: 32),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 20),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[400]),
                   ),
+                  const SizedBox(height: 4),
                   Text(
                     value,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
@@ -199,30 +336,52 @@ class _RetailerAnalyticsScreenState extends State<RetailerAnalyticsScreen> {
     );
   }
 
-
-
   Widget _buildChartsTab() {
     return Obx(() {
       if (controller.isLoadingAnalytics.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF17A2B8)),
+          ),
+        );
       }
 
       if (controller.analytics.value == null ||
           controller.salesOrders.isEmpty) {
-        return const Center(
+        return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.show_chart, size: 64, color: Colors.grey),
-              SizedBox(height: 16),
-              Text(
-                'No chart data available',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF17A2B8).withOpacity(0.2),
+                      const Color(0xFF0FB5D4).withOpacity(0.1),
+                    ],
+                  ),
+                ),
+                child: const Icon(
+                  Icons.show_chart,
+                  size: 80,
+                  color: Color(0xFF17A2B8),
+                ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 24),
+              const Text(
+                'No chart data available',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
               Text(
                 'Make some sales to see your analytics charts',
-                style: TextStyle(color: Colors.grey),
+                style: TextStyle(color: Colors.grey[400], fontSize: 14),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -237,7 +396,11 @@ class _RetailerAnalyticsScreenState extends State<RetailerAnalyticsScreen> {
           children: [
             const Text(
               'Sales Revenue Over Time',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -248,18 +411,28 @@ class _RetailerAnalyticsScreenState extends State<RetailerAnalyticsScreen> {
             const SizedBox(height: 40),
             const Text(
               'Customer Order Trends',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 20),
             SizedBox(
               height: 300,
-              child: _CustomerOrderTrendsChart(salesOrders: controller.salesOrders),
+              child: _CustomerOrderTrendsChart(
+                salesOrders: controller.salesOrders,
+              ),
             ),
 
             const SizedBox(height: 40),
             const Text(
               'Purchase Cost vs Sales Revenue',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -273,12 +446,18 @@ class _RetailerAnalyticsScreenState extends State<RetailerAnalyticsScreen> {
             const SizedBox(height: 40),
             const Text(
               'Top Selling Products',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 20),
             SizedBox(
               height: 350,
-              child: _RetailerTopProductsChart(salesOrders: controller.salesOrders),
+              child: _RetailerTopProductsChart(
+                salesOrders: controller.salesOrders,
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -303,12 +482,15 @@ class _RetailerRevenueChart extends StatelessWidget {
 
     for (final order in salesOrders) {
       final date = DateTime.parse(order.orderDate).toLocal();
-      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final dateKey =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
       if (!dailyRevenue.containsKey(dateKey)) {
         dailyRevenue[dateKey] = 0;
       }
-      dailyRevenue[dateKey] = dailyRevenue[dateKey]! + (order.orderDetails.price * order.orderDetails.quantity);
+      dailyRevenue[dateKey] =
+          dailyRevenue[dateKey]! +
+          (order.orderDetails.price * order.orderDetails.quantity);
     }
 
     // Sort dates and prepare data for chart
@@ -322,8 +504,29 @@ class _RetailerRevenueChart extends StatelessWidget {
       if (revenue > maxY) maxY = revenue;
     }
 
-    return Card(
-      elevation: 4,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0F1729),
+            const Color(0xFF1A2332).withOpacity(0.5),
+          ],
+        ),
+        border: Border.all(
+          color: const Color(0xFF10B981).withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -340,7 +543,10 @@ class _RetailerRevenueChart extends StatelessWidget {
                         reservedSize: 50,
                         getTitlesWidget: (value, meta) => Text(
                           '₹${value.toInt()}',
-                          style: const TextStyle(fontSize: 12),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white70,
+                          ),
                         ),
                       ),
                     ),
@@ -348,26 +554,47 @@ class _RetailerRevenueChart extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          if (value.toInt() >= 0 && value.toInt() < sortedDates.length) {
+                          if (value.toInt() >= 0 &&
+                              value.toInt() < sortedDates.length) {
                             final date = sortedDates[value.toInt()].split('-');
-                            return Text('${date[1]}/${date[2]}', style: const TextStyle(fontSize: 10));
+                            return Text(
+                              '${date[1]}/${date[2]}',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.white70,
+                              ),
+                            );
                           }
                           return const Text('');
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   borderData: FlBorderData(show: true),
                   lineBarsData: [
                     LineChartBarData(
                       spots: spots,
                       isCurved: true,
-                      color: Colors.green,
-                      barWidth: 3,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF10B981), Color(0xFF34D399)],
+                      ),
+                      barWidth: 4,
                       dotData: const FlDotData(show: false),
-                      belowBarData: BarAreaData(show: true, color: Colors.green.withValues(alpha: 51)),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF10B981).withOpacity(0.3),
+                            const Color(0xFF34D399).withOpacity(0.1),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                   minY: 0,
@@ -394,7 +621,8 @@ class _CustomerOrderTrendsChart extends StatelessWidget {
 
     for (final order in salesOrders) {
       final date = DateTime.parse(order.orderDate).toLocal();
-      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final dateKey =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
       dailyOrders[dateKey] = (dailyOrders[dateKey] ?? 0) + 1;
     }
@@ -411,19 +639,46 @@ class _CustomerOrderTrendsChart extends StatelessWidget {
           barRods: [
             BarChartRodData(
               toY: orderCount.toDouble(),
-              color: Colors.blue,
+              gradient: const LinearGradient(
+                colors: [Color(0xFF17A2B8), Color(0xFF0FB5D4)],
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+              ),
               width: 16,
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(6),
             ),
           ],
         ),
       );
     }
 
-    final maxY = dailyOrders.values.isEmpty ? 10.0 : (dailyOrders.values.reduce((a, b) => a > b ? a : b).toDouble()) * 1.2;
+    final maxY = dailyOrders.values.isEmpty
+        ? 10.0
+        : (dailyOrders.values.reduce((a, b) => a > b ? a : b).toDouble()) * 1.2;
 
-    return Card(
-      elevation: 4,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0F1729),
+            const Color(0xFF1A2332).withOpacity(0.5),
+          ],
+        ),
+        border: Border.all(
+          color: const Color(0xFF17A2B8).withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF17A2B8).withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -440,7 +695,10 @@ class _CustomerOrderTrendsChart extends StatelessWidget {
                         reservedSize: 30,
                         getTitlesWidget: (value, meta) => Text(
                           value.toInt().toString(),
-                          style: const TextStyle(fontSize: 12),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white70,
+                          ),
                         ),
                       ),
                     ),
@@ -448,16 +706,27 @@ class _CustomerOrderTrendsChart extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          if (value.toInt() >= 0 && value.toInt() < sortedDates.length) {
+                          if (value.toInt() >= 0 &&
+                              value.toInt() < sortedDates.length) {
                             final date = sortedDates[value.toInt()].split('-');
-                            return Text('${date[1]}/${date[2]}', style: const TextStyle(fontSize: 10));
+                            return Text(
+                              '${date[1]}/${date[2]}',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.white70,
+                              ),
+                            );
                           }
                           return const Text('');
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   borderData: FlBorderData(show: true),
                   barGroups: barGroups,
@@ -495,8 +764,11 @@ class _PurchaseVsSalesChart extends StatelessWidget {
     for (final order in purchaseOrders) {
       final date = DateTime.parse(order.orderDate).toLocal();
       if (date.isAfter(thirtyDaysAgo)) {
-        final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-        dailyPurchases[dateKey] = (dailyPurchases[dateKey] ?? 0) + (order.orderDetails.price * order.orderDetails.quantity);
+        final dateKey =
+            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+        dailyPurchases[dateKey] =
+            (dailyPurchases[dateKey] ?? 0) +
+            (order.orderDetails.price * order.orderDetails.quantity);
       }
     }
 
@@ -504,13 +776,17 @@ class _PurchaseVsSalesChart extends StatelessWidget {
     for (final order in salesOrders) {
       final date = DateTime.parse(order.orderDate).toLocal();
       if (date.isAfter(thirtyDaysAgo)) {
-        final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-        dailySales[dateKey] = (dailySales[dateKey] ?? 0) + (order.orderDetails.price * order.orderDetails.quantity);
+        final dateKey =
+            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+        dailySales[dateKey] =
+            (dailySales[dateKey] ?? 0) +
+            (order.orderDetails.price * order.orderDetails.quantity);
       }
     }
 
     // Create combined date keys
-    final allDateKeys = {...dailyPurchases.keys, ...dailySales.keys}.toList()..sort();
+    final allDateKeys = {...dailyPurchases.keys, ...dailySales.keys}.toList()
+      ..sort();
     final purchaseSpots = <FlSpot>[];
     final salesSpots = <FlSpot>[];
 
@@ -523,12 +799,37 @@ class _PurchaseVsSalesChart extends StatelessWidget {
       salesSpots.add(FlSpot(i.toDouble(), salesAmount));
     }
 
-    final maxPurchase = purchaseSpots.isEmpty ? 0 : purchaseSpots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
-    final maxSales = salesSpots.isEmpty ? 0 : salesSpots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
+    final maxPurchase = purchaseSpots.isEmpty
+        ? 0
+        : purchaseSpots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
+    final maxSales = salesSpots.isEmpty
+        ? 0
+        : salesSpots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
     final maxY = [maxPurchase, maxSales].reduce((a, b) => a > b ? a : b) * 1.2;
 
-    return Card(
-      elevation: 4,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0F1729),
+            const Color(0xFF1A2332).withOpacity(0.5),
+          ],
+        ),
+        border: Border.all(
+          color: const Color(0xFF17A2B8).withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF17A2B8).withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -536,13 +837,35 @@ class _PurchaseVsSalesChart extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(width: 12, height: 12, color: Colors.red),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFEF4444), Color(0xFFF87171)],
+                    ),
+                  ),
+                ),
                 const SizedBox(width: 4),
-                const Text('Purchase Cost', style: TextStyle(fontSize: 12)),
+                const Text(
+                  'Purchase Cost',
+                  style: TextStyle(fontSize: 12, color: Colors.white70),
+                ),
                 const SizedBox(width: 16),
-                Container(width: 12, height: 12, color: Colors.green),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF34D399)],
+                    ),
+                  ),
+                ),
                 const SizedBox(width: 4),
-                const Text('Sales Revenue', style: TextStyle(fontSize: 12)),
+                const Text(
+                  'Sales Revenue',
+                  style: TextStyle(fontSize: 12, color: Colors.white70),
+                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -557,7 +880,10 @@ class _PurchaseVsSalesChart extends StatelessWidget {
                         reservedSize: 50,
                         getTitlesWidget: (value, meta) => Text(
                           '₹${value.toInt()}',
-                          style: const TextStyle(fontSize: 12),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white70,
+                          ),
                         ),
                       ),
                     ),
@@ -565,31 +891,47 @@ class _PurchaseVsSalesChart extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          if (value.toInt() >= 0 && value.toInt() < allDateKeys.length && value.toInt() % 3 == 0) {
+                          if (value.toInt() >= 0 &&
+                              value.toInt() < allDateKeys.length &&
+                              value.toInt() % 3 == 0) {
                             final date = allDateKeys[value.toInt()].split('-');
-                            return Text('${date[1]}/${date[2]}', style: const TextStyle(fontSize: 10));
+                            return Text(
+                              '${date[1]}/${date[2]}',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.white70,
+                              ),
+                            );
                           }
                           return const Text('');
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   borderData: FlBorderData(show: true),
                   lineBarsData: [
                     LineChartBarData(
                       spots: purchaseSpots,
                       isCurved: true,
-                      color: Colors.red,
-                      barWidth: 3,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFEF4444), Color(0xFFF87171)],
+                      ),
+                      barWidth: 4,
                       dotData: const FlDotData(show: false),
                     ),
                     LineChartBarData(
                       spots: salesSpots,
                       isCurved: true,
-                      color: Colors.green,
-                      barWidth: 3,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF10B981), Color(0xFF34D399)],
+                      ),
+                      barWidth: 4,
                       dotData: const FlDotData(show: false),
                     ),
                   ],
@@ -621,17 +963,36 @@ class _RetailerTopProductsChart extends StatelessWidget {
       final quantity = order.orderDetails.quantity;
       final revenue = order.orderDetails.price * quantity;
 
-      productUnitsSold[productName] = (productUnitsSold[productName] ?? 0) + quantity;
-      productRevenue[productName] = (productRevenue[productName] ?? 0) + revenue;
+      productUnitsSold[productName] =
+          (productUnitsSold[productName] ?? 0) + quantity;
+      productRevenue[productName] =
+          (productRevenue[productName] ?? 0) + revenue;
     }
 
     if (productRevenue.isEmpty) {
-      return const Card(
-        elevation: 4,
-        child: Center(
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF0F1729),
+              const Color(0xFF1A2332).withOpacity(0.5),
+            ],
+          ),
+          border: Border.all(
+            color: const Color(0xFF17A2B8).withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: const Center(
           child: Padding(
             padding: EdgeInsets.all(32.0),
-            child: Text('No sales data available yet.'),
+            child: Text(
+              'No sales data available yet.',
+              style: TextStyle(color: Colors.white70),
+            ),
           ),
         ),
       );
@@ -643,14 +1004,22 @@ class _RetailerTopProductsChart extends StatelessWidget {
     final topProducts = sortedProducts.take(5);
 
     final sections = topProducts.map((entry) {
-      final percentage = productRevenue.values.fold<double>(0, (sum, rev) => sum + rev) > 0
-          ? (entry.value / productRevenue.values.fold<double>(0, (sum, rev) => sum + rev)) * 100
+      final percentage =
+          productRevenue.values.fold<double>(0, (sum, rev) => sum + rev) > 0
+          ? (entry.value /
+                    productRevenue.values.fold<double>(
+                      0,
+                      (sum, rev) => sum + rev,
+                    )) *
+                100
           : 0.0;
 
       return PieChartSectionData(
         value: entry.value,
         title: '${percentage.toStringAsFixed(1)}%',
-        color: Colors.primaries[topProducts.toList().indexOf(entry) % Colors.primaries.length],
+        color:
+            Colors.primaries[topProducts.toList().indexOf(entry) %
+                Colors.primaries.length],
         radius: 80,
         titleStyle: const TextStyle(
           fontSize: 14,
@@ -660,8 +1029,29 @@ class _RetailerTopProductsChart extends StatelessWidget {
       );
     }).toList();
 
-    return Card(
-      elevation: 4,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0F1729),
+            const Color(0xFF1A2332).withOpacity(0.5),
+          ],
+        ),
+        border: Border.all(
+          color: const Color(0xFFA855F7).withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFA855F7).withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -688,7 +1078,11 @@ class _RetailerTopProductsChart extends StatelessWidget {
                       children: [
                         const Text(
                           'Legend',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Expanded(
@@ -702,21 +1096,31 @@ class _RetailerTopProductsChart extends StatelessWidget {
                                   Container(
                                     width: 12,
                                     height: 12,
-                                    color: Colors.primaries[index % Colors.primaries.length],
+                                    color:
+                                        Colors.primaries[index %
+                                            Colors.primaries.length],
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           product.key,
-                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         Text(
                                           '$units units - ₹${product.value.toStringAsFixed(0)}',
-                                          style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.grey[400],
+                                          ),
                                         ),
                                       ],
                                     ),

@@ -11,11 +11,14 @@ class WholesalerReviewManagementScreen extends StatefulWidget {
   const WholesalerReviewManagementScreen({super.key});
 
   @override
-  State<WholesalerReviewManagementScreen> createState() => _WholesalerReviewManagementScreenState();
+  State<WholesalerReviewManagementScreen> createState() =>
+      _WholesalerReviewManagementScreenState();
 }
 
-class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManagementScreen> {
-  final WholesalerController wholesalerController = Get.find<WholesalerController>();
+class _WholesalerReviewManagementScreenState
+    extends State<WholesalerReviewManagementScreen> {
+  final WholesalerController wholesalerController =
+      Get.find<WholesalerController>();
   final AuthController authController = Get.find<AuthController>();
   final ApiService apiService = Get.find<ApiService>();
 
@@ -60,7 +63,9 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
 
   Future<void> _loadProducts() async {
     try {
-      final products = await apiService.getWholesalerProducts(authController.accessToken.value);
+      final products = await apiService.getWholesalerProducts(
+        authController.accessToken.value,
+      );
       _products = products;
     } catch (e) {
       rethrow;
@@ -70,7 +75,9 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
   Future<void> _loadAllReviews() async {
     for (final product in _products) {
       try {
-        final reviews = await apiService.getProductReviews(product.id.toString());
+        final reviews = await apiService.getProductReviews(
+          product.id.toString(),
+        );
         _productReviews[product.id] = reviews;
       } catch (e) {
         print('Error loading reviews for product ${product.id}: $e');
@@ -85,7 +92,9 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
   void _calculateStatistics() {
     for (final product in _products) {
       final reviews = _productReviews[product.id] ?? [];
-      _productAverageRatings[product.id] = Review.calculateAverageRating(reviews);
+      _productAverageRatings[product.id] = Review.calculateAverageRating(
+        reviews,
+      );
       _productReviewCounts[product.id] = reviews.length;
     }
   }
@@ -96,26 +105,46 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
 
     for (final reviews in _productReviews.values) {
       totalReviews += reviews.length;
-      totalRatingSum += reviews.fold<double>(0, (sum, review) => sum + review.rating);
+      totalRatingSum += reviews.fold<double>(
+        0,
+        (sum, review) => sum + review.rating,
+      );
     }
 
     return totalReviews > 0 ? totalRatingSum / totalReviews : 0.0;
   }
 
   int _getTotalReviews() {
-    return _productReviews.values.fold<int>(0, (sum, reviews) => sum + reviews.length);
+    return _productReviews.values.fold<int>(
+      0,
+      (sum, reviews) => sum + reviews.length,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!authController.isLoggedIn || authController.role.value != 'wholesaler') {
+    if (!authController.isLoggedIn ||
+        authController.role.value != 'wholesaler') {
       return Scaffold(
+        backgroundColor: const Color(0xFF0A0E27),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Access Denied'),
-              const Text('This page is restricted to wholesalers only'),
+              const Text(
+                'Access Denied',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'This page is restricted to wholesalers only',
+                style: TextStyle(color: Colors.grey[400]),
+              ),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Get.offAllNamed('/login'),
                 child: const Text('Go to Login'),
@@ -127,37 +156,100 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0A0E27),
       appBar: AppBar(
-        title: const Text('Product Reviews'),
-        backgroundColor: Colors.yellow.shade100,
-        foregroundColor: Colors.black,
+        backgroundColor: const Color(0xFF0F1729),
+        elevation: 0,
+        title: const Text(
+          'Product Reviews',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF0F1729),
+                const Color(0xFF0F1729).withOpacity(0.8),
+              ],
+            ),
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Get.back(),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadAllData,
-            tooltip: 'Refresh',
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: _loadAllData,
+              tooltip: 'Refresh',
+            ),
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage.isNotEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text(_errorMessage),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadAllData,
-                        child: const Text('Retry'),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0A0E27),
+              Color(0xFF0F1729),
+              Color(0xFF1A2332),
+              Color(0xFF0F1729),
+              Color(0xFF050A1A),
+            ],
+            stops: [0.1, 0.3, 0.6, 0.8, 1.0],
+          ),
+        ),
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6B35)),
+                ),
+              )
+            : _errorMessage.isNotEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.red,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _errorMessage,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF6B35),
                       ),
-                    ],
-                  ),
-                )
-              : _buildReviewContent(),
+                      onPressed: _loadAllData,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              )
+            : _buildReviewContent(),
+      ),
     );
   }
 
@@ -210,10 +302,7 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
                       ),
                       Text(
                         '$totalReviews total reviews across all products',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
                       ),
                     ],
                   ),
@@ -225,7 +314,10 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.yellow.shade100,
                     borderRadius: BorderRadius.circular(20),
@@ -264,7 +356,10 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
 
     final topProducts = sortedProducts.take(5).toList();
 
-    if (topProducts.isEmpty || topProducts.every((product) => (_productReviewCounts[product.id] ?? 0) == 0)) {
+    if (topProducts.isEmpty ||
+        topProducts.every(
+          (product) => (_productReviewCounts[product.id] ?? 0) == 0,
+        )) {
       return Container(); // Hide if no reviews
     }
 
@@ -285,12 +380,20 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
           return Card(
             margin: const EdgeInsets.only(bottom: 8),
             child: ListTile(
-              leading: ProductImageWidget(
-                imageUrl: product.imageUrl,
-                fallbackText: product.name,
-                size: 40,
+              leading: SizedBox(
+                width: 40,
+                height: 40,
+                child: ProductImageWidget(
+                  imageUrl: product.imageUrl,
+                  fallbackText: product.name,
+                  size: 40,
+                ),
               ),
-              title: Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+              title: Text(
+                product.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
               subtitle: Text('${reviewCount} reviews'),
               trailing: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -339,10 +442,14 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
       widgets.addAll([
         Row(
           children: [
-            ProductImageWidget(
-              imageUrl: product.imageUrl,
-              fallbackText: product.name,
-              size: 40,
+            SizedBox(
+              width: 40,
+              height: 40,
+              child: ProductImageWidget(
+                imageUrl: product.imageUrl,
+                fallbackText: product.name,
+                size: 40,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -351,7 +458,10 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
                 children: [
                   Text(
                     product.name,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Card(
@@ -366,14 +476,21 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
                                 Text('${reviews.length} reviews'),
                                 Text(
                                   product.category,
-                                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                           Row(
                             children: [
-                              const Icon(Icons.star, color: Colors.yellow, size: 20),
+                              const Icon(
+                                Icons.star,
+                                color: Colors.yellow,
+                                size: 20,
+                              ),
                               Text(
                                 '${averageRating.toStringAsFixed(1)}',
                                 style: const TextStyle(
@@ -451,10 +568,7 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
               const SizedBox(height: 8),
               Text(
                 review.body!,
-                style: TextStyle(
-                  color: Colors.grey[700],
-                  height: 1.4,
-                ),
+                style: TextStyle(color: Colors.grey[700], height: 1.4),
               ),
             ],
 
@@ -463,10 +577,7 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
             // Date
             Text(
               _formatReviewDate(review.createdAt),
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
             ),
           ],
         ),
@@ -488,8 +599,8 @@ class _WholesalerReviewManagementScreenState extends State<WholesalerReviewManag
     } else {
       // Use a more readable format: DD/MM/YYYY
       return '${date.day.toString().padLeft(2, '0')}/'
-             '${date.month.toString().padLeft(2, '0')}/'
-             '${date.year}';
+          '${date.month.toString().padLeft(2, '0')}/'
+          '${date.year}';
     }
   }
 }

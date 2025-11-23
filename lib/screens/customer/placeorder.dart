@@ -15,7 +15,6 @@ class _PlaceOrderState extends State<PlaceOrder> {
   @override
   void initState() {
     super.initState();
-    // Get totalAmount from arguments, or default to 0.0
     final args = Get.arguments as Map<String, dynamic>?;
     totalAmount = args != null && args['totalAmount'] != null ? args['totalAmount'] as double : 0.0;
   }
@@ -104,15 +103,29 @@ class _PlaceOrderState extends State<PlaceOrder> {
               ),
             ),
             const SizedBox(height: 20),
-            _isOnlineOrder
-                ? const Text(
-                    'Online Order Selected.\nYou will proceed with online payment and delivery.',
-                    style: TextStyle(fontSize: 16, color: Colors.white70),
-                  )
-                : const Text(
-                    'Offline Order Selected.\nPlease visit the nearest store to complete your purchase.',
-                    style: TextStyle(fontSize: 16, color: Colors.white70),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.96),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.07),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
                   ),
+                ],
+              ),
+              child: Text(
+                _isOnlineOrder
+                    ? 'Online Order Selected.\nYou will proceed with online payment and delivery.'
+                    : 'Offline Order Selected.\nPlease visit the nearest store to complete your purchase.',
+                style: const TextStyle(
+                    fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ),
             const Spacer(),
             Center(
               child: ElevatedButton(
@@ -122,10 +135,12 @@ class _PlaceOrderState extends State<PlaceOrder> {
                   textStyle: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                    color: Colors.white, // Ensures button text is white
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  foregroundColor: Colors.white, // Ensures icon/text is white
                 ),
                 onPressed: () {
                   // Dummy payment here
@@ -138,7 +153,10 @@ class _PlaceOrderState extends State<PlaceOrder> {
                     ),
                   );
                 },
-                child: const Text('Place Order'),
+                child: const Text(
+                  'Place Order',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],

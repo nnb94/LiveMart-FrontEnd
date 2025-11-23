@@ -34,7 +34,6 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
       permanent: true,
     );
 
-    // Orders Controller setup
     final CustomerOrdersController ordersController = Get.put(
       CustomerOrdersController(
         customerId: authController.userId.value,
@@ -116,24 +115,26 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Quick Access Cards
+          // -------- Modern Quick Actions Row --------
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _QuickAccessTile(
                 icon: Icons.person,
                 label: 'Profile',
                 route: AppRoutes.customerProfile,
+                bgColor: const Color(0xFF5BA8F7), // Blue
               ),
               _QuickAccessTile(
                 icon: Icons.shopping_cart,
                 label: 'Cart',
                 route: AppRoutes.customerCart,
+                bgColor: const Color(0xFF30D18C), // Green
               ),
               _QuickAccessTile(
                 icon: Icons.rate_review,
                 label: 'Reviews',
                 route: AppRoutes.customerReviews,
+                bgColor: const Color(0xFFB66BF1), // Purple
               ),
             ],
           ),
@@ -205,7 +206,6 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
             ),
           const SizedBox(height: 6),
 
-          // Recent Orders (GetX integration)
           const Text(
             'Recent Orders',
             style: TextStyle(
@@ -292,13 +292,14 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
           }),
           const SizedBox(height: 32),
 
-          // Products grid with search and filter
           const Text(
             'Available Products',
             style: TextStyle(
                 fontSize: 20, fontWeight: FontWeight.w500, color: Colors.white),
           ),
           const SizedBox(height: 8),
+
+          // Products Grid
           Obx(() {
             var filtered = productService.products.where((product) {
               final matchesSearch = searchQuery.isEmpty ||
@@ -568,50 +569,57 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
   }
 }
 
-// BEAUTIFUL QUICK ACCESS BUTTON IMPLEMENTATION
+// --- Modern Quick Access tile styled as dashboard card ---
 class _QuickAccessTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final String route;
+  final Color bgColor;
 
   const _QuickAccessTile({
     Key? key,
     required this.icon,
     required this.label,
     required this.route,
+    required this.bgColor,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: () => Get.toNamed(route),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8),
-        child: Column(
-          children: [
-            Material(
-              elevation: 3,
-              shape: const CircleBorder(),
-              color: const Color(0xFF17A2B8),
-              child: CircleAvatar(
-                backgroundColor: const Color(0xFF17A2B8),
-                radius: 28,
-                child: Icon(icon, size: 32, color: Colors.white),
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => Get.toNamed(route),
+        child: Container(
+          margin: const EdgeInsets.all(8),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: bgColor.withOpacity(0.15),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
               ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-                letterSpacing: 0.5,
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: Colors.white, size: 36),
+              const SizedBox(height: 18),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  letterSpacing: 0.6,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -23,7 +23,6 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
   String _body = '';
   bool _submitting = false;
 
-  // You should replace this with a GetX Controller or ApiService call in real app
   List<Review> reviews = [];
   Review? myReview;
 
@@ -34,6 +33,57 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
   }
 
   Future<void> _fetchReviews() async {
+    // DUMMY REVIEWS FOR "Ireland Premium Tea"
+    if (widget.product.name.trim().toLowerCase() == "ireland premium tea".toLowerCase()) {
+      // Make some dummy reviews. Normally you'd fetch from API.
+      setState(() {
+        reviews = [
+          Review(
+            id: 1,
+            productId: widget.product.id,
+            customerId: 1,
+            customerName: "Satvik Sharma",
+            rating: 5,
+            title: "Amazing flavor!",
+            body: "Felt fresh and rich, genuinely premium taste.",
+            createdAt: DateTime.now().subtract(const Duration(days: 2)),
+          ),
+          Review(
+            id: 2,
+            customerId: 2,
+            productId: widget.product.id,
+            customerName: "Shaurya Kumar",
+            rating: 4,
+            title: "Pretty good",
+            body: "Very good tea—would buy again. Slightly high priced.",
+            createdAt: DateTime.now().subtract(const Duration(days: 5)),
+          ),
+          Review(
+            id: 3,
+            customerId: 3,
+            productId: widget.product.id,
+            customerName: "Nirvan Bhagabati",
+            rating: 5,
+            title: "Best black tea I've tried",
+            body: "Perfect with milk. Aroma is fantastic, packaging is also lovely.",
+            createdAt: DateTime.now().subtract(const Duration(days: 8)),
+          ),
+          Review(
+            id: 4,
+            customerId: 4,
+            productId: widget.product.id,
+            customerName: "Vedansh Raj",
+            rating: 3,
+            title: "Average",
+            body: "Not as strong as I expected, but still decent for everyday use.",
+            createdAt: DateTime.now().subtract(const Duration(days: 12)),
+          ),
+        ];
+      });
+      return;
+    }
+
+    // Default: fetch from backend for other products
     final api = Get.find<ApiService>();
     final response = await api.getProductReviews(widget.product.id.toString());
 
@@ -82,9 +132,9 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF0F1729),
         elevation: 0,
-        title: const Text(
-          'Reviews',
-          style: TextStyle(
+        title: Text(
+          'Reviews — ${widget.product.name}',
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.2,
@@ -203,7 +253,14 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
             ),
           const Divider(color: Colors.white38),
           Expanded(
-            child: ListView.builder(
+            child: reviews.isEmpty
+                ? Center(
+                    child: Text(
+                      'No reviews yet.',
+                      style: TextStyle(color: Colors.grey[400]),
+                    ),
+                  )
+                : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: reviews.length,
               itemBuilder: (context, idx) {

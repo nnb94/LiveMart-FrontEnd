@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../../controllers/auth_controller.dart';
 import '../../services/api_service.dart';
 import '../../approutes.dart';
+import 'payment_checkout_screen.dart';
 
 class RetailerWishlistScreen extends StatefulWidget {
   const RetailerWishlistScreen({super.key});
@@ -308,7 +309,7 @@ class _RetailerWishlistScreenState extends State<RetailerWishlistScreen> {
               ),
             ),
             onPressed: () => Get.back(result: true),
-            child: const Text('Place Order'),
+            child: const Text('Proceed to Payment'),
           ),
         ],
       ),
@@ -316,46 +317,96 @@ class _RetailerWishlistScreenState extends State<RetailerWishlistScreen> {
 
     if (confirm != true) return;
 
+    // Calculate total amount
+    double totalAmount = 0.0;
+    List<Map<String, dynamic>> checkoutItems = [];
+
+    for (var item in wishlistItems) {
+      final quantity = item['quantity'];
+      int qty = quantity is int ? quantity : int.tryParse(quantity.toString()) ?? 0;
+      double price = double.tryParse(item['product']['price'].toString()) ?? 0.0;
+
+      totalAmount += qty * price;
+
+      checkoutItems.add({
+        'product_id': item['product_id'],
+        'product_name': item['product']['name'],
+        'quantity': qty,
+        'price': price,
+        'seller_id': item['product_id'], // Using product_id as seller_id for now
+        'seller_name': item['wholesaler']['name'],
+      });
+    }
+
+    // Navigate to payment checkout
     try {
-      final url = Uri.parse(
-        '${ApiService.baseUrl}/retailers/order/from-wishlist',
-      );
-      final response = await http.post(
-        url,
-        headers: {
-          'Authorization': 'Bearer ${authController.accessToken.value}',
-          'Content-Type': 'application/json',
+      final paymentResult = await Get.to(
+        () => const PaymentCheckoutScreen(),
+        arguments: {
+          'amount': totalAmount,
+          'orderId': 'WL_${DateTime.now().millisecondsSinceEpoch}',
+          'items': checkoutItems,
         },
-        body: jsonEncode({'clearWishlist': clearAfter}),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.snackbar(
-          'Success',
-          'Order placed successfully!',
-          backgroundColor: const Color(0xFF10B981),
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 3),
-        );
-        _loadWishlist();
-      } else {
-        final data = jsonDecode(response.body);
-        Get.snackbar(
-          'Error',
-          data['message'] ?? 'Failed to place order',
-          backgroundColor: const Color(0xFFEF4444),
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+      // Only place order if payment is successful
+      if (paymentResult != null && paymentResult['success'] == true) {
+        // Now call the actual wishlist ordering API
+        try {
+          final url = Uri.parse(
+            '${ApiService.baseUrl}/retailers/order/from-wishlist',
+          );
+          final response = await http.post(
+            url,
+            headers: {
+              'Authorization': 'Bearer ${authController.accessToken.value}',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'clearWishlist': clearAfter,
+              'transactionId': paymentResult['transactionId'],
+            }),
+          );
+
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            Get.snackbar(
+              'Order Placed',
+              'Your wishlist order has been confirmed!',
+              backgroundColor: const Color(0xFF10B981),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.BOTTOM,
+              duration: const Duration(seconds: 3),
+            );
+            _loadWishlist(); // Refresh the wishlist
+          } else {
+            final data = jsonDecode(response.body);
+            Get.snackbar(
+              'Order Error',
+              data['message'] ?? 'Order payment succeeded but order placement failed',
+              backgroundColor: const Color(0xFFEF4444),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+              duration: const Duration(seconds: 5),
+            );
+          }
+        } catch (e) {
+          Get.snackbar(
+            'Order Error',
+            'Order payment succeeded but order placement failed: $e',
+            backgroundColor: const Color(0xFFEF4444),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP,
+            duration: const Duration(seconds: 5),
+          );
+        }
       }
     } catch (e) {
       Get.snackbar(
-        'Error',
-        'Failed to place order: $e',
+        'Payment Error',
+        'Failed to open payment screen: $e',
         backgroundColor: const Color(0xFFEF4444),
         colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     }
   }

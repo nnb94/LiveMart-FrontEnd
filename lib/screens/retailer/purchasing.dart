@@ -1012,116 +1012,537 @@ class _RetailerPurchasingScreenState extends State<RetailerPurchasingScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Order ${item.product.name}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Seller: ${item.sellerName}'),
-            Text('Price: \$${item.product.price.toStringAsFixed(2)} per unit'),
-            Text('Available Stock: ${item.availableStock} units'),
-            Text('Minimum Order: ${item.minimumOrderQuantity} units'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: quantityController,
-              decoration: InputDecoration(
-                labelText: 'Quantity to order',
-                hintText: 'Min: ${item.minimumOrderQuantity}',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 500, maxHeight: 700),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF0F1729),
+                  const Color(0xFF1A2332),
+                  const Color(0xFF0F1729),
+                ],
               ),
-              keyboardType: TextInputType.number,
-              autofocus: true,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0xFF17A2B8).withOpacity(0.3),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF17A2B8).withOpacity(0.2),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final quantity = int.tryParse(quantityController.text);
-              if (quantity == null || quantity <= 0) {
-                Get.snackbar('Error', 'Please enter a valid quantity');
-                return;
-              }
-
-              if (quantity < item.minimumOrderQuantity) {
-                Get.snackbar(
-                  'Error',
-                  'Minimum order quantity is ${item.minimumOrderQuantity} units',
-                );
-                return;
-              }
-
-              if (quantity > item.availableStock) {
-                Get.snackbar(
-                  'Error',
-                  'Only ${item.availableStock} units available in stock',
-                );
-                return;
-              }
-
-              // Calculate total amount
-              final totalAmount = quantity * item.product.price;
-
-              // Navigate to payment checkout
-              Navigator.of(context).pop(); // Close order dialog
-
-              try {
-                final paymentResult = await Get.to(
-                  () => const PaymentCheckoutScreen(),
-                  arguments: {
-                    'amount': totalAmount,
-                    'orderId': 'WO_${DateTime.now().millisecondsSinceEpoch}',
-                    'items': [
-                      {
-                        'product_id': item.product.id,
-                        'product_name': item.product.name,
-                        'quantity': quantity,
-                        'price': item.product.price,
-                        'seller_id': item.sellerId,
-                        'seller_name': item.sellerName,
-                      },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header with product info
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF17A2B8).withOpacity(0.2),
+                        const Color(0xFF0FB5D4).withOpacity(0.1),
+                      ],
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF17A2B8).withOpacity(0.3),
+                                  const Color(0xFF0FB5D4).withOpacity(0.2),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF17A2B8).withOpacity(0.4),
+                              ),
+                            ),
+                            child: ProductImageWidget(
+                              imageUrl: item.product.imageUrl,
+                              fallbackText: item.product.name,
+                              size: 60,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.product.name,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Seller: ${item.sellerName}',
+                                  style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF17A2B8).withOpacity(0.3),
+                                  const Color(0xFF0FB5D4).withOpacity(0.2),
+                                ],
+                              ),
+                            ),
+                            child: IconButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
-                  },
-                );
+                  ),
+                ),
 
-                // If payment successful, place the order
-                if (paymentResult != null && paymentResult['success'] == true) {
-                  final success = await controller.placeWholesaleOrder([
-                    {
-                      'product_id': item.product.id,
-                      'quantity': quantity,
-                      'seller_id': item.sellerId,
-                      'transaction_id': paymentResult['transactionId'],
-                    },
-                  ]);
+                // Content
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Pricing & Stock Information
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF17A2B8).withOpacity(0.2),
+                              const Color(0xFF0FB5D4).withOpacity(0.1),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFF17A2B8).withOpacity(0.3),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Pricing Information',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF17A2B8),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.attach_money,
+                                  size: 20,
+                                  color: Color(0xFF17A2B8),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '\$${item.product.price.toStringAsFixed(2)} per unit',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.inventory,
+                                  size: 20,
+                                  color: Colors.orange,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Available Stock: ${item.availableStock} units',
+                                  style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.shopping_cart,
+                                  size: 20,
+                                  color: Color(0xFF10B981),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Minimum Order: ${item.minimumOrderQuantity} units',
+                                  style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
 
-                  if (success) {
-                    Get.snackbar(
-                      'Order Placed',
-                      'Your wholesale order has been confirmed!',
-                      backgroundColor: const Color(0xFF10B981),
-                      colorText: Colors.white,
-                      snackPosition: SnackPosition.BOTTOM,
-                    );
-                  }
-                }
-              } catch (e) {
-                print('Navigation error: $e');
-                Get.snackbar(
-                  'Error',
-                  'Failed to open payment screen',
-                  backgroundColor: const Color(0xFFEF4444),
-                  colorText: Colors.white,
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-              }
-            },
-            child: const Text('Place Order'),
+                      const SizedBox(height: 20),
+
+                      // Quantity Input Section
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF0F1729).withOpacity(0.8),
+                              const Color(0xFF1A2332).withOpacity(0.6),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFF17A2B8).withOpacity(0.2),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Order Quantity',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF17A2B8),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: quantityController,
+                              onChanged: (value) => setState(() {}), // Update UI on input
+                              style: const TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                labelText: 'Quantity to order',
+                                labelStyle: const TextStyle(color: Color(0xFF17A2B8)),
+                                hintText: 'Min: ${item.minimumOrderQuantity}',
+                                hintStyle: TextStyle(color: Colors.grey[600]),
+                                prefixIcon: const Icon(
+                                  Icons.format_list_numbered,
+                                  color: Color(0xFF17A2B8),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: const Color(0xFF17A2B8).withOpacity(0.3),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: const Color(0xFF17A2B8).withOpacity(0.3),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF17A2B8),
+                                    width: 2,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: const Color(0xFF0A0E27),
+                              ),
+                              keyboardType: TextInputType.number,
+                              autofocus: true,
+                            ),
+
+                            // Real-time Cost Calculation
+                            if (quantityController.text.isNotEmpty &&
+                                int.tryParse(quantityController.text) != null) ...[
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0xFF10B981).withOpacity(0.2),
+                                      const Color(0xFF059669).withOpacity(0.1),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0xFF10B981).withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.receipt,
+                                      size: 24,
+                                      color: Color(0xFF10B981),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Estimated Total',
+                                            style: TextStyle(
+                                              color: Color(0xFF10B981),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '\$${((int.tryParse(quantityController.text) ?? 0) * item.product.price).toStringAsFixed(2)}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ] else ...[
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[800]!.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    'Enter quantity to see estimated cost',
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Actions
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withOpacity(0.3),
+                        Colors.black.withOpacity(0.2),
+                      ],
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            side: BorderSide(
+                              color: Colors.grey.withOpacity(0.5),
+                              width: 1,
+                            ),
+                          ),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF17A2B8), Color(0xFF0FB5D4)],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF17A2B8).withOpacity(0.4),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final quantity = int.tryParse(quantityController.text);
+                              if (quantity == null || quantity <= 0) {
+                                Get.snackbar(
+                                  'Error',
+                                  'Please enter a valid quantity',
+                                  backgroundColor: const Color(0xFFEF4444),
+                                  colorText: Colors.white,
+                                  snackPosition: SnackPosition.TOP,
+                                );
+                                return;
+                              }
+
+                              if (quantity < item.minimumOrderQuantity) {
+                                Get.snackbar(
+                                  'Error',
+                                  'Minimum order quantity is ${item.minimumOrderQuantity} units',
+                                  backgroundColor: const Color(0xFFEF4444),
+                                  colorText: Colors.white,
+                                  snackPosition: SnackPosition.TOP,
+                                );
+                                return;
+                              }
+
+                              if (quantity > item.availableStock) {
+                                Get.snackbar(
+                                  'Error',
+                                  'Only ${item.availableStock} units available in stock',
+                                  backgroundColor: const Color(0xFFEF4444),
+                                  colorText: Colors.white,
+                                  snackPosition: SnackPosition.TOP,
+                                );
+                                return;
+                              }
+
+                              // Calculate total amount
+                              final totalAmount = quantity * item.product.price;
+
+                              // Navigate to payment checkout
+                              Navigator.of(context).pop(); // Close order dialog
+
+                              try {
+                                final paymentResult = await Get.to(
+                                  () => const PaymentCheckoutScreen(),
+                                  arguments: {
+                                    'amount': totalAmount,
+                                    'orderId': 'WO_${DateTime.now().millisecondsSinceEpoch}',
+                                    'items': [
+                                      {
+                                        'product_id': item.product.id,
+                                        'product_name': item.product.name,
+                                        'quantity': quantity,
+                                        'price': item.product.price,
+                                        'seller_id': item.sellerId,
+                                        'seller_name': item.sellerName,
+                                      },
+                                    ],
+                                  },
+                                );
+
+                                // If payment successful, place the order
+                                if (paymentResult != null && paymentResult['success'] == true) {
+                                  final success = await controller.placeWholesaleOrder([
+                                    {
+                                      'product_id': item.product.id,
+                                      'quantity': quantity,
+                                      'seller_id': item.sellerId,
+                                      'transaction_id': paymentResult['transactionId'],
+                                    },
+                                  ]);
+
+                                  if (success) {
+                                    Get.snackbar(
+                                      'Order Placed',
+                                      'Your wholesale order has been confirmed!',
+                                      backgroundColor: const Color(0xFF10B981),
+                                      colorText: Colors.white,
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                  }
+                                }
+                              } catch (e) {
+                                print('Navigation error: $e');
+                                Get.snackbar(
+                                  'Error',
+                                  'Failed to open payment screen',
+                                  backgroundColor: const Color(0xFFEF4444),
+                                  colorText: Colors.white,
+                                  snackPosition: SnackPosition.TOP,
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Proceed to Payment',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1391,7 +1812,7 @@ class _RetailerPurchasingScreenState extends State<RetailerPurchasingScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Unit Price: \${item.product.price.toStringAsFixed(2)}',
+                  'Unit Price: ${item.product.price.toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -1578,7 +1999,7 @@ class _RetailerPurchasingScreenState extends State<RetailerPurchasingScreen> {
                       child: Text(
                         quantityController.text.isNotEmpty &&
                                 int.tryParse(quantityController.text) != null
-                            ? 'Estimated Cost: \${(int.parse(quantityController.text) * item.product.price).toStringAsFixed(2)}'
+                            ? 'Estimated Cost: ${(int.parse(quantityController.text) * item.product.price).toStringAsFixed(2)}'
                             : 'Enter quantity to see cost estimate',
                         style: const TextStyle(
                           fontSize: 14,

@@ -23,6 +23,9 @@ class Product {
   final int? reorderLevel;
   final bool? needsRestock;
 
+  // NEW: Has this product been purchased by the user?
+  final bool hasPurchased;
+
   Product({
     required this.id,
     required this.sellerId,
@@ -41,6 +44,7 @@ class Product {
     this.minimumOrderQuantity,
     this.reorderLevel,
     this.needsRestock,
+    this.hasPurchased = false, // default: not purchased
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -86,6 +90,16 @@ class Product {
       return value.toString();
     }
 
+    bool _parseBool(dynamic value) {
+      if (value is bool) return value;
+      if (value is String) {
+        if (value.toLowerCase() == 'true' || value == '1') return true;
+        if (value.toLowerCase() == 'false' || value == '0') return false;
+      }
+      if (value is int) return value != 0;
+      return false;
+    }
+
     return Product(
       id: _parseInt(json['id']),
       sellerId: _parseInt(json['seller_id'] ?? json['sellerId']),
@@ -95,41 +109,16 @@ class Product {
       price: _parseDouble(json['price']),
       category: _parseString(json['category']),
       imageUrl: _parseNullableString(json['image_url'] ?? json['imageUrl']),
-      imagePublicId: _parseNullableString(
-        json['image_public_id'] ?? json['imagePublicId'],
-      ),
-      sellerEmail: _parseNullableString(
-        json['seller_email'] ?? json['sellerEmail'],
-      ),
-      sellerRole: _parseNullableString(
-        json['seller_role'] ?? json['sellerRole'],
-      ),
-      createdAt:
-          DateTime.tryParse(
-            json['created_at']?.toString() ??
-                json['createdAt']?.toString() ??
-                '',
-          ) ??
-          DateTime.now(),
-      updatedAt:
-          DateTime.tryParse(
-            json['updated_at']?.toString() ??
-                json['updatedAt']?.toString() ??
-                '',
-          ) ??
-          DateTime.now(),
-      stockQuantity: _parseNullableInt(
-        json['stock_quantity'] ?? json['stockQuantity'],
-      ),
-      minimumOrderQuantity: _parseNullableInt(
-        json['minimum_order_quantity'] ?? json['minimumOrderQuantity'],
-      ),
-      reorderLevel: _parseNullableInt(
-        json['reorder_level'] ?? json['reorderLevel'],
-      ),
-      needsRestock: _parseNullableBool(
-        json['needs_restock'] ?? json['needsRestock'],
-      ),
+      imagePublicId: _parseNullableString(json['image_public_id'] ?? json['imagePublicId']),
+      sellerEmail: _parseNullableString(json['seller_email'] ?? json['sellerEmail']),
+      sellerRole: _parseNullableString(json['seller_role'] ?? json['sellerRole']),
+      createdAt: DateTime.tryParse(json['created_at']?.toString() ?? json['createdAt']?.toString() ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at']?.toString() ?? json['updatedAt']?.toString() ?? '') ?? DateTime.now(),
+      stockQuantity: _parseNullableInt(json['stock_quantity'] ?? json['stockQuantity']),
+      minimumOrderQuantity: _parseNullableInt(json['minimum_order_quantity'] ?? json['minimumOrderQuantity']),
+      reorderLevel: _parseNullableInt(json['reorder_level'] ?? json['reorderLevel']),
+      needsRestock: _parseNullableBool(json['needs_restock'] ?? json['needsRestock']),
+      hasPurchased: json['hasPurchased'] != null ? _parseBool(json['hasPurchased']) : false,
     );
   }
 
@@ -137,7 +126,7 @@ class Product {
     return {
       'id': id,
       'sellerId': sellerId,
-      'sellerName': sellerName, // Added to JSON output
+      'sellerName': sellerName,
       'name': name,
       'description': description,
       'price': price,
@@ -147,10 +136,10 @@ class Product {
       if (imageUrl != null) 'imageUrl': imageUrl,
       if (imagePublicId != null) 'imagePublicId': imagePublicId,
       if (stockQuantity != null) 'stockQuantity': stockQuantity,
-      if (minimumOrderQuantity != null)
-        'minimumOrderQuantity': minimumOrderQuantity,
+      if (minimumOrderQuantity != null) 'minimumOrderQuantity': minimumOrderQuantity,
       if (reorderLevel != null) 'reorderLevel': reorderLevel,
       if (needsRestock != null) 'needsRestock': needsRestock,
+      'hasPurchased': hasPurchased,
     };
   }
 }

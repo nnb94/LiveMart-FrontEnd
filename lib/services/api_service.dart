@@ -12,6 +12,13 @@ import 'package:live_mart_app/models/wholesaler_sale.dart';
 import 'package:live_mart_app/models/retailer_inventory.dart';
 import 'package:live_mart_app/models/review.dart';
 
+class WishlistItem {
+    final Product product;
+    final int quantity;
+
+    WishlistItem({required this.product, required this.quantity});
+  }
+
 class ApiService extends GetxService {
   static const String baseUrl = 'http://localhost:3000';
 
@@ -321,6 +328,108 @@ class ApiService extends GetxService {
       return jsonList.map((json) => Product.fromJson(json)).toList();
     } else {
       throw Exception('Failed to fetch products: ${response.body}');
+    }
+  }
+
+  /// Submit or edit a review
+  Future<Review> submitReview({
+    required int productId,
+    required int rating,
+    String? title,
+    String? body,
+    required String accessToken,
+  }) async {
+    final url = Uri.parse('$baseUrl/reviews/add');
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'productId': productId,
+        'rating': rating,
+        if (title != null) 'title': title,
+        if (body != null) 'body': body,
+      }),
+    );
+    if (response.statusCode == 201) {
+      final Map<String, dynamic> revMap = jsonDecode(response.body)['review'];
+      return Review.fromJson(revMap);
+    } else {
+      throw Exception(jsonDecode(response.body)['message'] ??
+          'Failed to submit review');
+    }
+  }
+
+  /// Get the current user's reviews (customer only)
+  Future<List<Review>> getMyReviews(String accessToken) async {
+    final url = Uri.parse('$baseUrl/reviews/myreviews');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+    if (response.statusCode == 200) {
+      final List reviewsJson = jsonDecode(response.body);
+      return reviewsJson.map((e) => Review.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to fetch my reviews: ${response.body}');
+    }
+  }
+
+  /// Update a review (by its ID)
+  Future<Review> updateReview({
+    required int id,
+    int? rating,
+    String? title,
+    String? body,
+    required String accessToken,
+  }) async {
+    final url = Uri.parse('$baseUrl/reviews/update');
+    final response = await http.patch(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'id': id,
+        if (rating != null) 'rating': rating,
+        if (title != null) 'title': title,
+        if (body != null) 'body': body,
+      }),
+    );
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> revMap = jsonDecode(response.body)['review'];
+      return Review.fromJson(revMap);
+    } else {
+      throw Exception(jsonDecode(response.body)['message'] ??
+          'Failed to update review');
+    }
+  }
+
+  /// Delete a review (by its ID)
+  Future<bool> deleteReview({
+    required int id,
+    required String accessToken,
+  }) async {
+    final url = Uri.parse('$baseUrl/reviews/delete');
+    final response = await http.delete(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'id': id}),
+    );
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception(jsonDecode(response.body)['message'] ??
+          'Failed to delete review');
     }
   }
 
@@ -785,23 +894,6 @@ class ApiService extends GetxService {
     }
   }
 
-  /// Get current user's reviews (customer only)
-  Future<List<Map<String, dynamic>>> getMyReviews(String accessToken) async {
-    final url = Uri.parse('http://localhost:3000/reviews/myreviews');
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return List<Map<String, dynamic>>.from(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to fetch my reviews: ${response.body}');
-    }
-  }
   Future<bool> addToWishlist(String accessToken, int productId) async {
     final url = Uri.parse('http://localhost:3000/wishlists/add');
 
@@ -816,6 +908,52 @@ class ApiService extends GetxService {
 
     return response.statusCode == 201;
   }
+
+  Future<List<WishlistItem>> fetchWishlistWithQuantities(String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/wishlists/list'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final List decoded = json.decode(response.body);
+      return decoded.map((item) {
+        return WishlistItem(
+          product: Product.fromJson(item), // adjust according to your backend response
+          quantity: item['quantity'] ?? 1,
+        );
+      }).toList();
+    } else {
+      throw Exception('Failed to load wishlist');
+    }
+  }
+
+  Future<bool> addToWishlistWithQuantity(String token, int productId, int quantity) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/wishlists/add'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({'productId': productId, 'quantity': quantity}),
+    );
+
+    return response.statusCode == 201;
+  }
+
+  Future<bool> updateWishlistQuantity(String token, int productId, int newQuantity) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/wishlists/update-quantity'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({'productId': productId, 'quantity': newQuantity}),
+    );
+
+    return response.statusCode == 200;
+  }
+
 }
 
 

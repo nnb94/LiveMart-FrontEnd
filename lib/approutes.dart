@@ -8,13 +8,13 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'package:live_mart_app/screens/customer/dashboard.dart';
 import 'package:live_mart_app/screens/customer/profile.dart';
-import 'package:live_mart_app/screens/customer/wishlist.dart';
 import 'package:live_mart_app/screens/customer/cart.dart';
 import 'package:live_mart_app/screens/customer/placeorder.dart';
 import 'package:live_mart_app/screens/customer/orders.dart';
 import 'package:live_mart_app/screens/customer/notifications.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
+import 'package:live_mart_app/screens/customer/customer_reviews.dart'; // Adjust path as needed
 
 // Role-based dashboards
 import 'screens/retailer/dashboard.dart';
@@ -49,13 +49,13 @@ class AppRoutes {
 
   static const String customerDashboard = '/customer/dashboard';
   static const String customerProfile = '/customer/profile';
-  static const String customerWishlist = '/customer/wishlist';
-  static const String customerCart = '/customer/cart';
+  static const String customerCart = '/customer/wishlist';
   static const String customerPlaceOrder = '/customer/placeorder';
   static const String customerOrders = '/customer/orders';
   static const String customerNotifications = '/customer/notifications';
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
+  static const String customerReviews = '/customer/customer_reviews';
   static const String retailerDashboard = '/retailer/dashboard';
 
   static const String retailerInventory = '/retailer/inventory';
@@ -124,12 +124,6 @@ class AppRoutes {
     GetPage(
       name: AppRoutes.customerProfile,
       page: () => const CustomerProfile(),
-      transition: Transition.fadeIn,
-      transitionDuration: const Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: AppRoutes.customerWishlist,
-      page: () => const CustomerWishlist(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),
@@ -247,5 +241,12 @@ class AppRoutes {
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),
+    GetPage(
+      name: AppRoutes.customerReviews,
+      page: () => CustomerReviewsPage(), // Replace with the actual widget/class name in customer/reviews.dart
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+
   ];
 }

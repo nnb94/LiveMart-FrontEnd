@@ -604,40 +604,260 @@ class WholesalerDashboard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sales Analytics'),
+        backgroundColor: const Color(0xFF1A2332),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.analytics, color: Colors.white, size: 24),
+              SizedBox(width: 12),
+              Text(
+                'Sales Analytics',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
         content: Obx(() {
           if (controller.isLoadingAnalytics.value) {
             return const SizedBox(
               height: 100,
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                ),
+              ),
             );
           }
 
           if (controller.analytics.value == null) {
-            return const Text('No analytics data available');
+            return Container(
+              padding: const EdgeInsets.all(12),
+              child: const Text(
+                'No analytics data available',
+                style: TextStyle(color: Colors.white70),
+              ),
+            );
           }
 
           final analytics = controller.analytics.value!;
           return Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Total Orders: ${analytics.summary.totalOrders}'),
-              Text(
-                'Total Revenue: ₹${analytics.summary.totalRevenue.toStringAsFixed(2)}',
+              // Analytics Cards Row 1
+              Row(
+                children: [
+                  Expanded(
+                    child: _AnalyticsCard(
+                      title: 'Total Orders',
+                      value: '${analytics.summary.totalOrders}',
+                      icon: Icons.shopping_cart,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _AnalyticsCard(
+                      title: 'Total Revenue',
+                      value: '₹${analytics.summary.totalRevenue.toStringAsFixed(2)}',
+                      icon: Icons.attach_money,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF10B981), Color(0xFF34D399)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                'Avg Order Value: ₹${analytics.summary.averageOrderValue.toStringAsFixed(2)}',
+              const SizedBox(height: 12),
+              // Analytics Cards Row 2
+              Row(
+                children: [
+                  Expanded(
+                    child: _AnalyticsCard(
+                      title: 'Avg Order Value',
+                      value: '₹${analytics.summary.averageOrderValue.toStringAsFixed(2)}',
+                      icon: Icons.trending_up,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFA855F7), Color(0xFFD946EF)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _AnalyticsCard(
+                      title: 'Units Sold',
+                      value: '${analytics.summary.totalUnitsSold}',
+                      icon: Icons.inventory,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Text('Units Sold: ${analytics.summary.totalUnitsSold}'),
-              Text('Unique Buyers: ${analytics.summary.uniqueBuyers}'),
+              const SizedBox(height: 12),
+              // Single card for unique buyers
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0F1729), Color(0xFF1A2332)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFF3B82F6).withOpacity(0.3),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.people,
+                          size: 24,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${analytics.summary.uniqueBuyers}',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Unique Buyers',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           );
         }),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        actionsPadding: const EdgeInsets.only(left: 20, right: 20, top: 0, bottom: 20),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFA855F7), Color(0xFFD946EF)],
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Get.toNamed(AppRoutes.wholesalerAnalytics);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'View Detailed Analytics',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -998,37 +1218,79 @@ class WholesalerDashboard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Order #${order.orderId}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Product: ${order.productInfo.productName}'),
-            Text('Customer: ${order.retailerName}'),
-            Text('Quantity: ${order.orderDetails.quantity}'),
-            Text(
-              'Total: ₹${order.orderDetails.totalAmount.toStringAsFixed(2)}',
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: selectedStatus,
-              decoration: const InputDecoration(labelText: 'Order Status'),
-              items: statusOptions.map((status) {
-                return DropdownMenuItem(
-                  value: status,
-                  child: Text(status.toUpperCase()),
-                );
-              }).toList(),
-              onChanged: (value) => selectedStatus = value!,
-            ),
-          ],
+        backgroundColor: const Color(0xFF0F1729),
+        title: Text(
+          'Order #${order.orderId}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Product: ${order.productInfo.productName}',
+                style: const TextStyle(color: Colors.white),
+              ),
+              Text(
+                'Customer: ${order.retailerName}',
+                style: const TextStyle(color: Colors.white),
+              ),
+              Text(
+                'Quantity: ${order.orderDetails.quantity}',
+                style: const TextStyle(color: Colors.white),
+              ),
+              Text(
+                'Total: ₹${order.orderDetails.totalAmount.toStringAsFixed(2)}',
+                style: const TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedStatus,
+                dropdownColor: const Color(0xFF0A0E27),
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Order Status',
+                  labelStyle: const TextStyle(color: Color(0xFF10B981)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF10B981)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF10B981),
+                      width: 2,
+                    ),
+                  ),
+                ),
+                items: statusOptions.map((status) {
+                  return DropdownMenuItem(
+                    value: status,
+                    child: Text(status.toUpperCase()),
+                  );
+                }).toList(),
+                onChanged: (value) => selectedStatus = value!,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             onPressed: () async {
               final success = await controller.updateOrderStatus(
                 order.orderId,
@@ -1192,6 +1454,73 @@ class _ActionCard extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnalyticsCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final LinearGradient gradient;
+
+  const _AnalyticsCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.gradient,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: gradient,
+        boxShadow: [
+          BoxShadow(
+            color: gradient.colors.first.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 24, color: Colors.white),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white.withOpacity(0.8),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );

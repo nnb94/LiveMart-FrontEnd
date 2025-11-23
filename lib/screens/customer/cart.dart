@@ -4,6 +4,7 @@ import '../../controllers/auth_controller.dart';
 import '../../controllers/wishlist_controller.dart';
 import '../../services/api_service.dart';
 import '../../models/product.dart';
+import '../../approutes.dart';
 
 class CustomerCart extends StatefulWidget {
   const CustomerCart({Key? key}) : super(key: key);
@@ -128,10 +129,25 @@ class _CustomerCartState extends State<CustomerCart> {
                     const Text('Total:',
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     Obx(() => Text(
-                      '₹${getCartTotal().toStringAsFixed(2)}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.teal),
-                    )),
+                          '₹${getCartTotal().toStringAsFixed(2)}',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.teal),
+                        )),
                   ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.payment),
+                    label: const Text('Checkout'),
+                    onPressed: () {
+                      Get.toNamed(AppRoutes.customerPlaceOrder,
+                      arguments: {'totalAmount': getCartTotal()},        
+                    );
+                    },
+                  ),
                 ),
               ),
             ],

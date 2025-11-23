@@ -238,6 +238,8 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                       .firstWhereOrNull((entry) => entry.key.id == product.id);
                   final qty = qtyEntry?.value ?? 0;
 
+                  final stockCount = product.stockQuantity ?? 0;
+
                   return Card(
                     margin: EdgeInsets.zero,
                     child: Padding(
@@ -267,6 +269,18 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                               color: Colors.teal,
                             ),
                           ),
+                          Text(
+                            stockCount > 30
+                                ? 'Available'
+                                : stockCount == 0
+                                    ? 'Out of stock'
+                                    : '$stockCount remaining',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: stockCount > 0 ? Colors.green : Colors.red,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           if (qty == 0)
                             ElevatedButton.icon(
                               icon: const Icon(Icons.add_shopping_cart, size: 15),
@@ -277,23 +291,26 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                                 padding: EdgeInsets.zero,
                                 textStyle: const TextStyle(fontSize: 11),
                               ),
-                              onPressed: () async {
-                                await wishlistController.addToWishlist(
-                                    product.id,
-                                    quantity: 1);
-                                if (wishlistController.errorMessage.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text('${product.name} added to cart')),
-                                  );
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            'Error: ${wishlistController.errorMessage.value}')),
-                                  );
-                                }
-                              },
+                              onPressed: (stockCount > 0)
+                                  ? () async {
+                                      await wishlistController.addToWishlist(
+                                          product.id,
+                                          quantity: 1);
+                                      if (wishlistController.errorMessage.isEmpty) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                              content:
+                                                  Text('${product.name} added to cart')),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                              content: Text(
+                                                  'Error: ${wishlistController.errorMessage.value}')),
+                                        );
+                                      }
+                                    }
+                                  : null, // disables button if out of stock
                             )
                           else
                             Row(
@@ -359,28 +376,35 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                                   ),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.add_circle_outline,
-                                      size: 18),
+                                  icon: const Icon(Icons.add_circle_outline, size: 18),
                                   color: Colors.green,
                                   splashRadius: 18,
                                   padding: EdgeInsets.zero,
                                   onPressed: () async {
-                                    await wishlistController.addToWishlist(
-                                        product.id,
-                                        quantity: 1);
-                                    if (wishlistController.errorMessage.isEmpty) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                'Quantity updated for ${product.name}')),
-                                      );
+                                    if (qty < stockCount) {
+                                      await wishlistController.addToWishlist(
+                                          product.id,
+                                          quantity: 1);
+                                      if (wishlistController.errorMessage.isEmpty) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                              content: Text(
+                                                  'Quantity updated for ${product.name}')),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                              content: Text(
+                                                  'Error: ${wishlistController.errorMessage.value}')),
+                                        );
+                                      }
                                     } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
+                                      ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                            content: Text(
-                                                'Error: ${wishlistController.errorMessage.value}')),
+                                          content: Text('Cannot add more than available stock (${stockCount})'),
+                                        ),
                                       );
                                     }
                                   },
@@ -397,16 +421,8 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
           }),
           const SizedBox(height: 32),
 
-          // Place Order Button
-          Center(
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.add_shopping_cart),
-              label: const Text('Place an Order'),
-              onPressed: () {
-                Get.toNamed(AppRoutes.customerPlaceOrder);
-              },
-            ),
-          ),
+          // Removed Place Order Button as requested
+
           const SizedBox(height: 24),
         ],
       ),

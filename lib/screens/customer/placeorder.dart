@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class PlaceOrder extends StatefulWidget {
   const PlaceOrder({Key? key}) : super(key: key);
@@ -9,6 +10,15 @@ class PlaceOrder extends StatefulWidget {
 
 class _PlaceOrderState extends State<PlaceOrder> {
   bool _isOnlineOrder = true;
+  late double totalAmount;
+
+  @override
+  void initState() {
+    super.initState();
+    // Get totalAmount from arguments, or default to 0.0
+    final args = Get.arguments as Map<String, dynamic>?;
+    totalAmount = args != null && args['totalAmount'] != null ? args['totalAmount'] as double : 0.0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +60,11 @@ class _PlaceOrderState extends State<PlaceOrder> {
               ],
             ),
             const SizedBox(height: 20),
+            Text(
+              'Total Amount: ₹${totalAmount.toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
             _isOnlineOrder
                 ? const Text(
                     'Online Order Selected.\nYou will proceed with online payment and delivery.',
@@ -63,11 +78,11 @@ class _PlaceOrderState extends State<PlaceOrder> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Add place order logic here or navigate to next screen
+                  // Dummy payment here
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(_isOnlineOrder
-                          ? 'Placing online order...'
+                          ? 'Dummy payment of ₹${totalAmount.toStringAsFixed(2)} is successful.'
                           : 'Offline order selected. Please visit the store.'),
                     ),
                   );

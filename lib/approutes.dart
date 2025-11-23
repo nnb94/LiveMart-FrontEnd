@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:live_mart_app/screens/splashscreen.dart';
 import 'screens/email_screen.dart';
@@ -31,6 +30,7 @@ import 'screens/wholesaler/sales.dart';
 import 'screens/wholesaler/products.dart';
 import 'screens/wholesaler/analytics.dart';
 import 'screens/wholesaler/review_management.dart';
+import 'screens/retailer/payment_checkout_screen.dart';
 
 import 'screens/customer/editprofile.dart';
 
@@ -67,6 +67,7 @@ class AppRoutes {
   static const String wholesalerProducts = '/wholesaler/products';
   static const String wholesalerAnalytics = '/wholesaler/analytics';
   static const String customerEditProfile = '/customer/editprofile';
+  static const String paymentCheckout = '/payment-checkout';
 
   static List<GetPage> routes = [
     GetPage(
@@ -248,6 +249,12 @@ class AppRoutes {
       name: splashScreen,
       page: () => const SplashScreen(),
       transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: paymentCheckout,
+      page: () => const PaymentCheckoutScreen(),
+      transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 300),
     ),
   ];

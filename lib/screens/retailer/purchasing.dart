@@ -6,6 +6,7 @@ import '../../models/retailer_inventory.dart';
 import '../../models/review.dart';
 import '../../services/api_service.dart';
 import '../../widgets/image_picker_components.dart';
+import 'payment_checkout_screen.dart';
 
 class RetailerPurchasingScreen extends StatefulWidget {
   const RetailerPurchasingScreen({super.key});
@@ -1061,17 +1062,61 @@ class _RetailerPurchasingScreenState extends State<RetailerPurchasingScreen> {
                 return;
               }
 
-              // Place the order
-              final success = await controller.placeWholesaleOrder([
-                {
-                  'product_id': item.product.id,
-                  'quantity': quantity,
-                  'seller_id': item.sellerId,
-                },
-              ]);
+              // Calculate total amount
+              final totalAmount = quantity * item.product.price;
 
-              if (success) {
-                Navigator.of(context).pop();
+              // Navigate to payment checkout
+              Navigator.of(context).pop(); // Close order dialog
+
+              try {
+                final paymentResult = await Get.to(
+                  () => const PaymentCheckoutScreen(),
+                  arguments: {
+                    'amount': totalAmount,
+                    'orderId': 'WO_${DateTime.now().millisecondsSinceEpoch}',
+                    'items': [
+                      {
+                        'product_id': item.product.id,
+                        'product_name': item.product.name,
+                        'quantity': quantity,
+                        'price': item.product.price,
+                        'seller_id': item.sellerId,
+                        'seller_name': item.sellerName,
+                      },
+                    ],
+                  },
+                );
+
+                // If payment successful, place the order
+                if (paymentResult != null && paymentResult['success'] == true) {
+                  final success = await controller.placeWholesaleOrder([
+                    {
+                      'product_id': item.product.id,
+                      'quantity': quantity,
+                      'seller_id': item.sellerId,
+                      'transaction_id': paymentResult['transactionId'],
+                    },
+                  ]);
+
+                  if (success) {
+                    Get.snackbar(
+                      'Order Placed',
+                      'Your wholesale order has been confirmed!',
+                      backgroundColor: const Color(0xFF10B981),
+                      colorText: Colors.white,
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  }
+                }
+              } catch (e) {
+                print('Navigation error: $e');
+                Get.snackbar(
+                  'Error',
+                  'Failed to open payment screen',
+                  backgroundColor: const Color(0xFFEF4444),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.BOTTOM,
+                );
               }
             },
             child: const Text('Place Order'),

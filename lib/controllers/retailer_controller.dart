@@ -429,8 +429,7 @@ class RetailerController extends GetxController {
       await Future.wait([fetchSalesOrders(), fetchPurchaseOrders()]);
 
       // Use real backend data from sales orders
-      final salesData = salesOrders.value;
-      final purchasesData = purchaseOrders.value;
+      final salesData = salesOrders;
 
       // Calculate analytics from real sales data
       final totalRevenue = salesData.fold<double>(

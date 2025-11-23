@@ -870,6 +870,145 @@ class ApiService extends GetxService {
 
     return response.statusCode == 201 || response.statusCode == 200;
   }
+
+  // ==================== PAYMENT METHODS ====================
+
+  /// Get Braintree client token for initializing payment UI
+  Future<Map<String, dynamic>> getPaymentClientToken(String accessToken) async {
+    final url = Uri.parse('$baseUrl/api/payments/client-token');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      final data = jsonDecode(response.body);
+      throw Exception(data['error'] ?? 'Failed to get client token');
+    }
+  }
+
+  /// Process payment with Braintree
+  Future<Map<String, dynamic>> processPayment({
+    required String accessToken,
+    required String paymentMethodNonce,
+    required String amount,
+    required String orderId,
+  }) async {
+    final url = Uri.parse('$baseUrl/api/payments/checkout');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'paymentMethodNonce': paymentMethodNonce,
+        'amount': amount,
+        'orderId': orderId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      final data = jsonDecode(response.body);
+      throw Exception(data['error'] ?? 'Payment processing failed');
+    }
+  }
+
+  /// Get transaction details
+  Future<Map<String, dynamic>> getTransaction({
+    required String accessToken,
+    required String transactionId,
+  }) async {
+    final url = Uri.parse('$baseUrl/api/payments/transaction/$transactionId');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      final data = jsonDecode(response.body);
+      throw Exception(data['error'] ?? 'Failed to get transaction');
+    }
+  }
+
+  /// Refund a transaction (full or partial)
+  Future<Map<String, dynamic>> refundTransaction({
+    required String accessToken,
+    required String transactionId,
+    String? amount, // Optional: for partial refund
+  }) async {
+    final url = Uri.parse(
+      '$baseUrl/api/payments/transaction/$transactionId/refund',
+    );
+
+    final body = amount != null ? {'amount': amount} : {};
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      final data = jsonDecode(response.body);
+      throw Exception(data['error'] ?? 'Refund failed');
+    }
+  }
+
+  /// Search transactions with filters
+  Future<List<dynamic>> searchTransactions({
+    required String accessToken,
+    String? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    double? minAmount,
+    double? maxAmount,
+  }) async {
+    final url = Uri.parse('$baseUrl/api/payments/transactions/search');
+
+    final body = <String, dynamic>{};
+    if (status != null) body['status'] = status;
+    if (startDate != null) body['startDate'] = startDate.toIso8601String();
+    if (endDate != null) body['endDate'] = endDate.toIso8601String();
+    if (minAmount != null) body['minAmount'] = minAmount.toString();
+    if (maxAmount != null) body['maxAmount'] = maxAmount.toString();
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as List<dynamic>;
+    } else {
+      final data = jsonDecode(response.body);
+      throw Exception(data['error'] ?? 'Failed to search transactions');
+    }
+  }
 }
 
 class ProductService extends GetxService {

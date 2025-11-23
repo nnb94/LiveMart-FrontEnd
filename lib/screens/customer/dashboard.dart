@@ -53,14 +53,21 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
 
     if (!authController.isLoggedIn) {
       return Scaffold(
+        backgroundColor: const Color(0xFF0A0E27),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Please login to continue'),
+              const Text(
+                'Please login to continue',
+                style: TextStyle(color: Colors.white),
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Get.offAllNamed(AppRoutes.login),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF17A2B8),
+                ),
                 child: const Text('Go to Login'),
               ),
             ],
@@ -70,8 +77,31 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0A0E27),
       appBar: AppBar(
-        title: const Text('Customer Dashboard'),
+        backgroundColor: const Color(0xFF0F1729),
+        elevation: 0,
+        title: const Text(
+          'Customer Dashboard',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF0F1729),
+                const Color(0xFF0F1729).withOpacity(0.8),
+              ],
+            ),
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -113,10 +143,25 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: TextField(
+              style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search, color: Colors.white70),
                 hintText: 'Search products...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                hintStyle: TextStyle(color: Colors.white70),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF17A2B8)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF17A2B8)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF17A2B8), width: 2),
+                ),
+                filled: true,
+                fillColor: const Color(0xFF0F1729),
               ),
               onChanged: (value) {
                 setState(() => searchQuery = value.trim().toLowerCase());
@@ -130,6 +175,9 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
               padding: const EdgeInsets.symmetric(vertical: 6),
               child: DropdownButtonFormField<String>(
                 value: selectedCategory,
+                dropdownColor: const Color(0xFF0F1729),
+                style: const TextStyle(color: Colors.white),
+                iconEnabledColor: Colors.white70,
                 items: [
                   const DropdownMenuItem(value: null, child: Text('All Categories')),
                   ...allCategories.map((c) => DropdownMenuItem(value: c, child: Text(c))),
@@ -138,9 +186,20 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                   setState(() => selectedCategory = val);
                 },
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.filter_alt),
+                  prefixIcon: const Icon(Icons.filter_alt, color: Colors.white70),
                   labelText: 'Filter Category',
+                  labelStyle: const TextStyle(color: Colors.white70),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFF17A2B8)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFF17A2B8), width: 2),
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFF0F1729),
                 ),
               ),
             ),
@@ -149,11 +208,18 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
           // Recent Orders (GetX integration)
           const Text(
             'Recent Orders',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
           ),
           Obx(() {
             if (ordersController.isLoading.value) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(
+                child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF17A2B8))),
+              );
             } else if (ordersController.errorMessage.isNotEmpty) {
               return Center(
                 child: Text(
@@ -162,36 +228,62 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                 ),
               );
             } else if (ordersController.recentOrders.isEmpty) {
-              return const Center(child: Text('No recent orders found.'));
+              return Center(
+                child: Text(
+                  'No recent orders found.',
+                  style: TextStyle(color: Colors.grey[400]),
+                ),
+              );
             } else {
               return Column(
                 children: ordersController.recentOrders.map((order) {
-                  return ListTile(
-                    title: Text('Order #${order.orderId} - ${order.productInfo.name}'),
-                    subtitle: Text('Status: ${order.orderDetails.status}'),
-                    trailing: TextButton(
-                      child: const Text('Details'),
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text('Order Details'),
-                            content: Text(
-                              'Product: ${order.productInfo.name}\n'
-                              'Status: ${order.orderDetails.status}\n'
-                              'Quantity: ${order.orderDetails.quantity}\n'
-                              'Total: ${order.orderDetails.totalAmount}\n'
-                              'Seller: ${order.sellerInfo.name} (${order.sellerInfo.email})',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Close'),
+                  return Card(
+                    color: const Color(0xFF0F1729),
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    child: ListTile(
+                      title: Text('Order #${order.orderId} - ${order.productInfo.name}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          )),
+                      subtitle: Text(
+                        'Status: ${order.orderDetails.status}',
+                        style: TextStyle(color: Colors.grey[400]),
+                      ),
+                      trailing: TextButton(
+                        child: const Text('Details'),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: const Color(0xFF0F1729),
+                              title: Text(
+                                'Order Details',
+                                style: const TextStyle(color: Colors.white),
                               ),
-                            ],
-                          ),
-                        );
-                      },
+                              content: Text(
+                                'Product: ${order.productInfo.name}\n'
+                                'Status: ${order.orderDetails.status}\n'
+                                'Quantity: ${order.orderDetails.quantity}\n'
+                                'Total: ${order.orderDetails.totalAmount}\n'
+                                'Seller: ${order.sellerInfo.name} (${order.sellerInfo.email})',
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text(
+                                    'Close',
+                                    style: TextStyle(color: Color(0xFF17A2B8)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   );
                 }).toList(),
@@ -203,7 +295,8 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
           // Products grid with search and filter
           const Text(
             'Available Products',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+            style: TextStyle(
+                fontSize: 20, fontWeight: FontWeight.w500, color: Colors.white),
           ),
           const SizedBox(height: 8),
           Obx(() {
@@ -217,7 +310,12 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
             }).toList();
 
             if (filtered.isEmpty) {
-              return const Center(child: Text('No products available'));
+              return Center(
+                child: Text(
+                  'No products available',
+                  style: TextStyle(color: Colors.grey[400]),
+                ),
+              );
             }
             return GridView.builder(
               shrinkWrap: true,
@@ -231,19 +329,19 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
               itemCount: filtered.length,
               itemBuilder: (context, index) {
                 final product = filtered[index];
-
-                // Reactive widget for quantity and buttons
                 return Obx(() {
-                  final qtyEntry = wishlistController.wishlist.entries
-                      .firstWhereOrNull((entry) => entry.key.id == product.id);
+                  final qtyEntry = wishlistController.wishlist.entries.firstWhereOrNull(
+                      (entry) => entry.key.id == product.id);
                   final qty = qtyEntry?.value ?? 0;
-
                   final stockCount = product.stockQuantity ?? 0;
-
                   return Card(
+                    color: const Color(0xFF0F1729),
                     margin: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: Padding(
-                      padding: const EdgeInsets.all(4.0),
+                      padding: const EdgeInsets.all(8.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -253,14 +351,18 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                               onTap: () {},
                             ),
                           ),
+                          const SizedBox(height: 4),
                           Text(
                             product.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                fontWeight: FontWeight.w600, fontSize: 12),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                                color: Colors.white),
                             textAlign: TextAlign.center,
                           ),
+                          const SizedBox(height: 2),
                           Text(
                             '₹${product.price.toStringAsFixed(2)}',
                             style: const TextStyle(
@@ -269,6 +371,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                               color: Colors.teal,
                             ),
                           ),
+                          const SizedBox(height: 2),
                           Text(
                             stockCount > 30
                                 ? 'Available'
@@ -281,12 +384,18 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                          const SizedBox(height: 4),
                           if (qty == 0)
                             ElevatedButton.icon(
-                              icon: const Icon(Icons.add_shopping_cart, size: 15),
+                              icon:
+                                  const Icon(Icons.add_shopping_cart, size: 15),
                               label: const Text('Add to Cart',
-                                  style: TextStyle(fontSize: 11)),
+                                  style: TextStyle(fontSize: 10)),
                               style: ElevatedButton.styleFrom(
+                                backgroundColor: (stockCount > 0)
+                                    ? const Color(0xFF17A2B8)
+                                    : Colors.white,
+                                foregroundColor: Colors.white,
                                 minimumSize: const Size(85, 28),
                                 padding: EdgeInsets.zero,
                                 textStyle: const TextStyle(fontSize: 11),
@@ -297,20 +406,22 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                                           product.id,
                                           quantity: 1);
                                       if (wishlistController.errorMessage.isEmpty) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           SnackBar(
-                                              content:
-                                                  Text('${product.name} added to cart')),
+                                              content: Text(
+                                                  '${product.name} added to cart')),
                                         );
                                       } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           SnackBar(
                                               content: Text(
                                                   'Error: ${wishlistController.errorMessage.value}')),
                                         );
                                       }
                                     }
-                                  : null, // disables button if out of stock
+                                  : null,
                             )
                           else
                             Row(
@@ -324,8 +435,8 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                                   padding: EdgeInsets.zero,
                                   onPressed: () async {
                                     if (qty == 1) {
-                                      await wishlistController
-                                          .removeFromWishlist(product.id);
+                                      await wishlistController.removeFromWishlist(
+                                          product.id);
                                       if (wishlistController.errorMessage.isEmpty) {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
@@ -371,12 +482,13 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
-                                      color: Colors.deepOrange,
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.add_circle_outline, size: 18),
+                                  icon: const Icon(Icons.add_circle_outline,
+                                      size: 18),
                                   color: Colors.green,
                                   splashRadius: 18,
                                   padding: EdgeInsets.zero,
@@ -403,7 +515,8 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                                     } else {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: Text('Cannot add more than available stock (${stockCount})'),
+                                          content: Text(
+                                              'Cannot add more than available stock (${stockCount})'),
                                         ),
                                       );
                                     }
@@ -411,6 +524,33 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                                 ),
                               ],
                             ),
+                          // Add the Reviews button here (bottom of the Card)
+                          const SizedBox(height: 6),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.rate_review, size: 16),
+                              label: const Text('Reviews',
+                                  style: TextStyle(fontSize: 11)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF17A2B8),
+                                foregroundColor: Colors.white,
+                                minimumSize: const Size(80, 26),
+                                padding: EdgeInsets.zero,
+                                textStyle: const TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.bold),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () {
+                                Get.toNamed(
+                                  AppRoutes.productReviews,
+                                  arguments: {'product': product},
+                                );
+                              },
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -421,8 +561,6 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
           }),
           const SizedBox(height: 32),
 
-          // Removed Place Order Button as requested
-
           const SizedBox(height: 24),
         ],
       ),
@@ -430,6 +568,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
   }
 }
 
+// BEAUTIFUL QUICK ACCESS BUTTON IMPLEMENTATION
 class _QuickAccessTile extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -445,15 +584,35 @@ class _QuickAccessTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        Get.toNamed(route);
-      },
-      child: Column(
-        children: [
-          CircleAvatar(radius: 24, child: Icon(icon, size: 28)),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 12)),
-        ],
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => Get.toNamed(route),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        child: Column(
+          children: [
+            Material(
+              elevation: 3,
+              shape: const CircleBorder(),
+              color: const Color(0xFF17A2B8),
+              child: CircleAvatar(
+                backgroundColor: const Color(0xFF17A2B8),
+                radius: 28,
+                child: Icon(icon, size: 32, color: Colors.white),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

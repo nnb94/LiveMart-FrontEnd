@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import '../../controllers/auth_controller.dart';
-import '../../services/api_service.dart'; // You will need functions to call your review endpoints
-import '../../models/review.dart'; // Create a Review model matching your JSON
+import '../../services/api_service.dart';
+import '../../models/review.dart';
 import '../../models/product.dart';
 import 'package:intl/intl.dart';
 
@@ -34,7 +34,6 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
   }
 
   Future<void> _fetchReviews() async {
-    // Replace with your API call using ApiService
     final api = Get.find<ApiService>();
     final response = await api.getProductReviews(widget.product.id.toString());
 
@@ -52,7 +51,7 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
     try {
-      final api = Get.find<ApiService>(); // Or ApiService() if you don't use GetX DI
+      final api = Get.find<ApiService>();
       final authController = Get.find<AuthController>();
       final accessToken = authController.accessToken.value;
 
@@ -65,7 +64,9 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
       );
 
       await _fetchReviews();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Review saved!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Review saved!')),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
@@ -74,23 +75,54 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final hasPurchased = widget.product.hasPurchased; // Add this bool or check via API
+    final hasPurchased = widget.product.hasPurchased;
+
     return Scaffold(
-      appBar: AppBar(title: Text('Reviews')),
+      backgroundColor: const Color(0xFF0A0E27),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0F1729),
+        elevation: 0,
+        title: const Text(
+          'Reviews',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF0F1729),
+                const Color(0xFF0F1729).withOpacity(0.8),
+              ],
+            ),
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: Column(
         children: [
           if (hasPurchased)
             Card(
+              color: const Color(0xFF1A2332),
               margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     children: [
-                      Text(myReview == null ? 'Add a Review' : 'Update Your Review',
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
+                      Text(
+                        myReview == null ? 'Add a Review' : 'Update Your Review',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18),
+                      ),
+                      const SizedBox(height: 12),
                       RatingBar.builder(
                         initialRating: _rating,
                         minRating: 1,
@@ -98,24 +130,69 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
                         allowHalfRating: false,
                         itemCount: 5,
                         itemSize: 28,
-                        itemBuilder: (context, _) => const Icon(Icons.star, color: Colors.amber),
+                        unratedColor: Colors.white24,
+                        itemBuilder: (context, _) =>
+                            const Icon(Icons.star, color: Colors.amber),
                         onRatingUpdate: (v) => setState(() => _rating = v),
                       ),
+                      const SizedBox(height: 12),
                       TextFormField(
                         initialValue: _title,
-                        decoration: const InputDecoration(labelText: 'Title (optional)'),
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Title (optional)',
+                          labelStyle: const TextStyle(color: Colors.teal),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.teal),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.teal, width: 2),
+                          ),
+                          fillColor: const Color(0xFF0F1729),
+                          filled: true,
+                        ),
                         onChanged: (v) => _title = v,
                       ),
+                      const SizedBox(height: 12),
                       TextFormField(
                         initialValue: _body,
-                        decoration: const InputDecoration(labelText: 'Review'),
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Review',
+                          labelStyle: const TextStyle(color: Colors.teal),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.teal),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.teal, width: 2),
+                          ),
+                          fillColor: const Color(0xFF0F1729),
+                          filled: true,
+                        ),
                         minLines: 2,
                         maxLines: 5,
                         onChanged: (v) => _body = v,
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter your review' : null,
+                        validator: (v) =>
+                            (v == null || v.trim().isEmpty) ? 'Please enter your review' : null,
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 16),
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF17A2B8),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 40),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          textStyle: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                         onPressed: _submitting ? null : _submitReview,
                         child: Text(myReview == null ? 'Submit Review' : 'Update Review'),
                       ),
@@ -124,7 +201,7 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
                 ),
               ),
             ),
-          const Divider(),
+          const Divider(color: Colors.white38),
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -132,15 +209,22 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
               itemBuilder: (context, idx) {
                 final review = reviews[idx];
                 return Card(
+                  color: const Color(0xFF1A2332),
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   child: ListTile(
-                    leading: Icon(Icons.account_circle, color: Colors.blue, size: 32),
+                    contentPadding: const EdgeInsets.all(16),
+                    leading: const Icon(Icons.account_circle, color: Colors.blue, size: 32),
                     title: Row(
                       children: [
-                        Text('${review.customerName}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Text('${review.customerName}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, color: Colors.white)),
                         const SizedBox(width: 6),
                         RatingBarIndicator(
                           rating: review.rating.toDouble(),
-                          itemBuilder: (context, index) => const Icon(Icons.star, color: Colors.amber),
+                          itemBuilder: (context, index) =>
+                              const Icon(Icons.star, color: Colors.amber),
                           itemCount: 5,
                           itemSize: 18.0,
                         ),
@@ -152,17 +236,22 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
                         if (review.title != null && review.title!.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 2.0),
-                            child: Text(review.title!, style: TextStyle(fontWeight: FontWeight.w500)),
+                            child: Text(review.title!,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white70)),
                           ),
                         if (review.body != null && review.body!.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 4.0),
-                            child: Text(review.body!),
+                            child: Text(review.body!, style: const TextStyle(color: Colors.white70)),
                           ),
                         Padding(
                           padding: const EdgeInsets.only(top: 4.0),
-                          child: Text('Reviewed on ${DateFormat('yyyy-MM-dd').format(review.createdAt)}',
-                              style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          child: Text(
+                            'Reviewed on ${DateFormat('yyyy-MM-dd').format(review.createdAt)}',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                          ),
                         ),
                       ],
                     ),

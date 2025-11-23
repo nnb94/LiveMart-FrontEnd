@@ -14,6 +14,7 @@ import 'package:live_mart_app/screens/customer/notifications.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
 import 'package:live_mart_app/screens/customer/customer_reviews.dart'; // Adjust path as needed
+import 'package:live_mart_app/screens/customer/reviews.dart';
 
 // Role-based dashboards
 import 'screens/retailer/dashboard.dart';
@@ -52,6 +53,7 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
   static const String customerReviews = '/customer/customer_reviews';
+  static const String productReviews = '/customer/reviews';
   static const String retailerDashboard = '/retailer/dashboard';
   static const String retailerWishlist = '/retailer/wishlist';
 
@@ -252,11 +254,13 @@ class AppRoutes {
       transitionDuration: const Duration(milliseconds: 300),
     ),
 
-GetPage(
-      name: paymentCheckout,
-      page: () => const PaymentCheckoutScreen(),
-      transition: Transition.rightToLeft,
+    GetPage(
+      name: AppRoutes.productReviews,
+      page: () => ProductReviewsPage(product: Get.arguments['product']),
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),
+
+    
   ];
 }

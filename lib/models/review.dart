@@ -19,12 +19,14 @@ class Review {
     required this.createdAt,
   });
 
-  factory Review.fromJson(Map<String, dynamic> json) {
+  factory Review.fromJson(Map<String, dynamic> json, {int? productId}) {
     return Review(
       id: json['id'],
       customerId: json['user_id'],
       customerName: json['user_name'] ?? 'Anonymous',
-      productId: json['product_id'],
+      productId:
+          productId ??
+          json['product_id'], // Use provided productId if available
       rating: json['rating'],
       title: json['title'],
       body: json['body'],
@@ -65,10 +67,10 @@ class Review {
   static Map<String, int> getRatingBreakdown(List<Review> reviews) {
     Map<String, int> breakdown = {
       'excellent': 0, // 5 stars
-      'good': 0,      // 4 stars
-      'average': 0,   // 3 stars
-      'poor': 0,      // 2 stars
-      'terrible': 0,  // 1 star
+      'good': 0, // 4 stars
+      'average': 0, // 3 stars
+      'poor': 0, // 2 stars
+      'terrible': 0, // 1 star
     };
 
     for (final review in reviews) {

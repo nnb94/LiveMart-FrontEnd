@@ -6,7 +6,8 @@ import 'package:get/get.dart';
 
 /// Image Picker and Preview Components for Product Images
 class ImagePickerWidget extends StatefulWidget {
-  final Function(Map<String, dynamic>?) onImageSelected; // Now returns image data map or null
+  final Function(Map<String, dynamic>?)
+  onImageSelected; // Now returns image data map or null
   final String? initialImageUrl;
   final String? imagePath;
   final String labelText;
@@ -119,25 +120,16 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.add_a_photo,
-            size: 40,
-            color: Colors.grey.shade400,
-          ),
+          Icon(Icons.add_a_photo, size: 40, color: Colors.grey.shade400),
           const SizedBox(height: 8),
           Text(
             'Tap to add image',
-            style: TextStyle(
-              color: Colors.grey.shade500,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
           ),
         ],
       );
     }
   }
-
-
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -211,6 +203,11 @@ class ProductImageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Safely get first character with fallback
+    final fallbackChar = fallbackText.isNotEmpty
+        ? fallbackText[0].toUpperCase()
+        : '?';
+
     if (imageUrl != null && imageUrl!.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
@@ -228,7 +225,11 @@ class ProductImageWidget extends StatelessWidget {
                 color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.image, color: Colors.grey.shade400, size: size * 0.5),
+              child: Icon(
+                Icons.image,
+                color: Colors.grey.shade400,
+                size: size * 0.5,
+              ),
             );
           },
           errorBuilder: (context, error, stackTrace) {
@@ -236,7 +237,7 @@ class ProductImageWidget extends StatelessWidget {
               radius: size / 2,
               backgroundColor: Colors.blue.shade100,
               child: Text(
-                fallbackText[0].toUpperCase(),
+                fallbackChar,
                 style: TextStyle(
                   color: Colors.blue.shade700,
                   fontWeight: FontWeight.bold,
@@ -252,7 +253,7 @@ class ProductImageWidget extends StatelessWidget {
         radius: size / 2,
         backgroundColor: Colors.blue.shade100,
         child: Text(
-          fallbackText[0].toUpperCase(),
+          fallbackChar,
           style: TextStyle(
             color: Colors.blue.shade700,
             fontWeight: FontWeight.bold,
@@ -267,13 +268,19 @@ class ProductImageWidget extends StatelessWidget {
 /// Image validation utilities
 class ImageValidator {
   static const int maxFileSizeBytes = 5 * 1024 * 1024; // 5MB
-  static const List<String> allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+  static const List<String> allowedExtensions = [
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'webp',
+  ];
   static const List<String> allowedMimeTypes = [
     'image/jpeg',
     'image/jpg',
     'image/png',
     'image/gif',
-    'image/webp'
+    'image/webp',
   ];
 
   static Future<String?> validateImage(File? imageFile) async {
@@ -300,7 +307,6 @@ class ImageValidator {
       }
 
       return 'Only JPG, JPEG, PNG, GIF, and WebP images are allowed';
-
     } catch (e) {
       // Ultimate fallback - if validation fails, let backend handle it
       return null; // Allow if we can't validate locally

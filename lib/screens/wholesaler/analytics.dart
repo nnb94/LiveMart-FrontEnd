@@ -14,13 +14,18 @@ class WholesalerAnalyticsScreen extends StatelessWidget {
     final wholesalerController = Get.find<WholesalerController>();
 
     // Check authentication
-    if (!authController.isLoggedIn || authController.role.value != 'wholesaler') {
+    if (!authController.isLoggedIn ||
+        authController.role.value != 'wholesaler') {
       return Scaffold(
+        backgroundColor: const Color(0xFF0A0E27),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Please login as a wholesaler to continue'),
+              const Text(
+                'Please login as a wholesaler to continue',
+                style: TextStyle(color: Colors.white),
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Get.offAllNamed('/login'),
@@ -40,335 +45,447 @@ class WholesalerAnalyticsScreen extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-      appBar: AppBar(
-        title: const Text('Business Analytics'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => wholesalerController.fetchAnalytics(),
-          ),
-        ],
-        bottom: const TabBar(
-          tabs: [
-            Tab(text: 'Summary', icon: Icon(Icons.analytics)),
-            Tab(text: 'Charts', icon: Icon(Icons.bar_chart)),
-          ],
-        ),
-      ),
-      body: TabBarView(
-          children: [
-            // Summary Tab
-            Obx(() {
-        if (wholesalerController.isLoadingAnalytics.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (wholesalerController.analyticsError.isNotEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Error: ${wholesalerController.analyticsError}'),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => wholesalerController.fetchAnalytics(),
-                  child: const Text('Retry'),
-                ),
-              ],
+        backgroundColor: const Color(0xFF0A0E27),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF0F1729),
+          elevation: 0,
+          title: const Text(
+            'Business Analytics',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
             ),
-          );
-        }
-
-        if (wholesalerController.analytics.value == null) {
-          return const Center(
-            child: Text('No analytics data available yet. Make some sales to see your metrics!'),
-          );
-        }
-
-        final analytics = wholesalerController.analytics.value!;
-        return SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Sales Summary',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF0F1729),
+                  const Color(0xFF0F1729).withOpacity(0.8),
+                ],
+              ),
+            ),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Get.back(),
+          ),
+          actions: [
+            Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF10B981), Color(0xFF34D399)],
                 ),
-                const SizedBox(height: 20),
-
-                // Summary Cards
-                Row(
-                  children: [
-                    Expanded(
-                      child: _AnalyticsCard(
-                        title: 'Total Orders',
-                        value: analytics.summary.totalOrders.toString(),
-                        icon: Icons.shopping_cart,
-                        color: Colors.blue,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                onPressed: () => wholesalerController.fetchAnalytics(),
+              ),
+            ),
+          ],
+          bottom: const TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: Color(0xFF10B981),
+            tabs: [
+              Tab(text: 'Summary', icon: Icon(Icons.analytics)),
+              Tab(text: 'Charts', icon: Icon(Icons.bar_chart)),
+            ],
+          ),
+        ),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF0A0E27),
+                Color(0xFF0F1729),
+                Color(0xFF1A2332),
+                Color(0xFF0F1729),
+                Color(0xFF050A1A),
+              ],
+              stops: [0.1, 0.3, 0.6, 0.8, 1.0],
+            ),
+          ),
+          child: TabBarView(
+            children: [
+              // Summary Tab
+              Obx(() {
+                if (wholesalerController.isLoadingAnalytics.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(0xFF10B981),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _AnalyticsCard(
-                        title: 'Total Revenue',
-                        value: '₹${analytics.summary.totalRevenue.toStringAsFixed(2)}',
-                        icon: Icons.attach_money,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _AnalyticsCard(
-                        title: 'Avg Order Value',
-                        value: '₹${analytics.summary.averageOrderValue.toStringAsFixed(2)}',
-                        icon: Icons.trending_up,
-                        color: Colors.purple,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _AnalyticsCard(
-                        title: 'Units Sold',
-                        value: analytics.summary.totalUnitsSold.toString(),
-                        icon: Icons.inventory,
-                        color: Colors.orange,
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                }
 
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _AnalyticsCard(
-                        title: 'Unique Buyers',
-                        value: analytics.summary.uniqueBuyers.toString(),
-                        icon: Icons.people,
-                        color: Colors.teal,
-                      ),
+                if (wholesalerController.analyticsError.isNotEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Error: ${wholesalerController.analyticsError}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                          ),
+                          onPressed: () =>
+                              wholesalerController.fetchAnalytics(),
+                          child: const Text('Retry'),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 16),
-                    const Expanded(child: SizedBox()),
-                  ],
-                ),
+                  );
+                }
 
-                const SizedBox(height: 32),
-                const Text(
-                  'Top Performing Products',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-
-                // Top Products List
-                if (analytics.topProducts.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: Text('No sales data yet. Make your first sale to see top products!'),
+                if (wholesalerController.analytics.value == null) {
+                  return Center(
+                    child: Text(
+                      'No analytics data available yet. Make some sales to see your metrics!',
+                      style: TextStyle(color: Colors.grey[400]),
                     ),
-                  )
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: analytics.topProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = analytics.topProducts[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: Colors.blue.shade100,
-                                child: Text(
-                                  '#${index + 1}',
-                                  style: TextStyle(
-                                    color: Colors.blue.shade700,
-                                    fontWeight: FontWeight.bold,
+                  );
+                }
+
+                final analytics = wholesalerController.analytics.value!;
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Sales Summary',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Summary Cards
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _AnalyticsCard(
+                                title: 'Total Orders',
+                                value: analytics.summary.totalOrders.toString(),
+                                icon: Icons.shopping_cart,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _AnalyticsCard(
+                                title: 'Total Revenue',
+                                value:
+                                    '₹${analytics.summary.totalRevenue.toStringAsFixed(2)}',
+                                icon: Icons.attach_money,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _AnalyticsCard(
+                                title: 'Avg Order Value',
+                                value:
+                                    '₹${analytics.summary.averageOrderValue.toStringAsFixed(2)}',
+                                icon: Icons.trending_up,
+                                color: Colors.purple,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _AnalyticsCard(
+                                title: 'Units Sold',
+                                value: analytics.summary.totalUnitsSold
+                                    .toString(),
+                                icon: Icons.inventory,
+                                color: Colors.orange,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _AnalyticsCard(
+                                title: 'Unique Buyers',
+                                value: analytics.summary.uniqueBuyers
+                                    .toString(),
+                                icon: Icons.people,
+                                color: Colors.teal,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            const Expanded(child: SizedBox()),
+                          ],
+                        ),
+
+                        const SizedBox(height: 32),
+                        const Text(
+                          'Top Performing Products',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Top Products List
+                        if (analytics.topProducts.isEmpty)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(32.0),
+                              child: Text(
+                                'No sales data yet. Make your first sale to see top products!',
+                              ),
+                            ),
+                          )
+                        else
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: analytics.topProducts.length,
+                            itemBuilder: (context, index) {
+                              final product = analytics.topProducts[index];
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundColor: Colors.blue.shade100,
+                                        child: Text(
+                                          '#${index + 1}',
+                                          style: TextStyle(
+                                            color: Colors.blue.shade700,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              product.name,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Orders: ${product.orderCount} | Total Sold: ${product.totalQuantitySold} units',
+                                              style: TextStyle(
+                                                color: Colors.grey.shade600,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            '₹${product.totalRevenue.toStringAsFixed(2)}',
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.green,
+                                            ),
+                                          ),
+                                          const Text(
+                                            'Revenue',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      product.name,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Orders: ${product.orderCount} | Total Sold: ${product.totalQuantitySold} units',
-                                      style: TextStyle(
-                                        color: Colors.grey.shade600,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                              );
+                            },
+                          ),
+
+                        const SizedBox(height: 32),
+
+                        // Additional insights
+                        if (analytics.topProducts.isNotEmpty &&
+                            analytics.summary.totalOrders > 0)
+                          Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    '₹${product.totalRevenue.toStringAsFixed(2)}',
-                                    style: const TextStyle(
+                                  const Text(
+                                    'Business Insights',
+                                    style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.green,
                                     ),
                                   ),
-                                  const Text(
-                                    'Revenue',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    '• Your top product "${analytics.topProducts[0].name}" generated ₹${analytics.topProducts[0].totalRevenue.toStringAsFixed(2)} in revenue',
+                                  ),
+                                  if (analytics.topProducts.length > 1)
+                                    Text(
+                                      '• Together, your top 3 products account for ₹${analytics.topProducts.take(3).fold<double>(0, (sum, p) => sum + p.totalRevenue).toStringAsFixed(2)} in total revenue',
                                     ),
+                                  Text(
+                                    '• Average ${analytics.summary.totalUnitsSold > 1 ? (analytics.summary.totalUnitsSold / analytics.summary.totalOrders).toStringAsFixed(1) : "0"} units sold per order',
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-                const SizedBox(height: 32),
-
-                // Additional insights
-                if (analytics.topProducts.isNotEmpty && analytics.summary.totalOrders > 0)
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Business Insights',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            '• Your top product "${analytics.topProducts[0].name}" generated ₹${analytics.topProducts[0].totalRevenue.toStringAsFixed(2)} in revenue',
-                          ),
-                          if (analytics.topProducts.length > 1)
-                            Text(
-                              '• Together, your top 3 products account for ₹${analytics.topProducts.take(3).fold<double>(0, (sum, p) => sum + p.totalRevenue).toStringAsFixed(2)} in total revenue',
                             ),
-                          Text(
-                            '• Average ${analytics.summary.totalUnitsSold > 1 ? (analytics.summary.totalUnitsSold / analytics.summary.totalOrders).toStringAsFixed(1) : "0"} units sold per order',
                           ),
-                        ],
-                      ),
+
+                        const SizedBox(height: 20),
+                      ],
                     ),
                   ),
+                );
+              }),
 
-                const SizedBox(height: 20),
-              ],
-            ),
+              // Charts Tab
+              Obx(() {
+                if (wholesalerController.isLoadingAnalytics.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (wholesalerController.analyticsError.isNotEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Error: ${wholesalerController.analyticsError}'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () =>
+                              wholesalerController.fetchAnalytics(),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (wholesalerController.analytics.value == null ||
+                    wholesalerController.salesOrders.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'No chart data available yet. Make some sales to see visualizations!',
+                    ),
+                  );
+                }
+
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Revenue Over Time',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          height: 300,
+                          child: _RevenueChart(
+                            salesOrders: wholesalerController.salesOrders,
+                          ),
+                        ),
+
+                        const SizedBox(height: 40),
+                        const Text(
+                          'Order Volume Trends',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          height: 300,
+                          child: _OrderVolumeChart(
+                            salesOrders: wholesalerController.salesOrders,
+                          ),
+                        ),
+
+                        const SizedBox(height: 40),
+                        const Text(
+                          'Top Selling Products',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          height: 300,
+                          child: _TopProductsChart(
+                            analytics: wholesalerController.analytics.value!,
+                          ),
+                        ),
+
+                        const SizedBox(height: 40),
+                        const Text(
+                          'Customer Purchase Patterns',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          height: 400,
+                          child: _CustomerPatternsChart(
+                            salesOrders: wholesalerController.salesOrders,
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
           ),
-        );
-            }),
-
-            // Charts Tab
-            Obx(() {
-              if (wholesalerController.isLoadingAnalytics.value) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (wholesalerController.analyticsError.isNotEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Error: ${wholesalerController.analyticsError}'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => wholesalerController.fetchAnalytics(),
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              if (wholesalerController.analytics.value == null ||
-                  wholesalerController.salesOrders.isEmpty) {
-                return const Center(
-                  child: Text('No chart data available yet. Make some sales to see visualizations!'),
-                );
-              }
-
-              return SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Revenue Over Time',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        height: 300,
-                        child: _RevenueChart(salesOrders: wholesalerController.salesOrders),
-                      ),
-
-                      const SizedBox(height: 40),
-                      const Text(
-                        'Order Volume Trends',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        height: 300,
-                        child: _OrderVolumeChart(salesOrders: wholesalerController.salesOrders),
-                      ),
-
-                      const SizedBox(height: 40),
-                      const Text(
-                        'Top Selling Products',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        height: 300,
-                        child: _TopProductsChart(analytics: wholesalerController.analytics.value!),
-                      ),
-
-                      const SizedBox(height: 40),
-                      const Text(
-                        'Customer Purchase Patterns',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        height: 400,
-                        child: _CustomerPatternsChart(salesOrders: wholesalerController.salesOrders),
-                      ),
-
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ],
         ),
       ),
     );
@@ -389,12 +506,14 @@ class _RevenueChart extends StatelessWidget {
 
     for (final order in salesOrders) {
       final date = DateTime.parse(order.orderDate).toLocal();
-      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final dateKey =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
       if (!dailyRevenue.containsKey(dateKey)) {
         dailyRevenue[dateKey] = 0;
       }
-      dailyRevenue[dateKey] = dailyRevenue[dateKey]! + order.orderDetails.totalAmount;
+      dailyRevenue[dateKey] =
+          dailyRevenue[dateKey]! + order.orderDetails.totalAmount;
     }
 
     // Sort dates and prepare data for chart
@@ -435,16 +554,24 @@ class _RevenueChart extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          if (value.toInt() >= 0 && value.toInt() < sortedDates.length) {
+                          if (value.toInt() >= 0 &&
+                              value.toInt() < sortedDates.length) {
                             final date = sortedDates[value.toInt()].split('-');
-                            return Text('${date[1]}/${date[2]}', style: const TextStyle(fontSize: 10));
+                            return Text(
+                              '${date[1]}/${date[2]}',
+                              style: const TextStyle(fontSize: 10),
+                            );
                           }
                           return const Text('');
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   borderData: FlBorderData(show: true),
                   lineBarsData: [
@@ -454,7 +581,10 @@ class _RevenueChart extends StatelessWidget {
                       color: Colors.green,
                       barWidth: 3,
                       dotData: const FlDotData(show: false),
-                      belowBarData: BarAreaData(show: true, color: Colors.green.withValues(alpha: 51)), // 0.2 * 255
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: Colors.green.withValues(alpha: 51),
+                      ), // 0.2 * 255
                     ),
                   ],
                   minY: 0,
@@ -481,7 +611,8 @@ class _OrderVolumeChart extends StatelessWidget {
 
     for (final order in salesOrders) {
       final date = DateTime.parse(order.orderDate).toLocal();
-      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final dateKey =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
       dailyOrders[dateKey] = (dailyOrders[dateKey] ?? 0) + 1;
     }
@@ -507,7 +638,9 @@ class _OrderVolumeChart extends StatelessWidget {
       );
     }
 
-    final maxY = dailyOrders.values.isEmpty ? 10.0 : (dailyOrders.values.reduce((a, b) => a > b ? a : b).toDouble()) * 1.2;
+    final maxY = dailyOrders.values.isEmpty
+        ? 10.0
+        : (dailyOrders.values.reduce((a, b) => a > b ? a : b).toDouble()) * 1.2;
 
     return Card(
       elevation: 4,
@@ -536,16 +669,24 @@ class _OrderVolumeChart extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          if (value.toInt() >= 0 && value.toInt() < sortedDates.length) {
+                          if (value.toInt() >= 0 &&
+                              value.toInt() < sortedDates.length) {
                             final date = sortedDates[value.toInt()].split('-');
-                            return Text('${date[1]}/${date[2]}', style: const TextStyle(fontSize: 10));
+                            return Text(
+                              '${date[1]}/${date[2]}',
+                              style: const TextStyle(fontSize: 10),
+                            );
                           }
                           return const Text('');
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   borderData: FlBorderData(show: true),
                   barGroups: barGroups,
@@ -588,7 +729,8 @@ class _TopProductsChart extends StatelessWidget {
       return PieChartSectionData(
         value: product.totalRevenue,
         title: '${percentage.toStringAsFixed(1)}%',
-        color: Colors.primaries[topProducts.indexOf(product) % Colors.primaries.length],
+        color: Colors
+            .primaries[topProducts.indexOf(product) % Colors.primaries.length],
         radius: 80,
         titleStyle: const TextStyle(
           fontSize: 14,
@@ -627,7 +769,10 @@ class _TopProductsChart extends StatelessWidget {
                       children: [
                         const Text(
                           'Legend',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Expanded(
@@ -640,7 +785,9 @@ class _TopProductsChart extends StatelessWidget {
                                   Container(
                                     width: 12,
                                     height: 12,
-                                    color: Colors.primaries[index % Colors.primaries.length],
+                                    color:
+                                        Colors.primaries[index %
+                                            Colors.primaries.length],
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
@@ -652,7 +799,10 @@ class _TopProductsChart extends StatelessWidget {
                                   ),
                                   Text(
                                     '₹${product.totalRevenue.toStringAsFixed(0)}',
-                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               );
@@ -697,7 +847,8 @@ class _CustomerPatternsChart extends StatelessWidget {
     }
 
     // Sort by frequency and take top categories
-    final sortedFrequencies = frequencyCount.keys.toList()..sort((a, b) => b.compareTo(a));
+    final sortedFrequencies = frequencyCount.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
     final topFrequencies = sortedFrequencies.take(10).toList();
 
     final barGroups = topFrequencies.map((frequency) {
@@ -714,7 +865,10 @@ class _CustomerPatternsChart extends StatelessWidget {
       );
     }).toList();
 
-    final maxY = frequencyCount.values.isEmpty ? 10.0 : (frequencyCount.values.reduce((a, b) => a > b ? a : b).toDouble()) * 1.2;
+    final maxY = frequencyCount.values.isEmpty
+        ? 10.0
+        : (frequencyCount.values.reduce((a, b) => a > b ? a : b).toDouble()) *
+              1.2;
 
     return Card(
       elevation: 4,
@@ -757,8 +911,12 @@ class _CustomerPatternsChart extends StatelessWidget {
                         ),
                       ),
                     ),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   borderData: FlBorderData(show: true),
                   barGroups: barGroups,
@@ -788,27 +946,49 @@ class _AnalyticsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [color, color.withOpacity(0.7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            Icon(icon, size: 32, color: color),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 32, color: Colors.white),
+            ),
             const SizedBox(height: 12),
             Text(
               value,
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey,
+                color: Colors.white.withOpacity(0.8),
               ),
               textAlign: TextAlign.center,
             ),

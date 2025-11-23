@@ -31,11 +31,15 @@ class WholesalerDashboard extends StatelessWidget {
     if (!authController.isLoggedIn ||
         authController.role.value != 'wholesaler') {
       return Scaffold(
+        backgroundColor: const Color(0xFF0A0E27),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Please login as a wholesaler to continue'),
+              const Text(
+                'Please login as a wholesaler to continue',
+                style: TextStyle(color: Colors.white),
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Get.offAllNamed('/login'),
@@ -48,49 +52,138 @@ class WholesalerDashboard extends StatelessWidget {
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0A0E27),
       appBar: AppBar(
-        title: const Text('Wholesaler Dashboard'),
+        backgroundColor: const Color(0xFF0F1729),
+        elevation: 0,
+        title: const Text(
+          'Wholesaler Dashboard',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF0F1729),
+                const Color(0xFF0F1729).withOpacity(0.8),
+              ],
+            ),
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.analytics),
-            onPressed: () =>
-                _showAnalyticsDialog(context, wholesalerController),
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF10B981), Color(0xFF34D399)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: () => wholesalerController.loadInitialData(),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.analytics, color: Colors.white),
+              onPressed: () =>
+                  _showAnalyticsDialog(context, wholesalerController),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFEF4444), Color(0xFFF87171)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.logout, color: Colors.white),
+              onPressed: () {
+                authController.clearUser();
+                Get.offAllNamed('/login');
+              },
+            ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildOverviewCards(wholesalerController),
-              const SizedBox(height: 24),
-              _buildQuickActions(),
-              const SizedBox(height: 24),
-              _buildInventorySection(wholesalerController),
-              const SizedBox(height: 24),
-              _buildRecentSalesSection(wholesalerController),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0A0E27),
+              Color(0xFF0F1729),
+              Color(0xFF1A2332),
+              Color(0xFF0F1729),
+              Color(0xFF050A1A),
             ],
+            stops: [0.1, 0.3, 0.6, 0.8, 1.0],
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildOverviewCards(wholesalerController),
+                const SizedBox(height: 24),
+                _buildQuickActions(),
+                const SizedBox(height: 24),
+                _buildInventorySection(wholesalerController),
+                const SizedBox(height: 24),
+                _buildRecentSalesSection(wholesalerController),
+              ],
+            ),
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddProductDialog(context, wholesalerController),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Product'),
+        backgroundColor: const Color(0xFF3B82F6),
+        elevation: 8,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          'Add Product',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
       ),
     );
   }
 
   Widget _buildOverviewCards(WholesalerController controller) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Business Overview',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        const Padding(
+          padding: EdgeInsets.only(left: 4.0, bottom: 16.0),
+          child: Text(
+            'Business Overview',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
+          ),
         ),
-        const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
@@ -99,7 +192,11 @@ class WholesalerDashboard extends StatelessWidget {
                   title: 'Total Inventory',
                   value: '${controller.inventory.length}',
                   icon: Icons.inventory,
-                  color: Colors.blue,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
               ),
             ),
@@ -110,7 +207,11 @@ class WholesalerDashboard extends StatelessWidget {
                   title: 'Low Stock Items',
                   value: '${controller.getLowStockCount()}',
                   icon: Icons.warning,
-                  color: Colors.orange,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
               ),
             ),
@@ -125,7 +226,11 @@ class WholesalerDashboard extends StatelessWidget {
                   title: 'Total Orders',
                   value: '${controller.salesOrders.length}',
                   icon: Icons.shopping_cart,
-                  color: Colors.green,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF34D399)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
               ),
             ),
@@ -137,7 +242,11 @@ class WholesalerDashboard extends StatelessWidget {
                   value:
                       '₹${controller.getTotalInventoryValue().toStringAsFixed(2)}',
                   icon: Icons.attach_money,
-                  color: Colors.purple,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFA855F7), Color(0xFFD946EF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
               ),
             ),
@@ -151,11 +260,18 @@ class WholesalerDashboard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Quick Actions',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        const Padding(
+          padding: EdgeInsets.only(left: 4.0, bottom: 16.0),
+          child: Text(
+            'Quick Actions',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
+          ),
         ),
-        const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
@@ -163,6 +279,7 @@ class WholesalerDashboard extends StatelessWidget {
                 title: 'Manage Inventory',
                 icon: Icons.inventory_2,
                 onTap: () => Get.toNamed('/wholesaler/inventory'),
+                color: const Color(0xFF3B82F6),
               ),
             ),
             const SizedBox(width: 16),
@@ -171,6 +288,7 @@ class WholesalerDashboard extends StatelessWidget {
                 title: 'Sales Orders',
                 icon: Icons.receipt_long,
                 onTap: () => Get.toNamed('/wholesaler/sales'),
+                color: const Color(0xFF60A5FA),
               ),
             ),
           ],
@@ -183,6 +301,7 @@ class WholesalerDashboard extends StatelessWidget {
                 title: 'My Products',
                 icon: Icons.category,
                 onTap: () => Get.toNamed('/wholesaler/products'),
+                color: const Color(0xFF10B981),
               ),
             ),
             const SizedBox(width: 16),
@@ -191,6 +310,7 @@ class WholesalerDashboard extends StatelessWidget {
                 title: 'Analytics',
                 icon: Icons.bar_chart,
                 onTap: () => Get.toNamed(AppRoutes.wholesalerAnalytics),
+                color: const Color(0xFFA855F7),
               ),
             ),
           ],
@@ -203,6 +323,7 @@ class WholesalerDashboard extends StatelessWidget {
                 title: 'Product Reviews',
                 icon: Icons.rate_review,
                 onTap: () => Get.toNamed('/wholesaler/reviews'),
+                color: const Color(0xFFFF6B35),
               ),
             ),
             const SizedBox(width: 16),
@@ -219,64 +340,135 @@ class WholesalerDashboard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Inventory Overview',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        const Padding(
+          padding: EdgeInsets.only(left: 4.0, bottom: 16.0),
+          child: Text(
+            'Inventory Overview',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
+          ),
         ),
-        const SizedBox(height: 16),
         Obx(() {
           // Check if both inventory and products are loaded
-          if (controller.isLoadingInventory.value || controller.isLoadingProducts.value) {
-            return const Center(child: CircularProgressIndicator());
+          if (controller.isLoadingInventory.value ||
+              controller.isLoadingProducts.value) {
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+              ),
+            );
           }
 
           if (controller.inventory.isEmpty) {
-            return const Center(
-              child: Text('No products in inventory. Add your first product!'),
+            return Center(
+              child: Text(
+                'No products in inventory. Add your first product!',
+                style: TextStyle(color: Colors.grey[400]),
+              ),
             );
           }
 
           if (controller.products.isEmpty) {
-            return const Center(
-              child: Text('Loading products data...'),
+            return Center(
+              child: Text(
+                'Loading products data...',
+                style: TextStyle(color: Colors.grey[400]),
+              ),
             );
           }
 
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: controller.inventory.length.clamp(
-                    0,
-                    3,
-                  ), // Show first 3 items
-                  itemBuilder: (context, index) {
-                    final item = controller.inventory[index];
-                    final imageUrl = controller.getImageUrlForInventoryItem(item);
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        leading: ProductImageWidget(
-                          imageUrl: imageUrl,
-                          fallbackText: item.productName,
-                          size: 40,
-                        ),
-                        title: Text(item.productName),
-                        subtitle: Text(
-                          'Stock: ${item.quantityInStock} | Min Order: ${item.minimumOrderQuantity}',
-                        ),
-                        trailing: Chip(
-                          label: Text('₹${item.price.toStringAsFixed(2)}'),
-                          backgroundColor:
-                              item.quantityInStock < item.minimumOrderQuantity
-                              ? Colors.red.shade100
-                              : Colors.green.shade100,
-                        ),
-                        onTap: () =>
-                            _showInventoryItemDialog(context, controller, item),
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: controller.inventory.length.clamp(
+              0,
+              3,
+            ), // Show first 3 items
+            itemBuilder: (context, index) {
+              final item = controller.inventory[index];
+              final imageUrl = controller.getImageUrlForInventoryItem(item);
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFF0F1729),
+                      const Color(0xFF1A2332).withOpacity(0.5),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFF3B82F6).withOpacity(0.3),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(16),
+                  leading: SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: ProductImageWidget(
+                      imageUrl: imageUrl,
+                      fallbackText: item.productName,
+                      size: 40,
+                    ),
+                  ),
+                  title: Text(
+                    item.productName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Stock: ${item.quantityInStock} | Min Order: ${item.minimumOrderQuantity}',
+                    style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                  ),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: item.quantityInStock < item.minimumOrderQuantity
+                            ? [const Color(0xFFFF6B35), const Color(0xFFFF8C42)]
+                            : [
+                                const Color(0xFF10B981),
+                                const Color(0xFF34D399),
+                              ],
                       ),
-                    );
-                  },
-                );
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '₹${item.price.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  onTap: () =>
+                      _showInventoryItemDialog(context, controller, item),
+                ),
+              );
+            },
+          );
         }),
       ],
     );
@@ -286,20 +478,32 @@ class WholesalerDashboard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Recent Sales Orders',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        const Padding(
+          padding: EdgeInsets.only(left: 4.0, bottom: 16.0),
+          child: Text(
+            'Recent Sales Orders',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
+          ),
         ),
-        const SizedBox(height: 16),
         Obx(() {
           if (controller.isLoadingSales.value) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+              ),
+            );
           }
 
           if (controller.salesOrders.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 'No sales orders yet. Orders will appear here when retailers buy from you.',
+                style: TextStyle(color: Colors.grey[400]),
               ),
             );
           }
@@ -310,30 +514,77 @@ class WholesalerDashboard extends StatelessWidget {
             itemCount: controller.salesOrders.length.clamp(0, 3),
             itemBuilder: (context, index) {
               final order = controller.salesOrders[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFF0F1729),
+                      const Color(0xFF1A2332).withOpacity(0.5),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFF3B82F6).withOpacity(0.3),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: ListTile(
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    child: Obx(() {
-                      final imageUrl = controller.getProductImageUrlByName(order.productInfo.productName);
-                      return ProductImageWidget(
+                  contentPadding: const EdgeInsets.all(16),
+                  leading: Obx(() {
+                    final imageUrl = controller.getProductImageUrlByName(
+                      order.productInfo.productName,
+                    );
+                    return SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: ProductImageWidget(
                         imageUrl: imageUrl,
                         fallbackText: order.productInfo.productName,
                         size: 40,
-                      );
-                    }),
-                  ),
+                      ),
+                    );
+                  }),
                   title: Text(
                     '${order.productInfo.productName} → ${order.retailerName}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
                   ),
                   subtitle: Text(
                     'Qty: ${order.orderDetails.quantity} | ₹${order.orderDetails.totalAmount.toStringAsFixed(2)}',
+                    style: TextStyle(color: Colors.grey[400], fontSize: 13),
                   ),
-                  trailing: Chip(
-                    label: Text(order.status.toUpperCase()),
-                    backgroundColor: _getStatusColor(order.status),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: _getStatusGradientColors(order.status),
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      order.status.toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                      ),
+                    ),
                   ),
                   onTap: () => _showOrderDialog(context, controller, order),
                 ),
@@ -482,9 +733,15 @@ class WholesalerDashboard extends StatelessWidget {
                 final stock = int.tryParse(stockController.text) ?? 0;
                 final minOrder = int.tryParse(minOrderController.text) ?? 1;
 
-                if (name.isEmpty || description.isEmpty || price == null ||
-                    category.isEmpty || stock < 0) {
-                  Get.snackbar('Error', 'Please fill all required fields correctly');
+                if (name.isEmpty ||
+                    description.isEmpty ||
+                    price == null ||
+                    category.isEmpty ||
+                    stock < 0) {
+                  Get.snackbar(
+                    'Error',
+                    'Please fill all required fields correctly',
+                  );
                   return;
                 }
 
@@ -555,47 +812,97 @@ class WholesalerDashboard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(item.productName),
+        backgroundColor: const Color(0xFF1A2332),
+        title: Text(
+          item.productName,
+          style: const TextStyle(color: Colors.white),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: stockController,
-              decoration: const InputDecoration(labelText: 'Current Stock'),
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Current Stock',
+                labelStyle: TextStyle(color: Colors.white70),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white30),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFF3B82F6)),
+                ),
+              ),
               keyboardType: TextInputType.number,
             ),
+            const SizedBox(height: 16),
             TextField(
               controller: minOrderController,
+              style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
                 labelText: 'Minimum Order Quantity',
+                labelStyle: TextStyle(color: Colors.white70),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white30),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFF3B82F6)),
+                ),
               ),
               keyboardType: TextInputType.number,
             ),
           ],
         ),
         actions: [
-          ElevatedButton(
-            onPressed: () async {
-              final stock = int.tryParse(stockController.text);
-              final minOrder = int.tryParse(minOrderController.text) ?? 1;
-              final success = await controller.updateInventoryItem(
-                item.productId,
-                quantityInStock: stock,
-                minimumOrderQuantity: minOrder,
-              );
-              if (success) {
-                Navigator.of(context).pop();
-              }
-            },
-            child: const Text('Update'),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ElevatedButton(
+              onPressed: () async {
+                final stock = int.tryParse(stockController.text);
+                final minOrder = int.tryParse(minOrderController.text) ?? 1;
+                final success = await controller.updateInventoryItem(
+                  item.productId,
+                  quantityInStock: stock,
+                  minimumOrderQuantity: minOrder,
+                );
+                if (success) {
+                  Navigator.of(context).pop();
+                  // Refresh inventory data
+                  await controller.loadInitialData();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+              child: const Text(
+                'Update',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => _showRestockDialog(context, controller, item),
-            child: const Text('Restock'),
+            child: const Text(
+              'Restock',
+              style: TextStyle(color: Color(0xFF10B981)),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white70),
+            ),
           ),
         ],
       ),
@@ -612,30 +919,68 @@ class WholesalerDashboard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Restock ${item.productName}'),
+        backgroundColor: const Color(0xFF1A2332),
+        title: Text(
+          'Restock ${item.productName}',
+          style: const TextStyle(color: Colors.white),
+        ),
         content: TextField(
           controller: quantityController,
-          decoration: const InputDecoration(labelText: 'Quantity to add'),
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            labelText: 'Quantity to add',
+            labelStyle: TextStyle(color: Colors.white70),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white30),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFF10B981)),
+            ),
+          ),
           keyboardType: TextInputType.number,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white70),
+            ),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              final quantity = int.tryParse(quantityController.text) ?? 0;
-              final success = await controller.restockProduct(
-                item.productId,
-                quantity,
-              );
-              if (success) {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop(); // Close inventory dialog too
-              }
-            },
-            child: const Text('Restock'),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF10B981), Color(0xFF34D399)],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ElevatedButton(
+              onPressed: () async {
+                final quantity = int.tryParse(quantityController.text) ?? 0;
+                final success = await controller.restockProduct(
+                  item.productId,
+                  quantity,
+                );
+                if (success) {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // Close inventory dialog too
+                  // Refresh inventory data
+                  await controller.loadInitialData();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+              child: const Text(
+                'Restock',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
           ),
         ],
       ),
@@ -700,18 +1045,18 @@ class WholesalerDashboard extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(String status) {
+  List<Color> _getStatusGradientColors(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
-        return Colors.orange.shade100;
+        return [const Color(0xFFFF6B35), const Color(0xFFFF8C42)];
       case 'shipped':
-        return Colors.blue.shade100;
+        return [const Color(0xFF3B82F6), const Color(0xFF60A5FA)];
       case 'delivered':
-        return Colors.green.shade100;
+        return [const Color(0xFF10B981), const Color(0xFF34D399)];
       case 'cancelled':
-        return Colors.red.shade100;
+        return [const Color(0xFFEF4444), const Color(0xFFF87171)];
       default:
-        return Colors.grey.shade100;
+        return [Colors.grey.shade600, Colors.grey.shade400];
     }
   }
 }
@@ -720,33 +1065,60 @@ class _OverviewCard extends StatelessWidget {
   final String title;
   final String value;
   final IconData icon;
-  final Color color;
+  final LinearGradient gradient;
 
   const _OverviewCard({
     required this.title,
     required this.value,
     required this.icon,
-    required this.color,
+    required this.gradient,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: gradient,
+        boxShadow: [
+          BoxShadow(
+            color: gradient.colors.first.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 32, color: color),
-            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 32, color: Colors.white),
+            ),
+            const SizedBox(height: 12),
             Text(
               value,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               title,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white.withOpacity(0.8),
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -759,28 +1131,66 @@ class _ActionCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final VoidCallback onTap;
+  final Color color;
 
   const _ActionCard({
     required this.title,
     required this.icon,
     required this.onTap,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Icon(icon, size: 32, color: Colors.blue),
-              const SizedBox(height: 8),
-              Text(title, style: const TextStyle(fontSize: 14)),
-            ],
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [const Color(0xFF0F1729), const Color(0xFF1A2332)],
+        ),
+        border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [color, color.withOpacity(0.7)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, size: 28, color: Colors.white),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

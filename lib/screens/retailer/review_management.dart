@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import '../../controllers/retailer_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../models/review.dart';
-import '../../models/product.dart';
 import '../../services/api_service.dart';
 import '../../widgets/image_picker_components.dart';
 
@@ -11,10 +10,12 @@ class RetailerReviewManagementScreen extends StatefulWidget {
   const RetailerReviewManagementScreen({super.key});
 
   @override
-  State<RetailerReviewManagementScreen> createState() => _RetailerReviewManagementScreenState();
+  State<RetailerReviewManagementScreen> createState() =>
+      _RetailerReviewManagementScreenState();
 }
 
-class _RetailerReviewManagementScreenState extends State<RetailerReviewManagementScreen> {
+class _RetailerReviewManagementScreenState
+    extends State<RetailerReviewManagementScreen> {
   final RetailerController retailerController = Get.find<RetailerController>();
   final AuthController authController = Get.find<AuthController>();
   final ApiService apiService = Get.find<ApiService>();
@@ -61,24 +62,39 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
         .toSet()
         .toList();
 
+    print(
+      '🔍 DEBUG: Found ${productIds.length} products in retailer inventory',
+    );
+    print('🔍 DEBUG: Product IDs: $productIds');
+
     for (final productId in productIds) {
       try {
-        final reviews = await apiService.getProductReviews(productId.toString());
+        print('📡 Fetching reviews for product ID: $productId');
+        final reviews = await apiService.getProductReviews(
+          productId.toString(),
+        );
         _productReviews[productId] = reviews;
+        print('✅ Got ${reviews.length} reviews for product $productId');
       } catch (e) {
-        print('Error loading reviews for product ${productId}: $e');
+        print('❌ Error loading reviews for product $productId: $e');
         _productReviews[productId] = [];
       }
 
       // Small delay to be gentle on the API
       await Future.delayed(const Duration(milliseconds: 100));
     }
+
+    print(
+      '🎉 Finished loading reviews. Total products with reviews: ${_productReviews.length}',
+    );
   }
 
   void _calculateStatistics() {
     for (final productId in _productReviews.keys) {
       final reviews = _productReviews[productId] ?? [];
-      _productAverageRatings[productId] = Review.calculateAverageRating(reviews);
+      _productAverageRatings[productId] = Review.calculateAverageRating(
+        reviews,
+      );
       _productReviewCounts[productId] = reviews.length;
     }
   }
@@ -89,14 +105,20 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
 
     for (final reviews in _productReviews.values) {
       totalReviews += reviews.length;
-      totalRatingSum += reviews.fold<double>(0, (sum, review) => sum + review.rating);
+      totalRatingSum += reviews.fold<double>(
+        0,
+        (sum, review) => sum + review.rating,
+      );
     }
 
     return totalReviews > 0 ? totalRatingSum / totalReviews : 0.0;
   }
 
   int _getTotalReviews() {
-    return _productReviews.values.fold<int>(0, (sum, reviews) => sum + reviews.length);
+    return _productReviews.values.fold<int>(
+      0,
+      (sum, reviews) => sum + reviews.length,
+    );
   }
 
   @override
@@ -120,37 +142,99 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0A0E27),
       appBar: AppBar(
-        title: const Text('Product Reviews'),
-        backgroundColor: Colors.teal.shade100,
-        foregroundColor: Colors.black,
+        backgroundColor: const Color(0xFF0F1729),
+        elevation: 0,
+        title: const Text(
+          'Product Reviews',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF0F1729),
+                const Color(0xFF0F1729).withOpacity(0.8),
+              ],
+            ),
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadAllData,
-            tooltip: 'Refresh',
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF17A2B8), Color(0xFF0FB5D4)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: _loadAllData,
+              tooltip: 'Refresh',
+            ),
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage.isNotEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text(_errorMessage),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadAllData,
-                        child: const Text('Retry'),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0A0E27),
+              Color(0xFF0F1729),
+              Color(0xFF1A2332),
+              Color(0xFF0F1729),
+              Color(0xFF050A1A),
+            ],
+            stops: [0.1, 0.3, 0.6, 0.8, 1.0],
+          ),
+        ),
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF17A2B8)),
+                ),
+              )
+            : _errorMessage.isNotEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Color(0xFFEF4444),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _errorMessage,
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _loadAllData,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF17A2B8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ],
-                  ),
-                )
-              : _buildReviewContent(),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              )
+            : _buildReviewContent(),
+      ),
     );
   }
 
@@ -179,16 +263,56 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
     final totalReviews = _getTotalReviews();
     final averageRating = _getOverallAverageRating();
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0F1729),
+            const Color(0xFF1A2332).withOpacity(0.8),
+          ],
+        ),
+        border: Border.all(
+          color: const Color(0xFF17A2B8).withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF17A2B8).withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
           children: [
             Row(
               children: [
-                const Icon(Icons.rate_review, color: Colors.teal, size: 32),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF17A2B8), Color(0xFF0FB5D4)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF17A2B8).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.rate_review,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -199,46 +323,52 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                       Text(
                         '$totalReviews total reviews across ${retailerController.inventory.length} products',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.grey[400], fontSize: 14),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.teal.shade100,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        '${averageRating.toStringAsFixed(1)} ⭐',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.teal,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text('Average Rating'),
-                    ],
-                  ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
                 ),
-              ],
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFF6B35).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${averageRating.toStringAsFixed(1)} ⭐',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Average Rating',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -255,7 +385,10 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
         return ratingB.compareTo(ratingA); // Higher rating first
       });
 
-    final topItems = sortedInventoryItems.take(5).where((item) => (_productReviewCounts[item.productId] ?? 0) > 0).toList();
+    final topItems = sortedInventoryItems
+        .take(5)
+        .where((item) => (_productReviewCounts[item.productId] ?? 0) > 0)
+        .toList();
 
     if (topItems.isEmpty) {
       return SizedBox.shrink(); // Hide if no reviews
@@ -266,42 +399,97 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
       children: [
         const Text(
           'Top Rated Products in Your Inventory',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         const SizedBox(height: 12),
         ...topItems.map((item) {
           final rating = _productAverageRatings[item.productId] ?? 0;
           final reviewCount = _productReviewCounts[item.productId] ?? 0;
 
-          return Card(
-            margin: const EdgeInsets.only(bottom: 8),
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF0F1729),
+                  const Color(0xFF1A2332).withOpacity(0.5),
+                ],
+              ),
+              border: Border.all(
+                color: _getRatingColor(rating).withOpacity(0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _getRatingColor(rating).withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: ListTile(
+              contentPadding: const EdgeInsets.all(12),
               leading: Obx(() {
-                final productImageUrl = retailerController.getProductImageUrl(item.productId);
+                final productImageUrl = retailerController.getProductImageUrl(
+                  item.productId,
+                );
                 return ProductImageWidget(
                   imageUrl: productImageUrl,
                   fallbackText: item.productName,
-                  size: 40,
+                  size: 50,
                 );
               }),
-              title: Text(item.productName, maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle: Text('$reviewCount reviews • Stock: ${item.quantityInStock}'),
+              title: Text(
+                item.productName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                '$reviewCount reviews • Stock: ${item.quantityInStock}',
+                style: TextStyle(color: Colors.grey[400]),
+              ),
               trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: _getRatingColor(rating),
-                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    colors: [
+                      _getRatingColor(rating),
+                      _getRatingColor(rating).withOpacity(0.8),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _getRatingColor(rating).withOpacity(0.3),
+                      blurRadius: 4,
+                    ),
+                  ],
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star, size: 16, color: Colors.white),
+                    const Icon(Icons.star, size: 18, color: Colors.white),
                     const SizedBox(width: 4),
                     Text(
                       rating.toStringAsFixed(1),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
                     ),
                   ],
@@ -315,10 +503,10 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
   }
 
   Color _getRatingColor(double rating) {
-    if (rating >= 4.5) return Colors.green;
-    if (rating >= 4.0) return Colors.blue;
-    if (rating >= 3.0) return Colors.orange;
-    return Colors.red;
+    if (rating >= 4.5) return const Color(0xFF10B981);
+    if (rating >= 4.0) return const Color(0xFF17A2B8);
+    if (rating >= 3.0) return const Color(0xFFFF6B35);
+    return const Color(0xFFEF4444);
   }
 
   List<Widget> _buildProductReviewSections() {
@@ -334,11 +522,13 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
         Row(
           children: [
             Obx(() {
-              final productImageUrl = retailerController.getProductImageUrl(item.productId);
+              final productImageUrl = retailerController.getProductImageUrl(
+                item.productId,
+              );
               return ProductImageWidget(
                 imageUrl: productImageUrl,
                 fallbackText: item.productName,
-                size: 40,
+                size: 50,
               );
             }),
             const SizedBox(width: 12),
@@ -348,39 +538,86 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
                 children: [
                   Text(
                     item.productName,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('${reviews.length} customer reviews'),
-                              Text(
-                                'Current Stock: ${item.quantityInStock}',
-                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFF0F1729),
+                          const Color(0xFF1A2332).withOpacity(0.5),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: const Color(0xFF17A2B8).withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${reviews.length} customer reviews',
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                            Text(
+                              'Current Stock: ${item.quantityInStock}',
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFF6B35).withOpacity(0.3),
+                                blurRadius: 4,
                               ),
                             ],
                           ),
-                          Row(
+                          child: Row(
                             children: [
-                              const Icon(Icons.star, color: Colors.yellow, size: 20),
+                              const Icon(
+                                Icons.star,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 4),
                               Text(
-                                '${averageRating.toStringAsFixed(1)}',
+                                averageRating.toStringAsFixed(1),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
+                                  color: Colors.white,
                                 ),
                               ),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -398,8 +635,30 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
   }
 
   Widget _buildReviewTile(Review review) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(left: 16, right: 16, top: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0F1729),
+            const Color(0xFF1A2332).withOpacity(0.3),
+          ],
+        ),
+        border: Border.all(
+          color: const Color(0xFF17A2B8).withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -413,6 +672,7 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                    color: Colors.white,
                   ),
                 ),
                 const Spacer(),
@@ -422,8 +682,8 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
                       starIndex < review.rating.toInt()
                           ? Icons.star
                           : Icons.star_border,
-                      size: 16,
-                      color: Colors.yellow,
+                      size: 18,
+                      color: const Color(0xFFFF6B35),
                     );
                   }),
                 ),
@@ -439,6 +699,7 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
+                  color: Colors.white,
                 ),
               ),
 
@@ -448,8 +709,9 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
               Text(
                 review.body!,
                 style: TextStyle(
-                  color: Colors.grey[700],
+                  color: Colors.grey[400],
                   height: 1.4,
+                  fontSize: 14,
                 ),
               ),
             ],
@@ -459,10 +721,7 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
             // Date
             Text(
               _formatReviewDate(review.createdAt),
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
             ),
           ],
         ),
@@ -484,8 +743,8 @@ class _RetailerReviewManagementScreenState extends State<RetailerReviewManagemen
     } else {
       // Use a more readable format: DD/MM/YYYY
       return '${date.day.toString().padLeft(2, '0')}/'
-             '${date.month.toString().padLeft(2, '0')}/'
-             '${date.year}';
+          '${date.month.toString().padLeft(2, '0')}/'
+          '${date.year}';
     }
   }
 }

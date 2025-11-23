@@ -256,12 +256,12 @@ class LowStockAlert {
 
     return LowStockAlert(
       productId: _parseInt(json['product_id'] ?? json['productId']),
-      productName: json['name'],
-      category: json['category'],
+      productName: json['name'] ?? json['product_name'] ?? 'Unknown Product',
+      category: json['category'] ?? 'Uncategorized',
       price: _parseDouble(json['price']),
       currentStock: _parseInt(json['quantity_in_stock']),
       reorderLevel: _parseInt(json['reorder_level']),
-      description: json['description'],
+      description: json['description'] ?? '',
     );
   }
 }

@@ -13,11 +13,11 @@ import 'package:live_mart_app/models/retailer_inventory.dart';
 import 'package:live_mart_app/models/review.dart';
 
 class WishlistItem {
-    final Product product;
-    final int quantity;
+  final Product product;
+  final int quantity;
 
-    WishlistItem({required this.product, required this.quantity});
-  }
+  WishlistItem({required this.product, required this.quantity});
+}
 
 class ApiService extends GetxService {
   static const String baseUrl = 'http://localhost:3000';
@@ -980,8 +980,6 @@ class ApiService extends GetxService {
 
     return response.statusCode == 200;
   }
-
-}
 
   Future<bool> addToRetailerWishlist({
     required String accessToken,

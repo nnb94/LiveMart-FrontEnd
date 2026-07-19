@@ -34,7 +34,7 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
 
   Future<void> _fetchReviews() async {
     // DUMMY REVIEWS FOR "Ireland Premium Tea"
-    if (widget.product.name.trim().toLowerCase() == "ireland premium tea".toLowerCase()) {
+    if (true) {
       // Make some dummy reviews. Normally you'd fetch from API.
       setState(() {
         reviews = [
@@ -55,7 +55,7 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
             customerName: "Shaurya Kumar",
             rating: 4,
             title: "Pretty good",
-            body: "Very good tea—would buy again. Slightly high priced.",
+            body: "Very good quality—would buy again. Slightly high priced.",
             createdAt: DateTime.now().subtract(const Duration(days: 5)),
           ),
           Review(
@@ -64,8 +64,8 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
             productId: widget.product.id,
             customerName: "Nirvan Bhagabati",
             rating: 5,
-            title: "Best black tea I've tried",
-            body: "Perfect with milk. Aroma is fantastic, packaging is also lovely.",
+            title: "Best almonds I've tried",
+            body: "Perfect. Taste is fantastic, packaging is also lovely.",
             createdAt: DateTime.now().subtract(const Duration(days: 8)),
           ),
           Review(
@@ -75,7 +75,7 @@ class _ProductReviewsPageState extends State<ProductReviewsPage> {
             customerName: "Vedansh Raj",
             rating: 3,
             title: "Average",
-            body: "Not as strong as I expected, but still decent for everyday use.",
+            body: "Not as flavourful as I expected, but still decent for everyday use.",
             createdAt: DateTime.now().subtract(const Duration(days: 12)),
           ),
         ];

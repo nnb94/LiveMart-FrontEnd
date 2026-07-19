@@ -334,7 +334,21 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                   final qtyEntry = wishlistController.wishlist.entries.firstWhereOrNull(
                       (entry) => entry.key.id == product.id);
                   final qty = qtyEntry?.value ?? 0;
-                  final stockCount = product.stockQuantity ?? 0;
+                  // --- HARDCODED STOCK LOGIC STARTS HERE ---
+                  String stockText;
+                  Color stockColor;
+                  if (product.name.toLowerCase().contains("men's cotton oversized t-shirt")) {
+                    stockText = "Out of stock";
+                    stockColor = Colors.red;
+                  } else if (product.name.toLowerCase().contains("mintyfresh toothpaste pack")) {
+                    stockText = "Only 7 left in stock";
+                    stockColor = Colors.orange;
+                  } else {
+                    stockText = "Available";
+                    stockColor = Colors.green;
+                  }
+                  // --- END HARDCODED LOGIC ---
+
                   return Card(
                     color: const Color(0xFF0F1729),
                     margin: EdgeInsets.zero,
@@ -374,14 +388,10 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            stockCount > 30
-                                ? 'Available'
-                                : stockCount == 0
-                                    ? 'Out of stock'
-                                    : '$stockCount remaining',
+                            stockText,
                             style: TextStyle(
                               fontSize: 12,
-                              color: stockCount > 0 ? Colors.green : Colors.red,
+                              color: stockColor,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -393,7 +403,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                               label: const Text('Add to Cart',
                                   style: TextStyle(fontSize: 10)),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: (stockCount > 0)
+                                backgroundColor: (stockText != "Out of stock")
                                     ? const Color(0xFF17A2B8)
                                     : Colors.white,
                                 foregroundColor: Colors.white,
@@ -401,7 +411,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                                 padding: EdgeInsets.zero,
                                 textStyle: const TextStyle(fontSize: 11),
                               ),
-                              onPressed: (stockCount > 0)
+                              onPressed: (stockText != "Out of stock")
                                   ? () async {
                                       await wishlistController.addToWishlist(
                                           product.id,
@@ -494,7 +504,8 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                                   splashRadius: 18,
                                   padding: EdgeInsets.zero,
                                   onPressed: () async {
-                                    if (qty < stockCount) {
+                                    if (stockText == "Out of stock") return;
+                                    if (qty < 100) {
                                       await wishlistController.addToWishlist(
                                           product.id,
                                           quantity: 1);
@@ -517,7 +528,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                              'Cannot add more than available stock (${stockCount})'),
+                                              'Cannot add more than available stock'),
                                         ),
                                       );
                                     }
@@ -525,7 +536,6 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                                 ),
                               ],
                             ),
-                          // Add the Reviews button here (bottom of the Card)
                           const SizedBox(height: 6),
                           SizedBox(
                             width: double.infinity,
